@@ -16,7 +16,7 @@ Symptom → cause → fix, per subsystem. Wiring map: `docs/BLOCK-DIAGRAM.md`. C
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Heater never runs, no output on SSR | Input polarity / wrong pin (D4 or D5) / cycle not started / 10k pull-up missing | Confirm state on Serial; check D4/D5 wiring and pull-ups |
+| Heater never runs, no output on SSR | Input polarity / wrong pin (D4 or D5) / cycle not started / 10k pull-down missing or shorting the input | Confirm state on Serial; check D4/D5 wiring and the bias resistor |
 | SSR input driven, no heat | 10A branch fuse open / loose SSR output terminal / appliance tripped | Fuse, meter SSR terminals under load, check the appliance's own thermostat/reset |
 | Only one heater works | Staging logic holding stage 1 (normal on light loads) or SSR2/appliance fault | Raise humidity load (wetter load); swap SSR1/SSR2 outputs to isolate SSR vs appliance |
 | SSR overheating / thermal cycling | Heatsink too small or no thermal paste | 7–10W each — verify heatsink mounting inside the box; re-paste |

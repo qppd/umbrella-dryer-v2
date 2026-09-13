@@ -12,7 +12,7 @@ Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air 
 3. **DHT22** (humidity) + **DS18B20** (heater-zone temp) drive the duty-cycling controller on the **Arduino Mega 2560** — heaters run only while chamber humidity is above threshold (the "energy efficient control" of the study).
 4. When chamber humidity drops below threshold → auto-shutoff + buzzer + green LED. Condensate drains passively (sloped floor → drain tube → drip tray).
 
-## Core components (Rev 4)
+## Core components (Rev 5)
 
 | Subsystem | Component |
 |---|---|

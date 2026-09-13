@@ -20,7 +20,7 @@ Spec sheets for what was actually bought (sources & prices: `docs/BOM.md` §14).
 | Spec | Value | Note |
 |---|---|---|
 | Output | 24–380VAC, 40A | **DA = AC output — the correct type for the 220V heater-fans.** Never DD on these |
-| Input | 3–32VDC, ~12 mA | direct Mega pin (D4/D5) + 10 kΩ pull-up to hold OFF at boot |
+| Input | 3–32VDC, ~12 mA | direct Mega pin (D4/D5) + 10 kΩ pull-down (input+ to input−) to hold OFF at boot |
 | Duty | 1× 1500W heater each (6.8A) | 5.9× margin |
 | Dissipation | ≈ 7–10W each | **heatsink mandatory**, thermal paste, inside the grounded metal box |
 | Switching | slow time-proportional 2–5s | zero-cross DA type; no fast PWM |
@@ -107,7 +107,7 @@ Spec sheets for what was actually bought (sources & prices: `docs/BOM.md` §14).
 | Condensate zone | No bare copper below 5 cm above the floor; silicone-sealed seams; drain tube 6–8 mm ID |
 | Environment | All-12V extra-low voltage; keep every connector ≥ 5 cm from the heater body |
 
-## 3. Station layout — decided (Rev 4)
+## 3. Station layout — decided (Rev 5)
 
 | Parameter | Decision |
 |---|---|

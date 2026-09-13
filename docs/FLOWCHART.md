@@ -60,7 +60,7 @@ flowchart TD
     JAM -- no --> RUN
 ```
 
-> **Design note:** stations are fuse-isolated, not sensor-monitored (no current-sense path in Rev 4). A blown 3A fuse is detected at the UI as "station commanded ON but motion absent" — see `docs/TROUBLESHOOTING.md` §Motors.
+> **Design note:** stations are fuse-isolated, not sensor-monitored (no current-sense path in this design). A blown 3A fuse is detected at the UI as "station commanded ON but motion absent" — see `docs/TROUBLESHOOTING.md` §Motors.
 
 ## 4. State summary
 

@@ -76,7 +76,7 @@ Rev 2–4 banned the DA type because a TRIAC cannot turn off a **DC** load. The 
 | Output | 24–380VAC, 40A | 220V heaters — correct type |
 | Rated current | 40A | 5.9× the 6.8A heater |
 | Surge | 600A-class | PTC inrush covered |
-| Input | 3–32VDC, ~12mA | direct Mega pin (D4/D5), 10kΩ pull-up to hold OFF at boot |
+| Input | 3–32VDC, ~12mA | direct Mega pin (D4/D5), 10kΩ pull-down to hold OFF at boot |
 | Dissipation | ≈ 1.0–1.6V × 6.8A ≈ **7–10W each** | **heatsink mandatory** — mount inside the grounded metal box with thermal paste |
 | Control | slow time-proportional (2–5s period) | zero-cross DA switches at mains zero-crossings; do not fast-PWM |
 
@@ -240,7 +240,7 @@ flowchart TB
 | Component | Domain | Margin | Interface | Verdict |
 |---|---|---|---|---|
 | Arduino Mega 2560 | 5V buck | pin fit 10+2 | SSR inputs + opto LEDs + sensors | PASS |
-| Fotek SSR-40DA ×2 | 220VAC out / 3–32VDC in | 5.9× per heater | Mega D4/D5, 10kΩ pull-ups, heatsinked | PASS |
+| Fotek SSR-40DA ×2 | 220VAC out / 3–32VDC in | 5.9× per heater | Mega D4/D5, 10kΩ pull-downs, heatsinked | PASS |
 | 1500W PTC heater-fans ×2 | 220VAC | 6.8A each | SSR output + plug/socket | PASS |
 | Omni 12" exhaust fan | 220VAC | ~2A on 10A branch | mains rocker (no SSR) | PASS |
 | RCD/GFCI + mains kit | 220VAC | life-safety | — | PASS (mandatory) |
@@ -349,7 +349,7 @@ flowchart TB
 | D12 | Buzzer |
 | D13 | Start button (INPUT_PULLUP) |
 | 20 / 21 | LCD I2C |
-| — | 10kΩ pull-ups on D4–D8 to their module's VCC/off level |
+| — | 10kΩ pull-downs on D4/D5 (SSR inputs, active-HIGH — hold OFF at boot); 10kΩ pull-ups on D6–D8 to relay VCC (active-LOW boards) |
 | — | Mains rocker + RCD + 10A fuses: AC domain (no Mega channel) |
 | — | DC rocker + 25A main: battery domain |
 

@@ -18,8 +18,8 @@ Master connection list for every component. Rev 5 architecture: **heat is 220V A
 | GND | common | Ground rail (DC side only) | 22 AWG |
 | D2 | in | DHT22 DATA | 22 AWG |
 | D3 | in | DS18B20 yellow DATA | + 4.7 kΩ pull-up D3→5V |
-| D4 | out | SSR-40DA #1 input (3–32VDC) — heater-fan 1 | + 10 kΩ pull-up to SSR input− (off at boot) |
-| D5 | out | SSR-40DA #2 input — heater-fan 2 | + 10 kΩ pull-up |
+| D4 | out | SSR-40DA #1 input (3–32VDC) — heater-fan 1 | + 10 kΩ pull-down, input+ to input− (holds OFF at boot) |
+| D5 | out | SSR-40DA #2 input — heater-fan 2 | + 10 kΩ pull-down (off at boot) |
 | D6 | out | 2-CH relay #1 ch1 — Station 1 motor | + 10 kΩ pull-up to relay VCC |
 | D7 | out | 2-CH relay #1 ch2 — Station 2 motor | + 10 kΩ pull-up |
 | D8 | out | 2-CH relay #2 ch1 — Station 3 motor | + 10 kΩ pull-up |
@@ -41,7 +41,7 @@ Note: the 12" exhaust fan has **no Mega control channel** — it switches with t
 | Fused line 1 | SSR-40DA #1 OUT → heater-fan 1 plug/socket | 2.0 mm² | 10 A |
 | Fused line 2 | SSR-40DA #2 OUT → heater-fan 2 plug/socket | 2.0 mm² | 10 A |
 | Mains rocker (second gang) | 12" Omni exhaust fan plug | 2.0 mm² | 10 A |
-| SSR input + (per SSR) | Mega D4 / D5 through the 10 kΩ pull-up | 22 AWG | — |
+| SSR input + (per SSR) | Mega D4 / D5, each with a 10 kΩ pull-down to that SSR's input− | 22 AWG | — |
 | SSR input − | SSR common to Mega GND (DC domain) | 22 AWG | — |
 
 **1500 W = 6.8 A at 220V.** SSR-40DA (40 A) per heater = 5.9x margin; the 10 A branch fuses protect wiring. SSRs mount on a **heatsink** (7–10 W each dissipated at 6.8 A) inside the electrical box, away from the chamber heat.
@@ -75,7 +75,7 @@ Load check: 3 motors 3.6 A + logic ~0.8 A ≈ **4.4 A steady** — BMS 30 A now 
 | Output 1 (line) | Fused mains line (10 A) |
 | Output 2 (load) | Heater-fan plug line |
 
-Active-LOW behavior at boot: 10 kΩ pull-ups hold SSR inputs OFF until firmware drives them.
+Boot-safe inputs: the 2-CH relay boards are active-LOW (LOW pin = relay ON) so their inputs get 10 kΩ pull-ups to board VCC; the SSRs are active-HIGH (HIGH input = heater ON) so their input+ gets a 10 kΩ pull-down to input−. Both heater channels and all relay channels are therefore guaranteed OFF at power-on until firmware drives them.
 
 ### 2x 2-CH relay boards (12V motor switching)
 | Board pin | Goes to |
@@ -89,7 +89,7 @@ Active-LOW behavior at boot: 10 kΩ pull-ups hold SSR inputs OFF until firmware 
 - **2x 1500W PTC heater-fans (220V):** plug/socket on each SSR output; built-in thermostat + thermal cutoff stay in circuit.
 - **Omni 12" exhaust fan (220V):** its own fused mains gang on the mains rocker, NOT SSR-controlled.
 - **3x worm motors (12V):** relay NO → motor +; motor − → ground rail.
-- **DHT22 / DS18B20 / LCD / LEDs / buzzer / button:** unchanged from Rev 4 — see `docs/FIRMWARE-GUIDE.md` pin table and section 1 above.
+- **DHT22 / DS18B20 / LCD / LEDs / buzzer / button:** see `docs/FIRMWARE-GUIDE.md` pin table and section 1 above.
 
 ## 5. Rules that keep this wiring safe
 

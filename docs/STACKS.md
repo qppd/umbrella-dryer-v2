@@ -12,7 +12,7 @@ The full stack from silicon to tooling. Firmware behavior lives in `docs/FIRMWAR
 | Library | `OneWire` (Paul Stoffregen) | Latest stable | DS18B20 bus |
 | Library | `DallasTemperature` (Miles Burton) | Latest stable | DS18B20 high-level reads |
 | Library | `LiquidCrystal I2C` (Frank de Brabander / marcoschwartz) | Latest stable | LCD @ 0x27/0x3F |
-| Application | `umbrella-dryer.ino` (this repo) | Rev 4 | State machine + duty-cycle control |
+| Application | `umbrella-dryer.ino` (this repo) | Rev 5 | State machine + duty-cycle control |
 
 **Toolchain:** Arduino IDE 2.x (Boards Manager → *Arduino Mega or Mega 2560*, Processor → *ATmega2560*) or `arduino-cli` for scripted builds. SRAM discipline: wrap LCD/Serial string literals in `F()` — 8 KB SRAM fills fast with menus.
 

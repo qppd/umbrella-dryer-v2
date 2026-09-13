@@ -143,13 +143,13 @@ The store pages sell look-alike versions. Verify each:
 1. Dupont jumper from each Mega pin to that relay board's IN pin.
 2. Fit 10k pull-up resistors from each IN pin to the relay board's VCC (this is the low-trigger module's OFF level) so boards stay OFF while the Mega boots.
 
-**Check:** all 5 wires follow the table (D4–D8); pull-ups fitted.
+**Check:** all 5 wires follow the table (D4–D8); bias resistors fitted — 10 kΩ pull-downs on the SSR inputs (D4/D5), 10 kΩ pull-ups on the relay inputs (D6–D8).
 
 ### Step 3.6 — Wire the mains AC box (adult supervision / electrician recommended)
 1. RCD/GFCI outlet feeding a 2-gang mains rocker.
 2. Each heater line: rocker gang → 10 A fuse → SSR-40DA output terminals → plug/socket for that heater-fan.
 3. Third gang or direct rocker line → 12" Omni exhaust fan plug.
-4. SSR input terminals to the Mega side: input + from D4/D5 (with 10 kΩ pull-ups), input − to Mega GND.
+4. SSR input terminals to the Mega side: input + from D4/D5 (each with a 10 kΩ pull-down to that SSR's input−), input − to Mega GND.
 5. SSRs on heatsinks with thermal paste, inside the grounded metal box. Earth the box, the chamber frame, and both appliance chassis.
 
 **Check:** continuity earth→box, earth→frame, earth→chassis each < 1 Ω; RCD test button trips; with the mains rocker OFF, no voltage at any SSR output.
