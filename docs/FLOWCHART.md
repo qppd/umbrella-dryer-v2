@@ -1,4 +1,4 @@
-# Flowcharts — Control Loop & Safety Interlocks (Rev 5)
+# Flowcharts — Control Loop & Safety Interlocks (Rev 6)
 
 Firmware behavior reference. Pin assignments per `docs/BOM.md` §15; control constants per `docs/FIRMWARE-GUIDE.md`.
 
@@ -39,14 +39,17 @@ flowchart TD
     T3 -- no --> OFF2[Both SSRs OFF]
     T3 -- yes --> T4{H above threshold?}
     T4 -- no --> OFF2
-    T4 -- yes --> STG[Stage 1: SSR1 duty from H error<br/>Stage 2 error >= E_BOOST: SSR1 ON + SSR2 duty<br/>ON windows inside 4 s period]
+    T4 -- yes --> T5{Source mode?<br/>D14}
+    T5 -- "battery mode" --> STG1[Stage 1 only: SSR1 duty from H error<br/>SSR2 forced OFF<br/>ON windows inside 4 s period]
+    T5 -- "wall mode" --> STG[Stage 1: SSR1 duty from H error<br/>Stage 2 error >= E_BOOST: SSR1 ON + SSR2 duty<br/>ON windows inside 4 s period]
     STG --> RELAY[Write SSR pins D4 / D5]
+    STG1 --> RELAY
     OFF1 --> RELAY
     OFF2 --> RELAY
     SERR --> RELAY
 ```
 
-Note: a fail-short SSR means a heater stuck ON — the mains rocker (labeled kill), 10A branch fuse, appliance thermostat, and RCD are the hardware layers behind this software interlock.
+Note: a fail-short SSR means a heater stuck ON — the mains rocker (labeled kill), 10A branch fuse, appliance thermostat, and RCD are the hardware layers behind this software interlock. In battery mode (D14 HIGH) stage 2 is software-disabled so the 3000W inverter only ever carries stage 1 (heater 1 + fan ≈ 2.05kW).
 
 ## 3. Per-station fault handling
 

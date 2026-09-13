@@ -1,4 +1,4 @@
-# Testing & Validation Plan (Rev 5)
+# Testing & Validation Plan (Rev 6)
 
 Formal test protocol for the build — module bench tests through full-system validation against the study's claims. Bench bring-up steps live in `docs/SETUP.md` §3; this doc expands them into a pass/fail record for the capstone paper.
 
@@ -23,6 +23,8 @@ Formal test protocol for the build — module bench tests through full-system va
 | T0.5 | Each motor | 12 V direct, uncoupled then coupled | 16 RPM; self-locks when de-energized; no grinding |
 | T0.6 | Each SSR-40DA | 12V lamp / appliance load on output; drive input from Mega | Load switches cleanly; OFF leakage ≈ 0; no heating without heatsink check |
 | T0.6b | RCD test button | Press test on the RCD outlet | Trips immediately; reset works |
+| T0.6c | Inverter | Battery bank on DC input, changeover at B, 60 s no-load then with fan load | Clean 220 V output; overload alarm absent at stage-1 load; remote pin works (off in wall mode) |
+| T0.6d | Changeover switch | Toggle A/B several times under load and no-load | Break-before-make; D14 tracks position; inverter remote grounded in A |
 | T0.7 | Heater-fan + exhaust fan (220V) | Plug into RCD outlet via rocker, 60 s on tile | Warm air + airflow; appliance thermostats in circuit; plugs accessible |
 | T0.7 | LCD / LEDs / buzzer / button | Sketch I/O test | All visible/audible; button debounces |
 
@@ -57,11 +59,12 @@ Measure energy at the battery with a DC watt-meter (inline on the main branch).
 | T3.1 | 1 umbrella, light moisture | Cycle time | ≈ 15–20 min |  |
 | T3.2 | 3 umbrellas, light moisture | Cycle time | ≈ 15–25 min |  |
 | T3.3 | 3 umbrellas, soaked | Cycle time | ≈ 30–45 min |  |
-| T3.4 | 3-umbrella cycle | **Energy (plug-in kWh meter)** | **≈ 0.6–1.0 kWh** |  |
-| T3.5 | Battery autonomy | Control + rotation runtime on one charge | ≈ 27 h (25+ cycles) |  |
+| T3.4 | 3-umbrella cycle | **Energy (plug-in kWh meter)** | **≈ 0.6–1.0 kWh (wall mode)** |  |
+| T3.5 | Battery-mode cycles | Stage-1-only cycles per charge | ≈ 6–8 cycles (≈ 0.4–0.6 kWh each) |  |
 | T3.6 | Mid-cycle | Chamber air temp | 40–60 °C |  |
 | T3.7 | Result | Canopy condition | Dry to touch, no fabric odor/deformation |  |
-| T3.8 | Steady draw | Battery current | ≤ 4.4 A (3 motors + logic) |  |
+| T3.8 | Steady draw (wall mode) | Battery current | ≤ 4.4 A (3 motors + logic) |  |
+| T3.8b | Stage-1 draw (battery mode) | Inverter DC feed current | ≈ 188 A steady / ≤ 210 A surge (clamp DC meter) |  |
 | T3.9 | Station independence | Jam one umbrella mid-cycle | Other stations + heaters continue; only that 3A fuse opens if stalled |  |
 
 ## 6. T4 — Safety drills (all must pass before unattended use)
@@ -71,6 +74,7 @@ Measure energy at the battery with a DC watt-meter (inline on the main branch).
 | T4.1 | Over-temp cutoff | Heat chamber; temporarily lower `T_CUT` to 45 °C | Both SSRs drop; latched until `T < T_RESET`; stations keep running |
 | T4.2 | Sensor loss | Unplug DS18B20 mid-cycle (3-fail logic) | FAULT state; both SSRs OFF; red LED + buzzer |
 | T4.3 | Fail-short SSR | Simulate welded SSR (jumper output) | Mains rocker kills it; 10 A branch fuse opens on sustained overload; RCD trips on any earth fault |
+| T4.3b | Source interlock | In battery mode, force stage-2 request (wet load + serial override) | SSR2 stays OFF; heater 1 + fan ≤ 2.1 kW; inverter stays under its rating |
 | T4.4 | Fuse isolation | Run 3 stations; short one motor | Only that station's 3A fuse opens; others keep running |
 | T4.5 | BMS / battery | Attempt discharge below cutoff / verify charge cycle | BMS protects; charger terminates at 14.6 V profile |
 | T4.6 | Water vs electronics | Sprinkle near chamber pass-throughs | No ingress at grommets; tray catches all condensate |

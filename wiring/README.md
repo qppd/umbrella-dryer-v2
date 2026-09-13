@@ -1,13 +1,13 @@
-# Wiring Reference — Arduino Mega 2560 (Rev 5: mains heat + 12V stations)
+# Wiring Reference — Arduino Mega 2560 (Rev 6: dual source + mains heat + 12V stations)
 
-Master connection list for every component. Rev 5 architecture: **heat is 220V AC** (2x 1500W PTC heater-fans via SSR-40DA), **rotation + control stay 12V DC** (battery-backed). The Mega never touches mains — SSRs and DC relays keep the domains separate. Pin map source: `docs/BOM.md` section 15.
+Master connection list for every component. Rev 6 architecture: **heat is 220V AC** (2x 1500W PTC heater-fans via SSR-40DA), **rotation + control stay 12V DC** (battery-backed), and the 220V loads run from **either the wall outlet or a 3000W pure sine inverter** selected by a **changeover switch** — never both. The Mega never touches mains — SSRs and DC relays keep the domains separate. Pin map source: `docs/BOM.md` section 15.
 
 ## 0. Domains overview
 
 | Domain | Source | Loads | Switched by | Mega sees it? |
 |---|---|---|---|---|
-| 220V AC | Wall outlet | 2x 1500W PTC heater-fans, 12" Omni exhaust fan | 2x Fotek SSR-40DA | NO — SSR input side only |
-| 12V DC | LiFePO4 battery | 3 worm motors | 3x relay channels | NO — optocoupler input only |
+| 220V AC | Wall outlet OR 3000W inverter via changeover | 2x 1500W PTC heater-fans, 12" Omni exhaust fan | 2x Fotek SSR-40DA | NO — SSR input side only |
+| 12V DC | 2x LiFePO4 200Ah (parallel) | 3 worm motors + inverter DC feed | 3x relay channels + changeover | NO — optocoupler input only; inverter takes its own heavy feed |
 | 5V DC | LM2596S buck | Mega, sensors, LCD, relay coils | — | yes (this is the Mega's home) |
 
 ## 1. Pin map — Mega 2560 side
@@ -28,16 +28,20 @@ Master connection list for every component. Rev 5 architecture: **heat is 220V A
 | D11 | out | Red LED (220 Ω) | cathode→GND |
 | D12 | out | Buzzer + | − → GND |
 | D13 | in | Start button (other leg → GND) | INPUT_PULLUP |
+| D14 | in | Changeover aux contact (other side → GND) | INPUT_PULLUP — LOW = wall-outlet mode |
 | 20/21 | I2C | LCD SDA / SCL | addr 0x27/0x3F |
 
 Note: the 12" exhaust fan has **no Mega control channel** — it switches with the mains rocker (see section 2). Fan stage control = stage 1 only.
 
-## 2. 220V AC domain (mains — hazardous)
+## 2. 220V AC domain (dual source — hazardous)
 
 | From | To | Wire | Protection |
 |---|---|---|---|
-| Wall outlet | **GFCI/RCD outlet** | — | 30 mA life protection — mandatory |
-| RCD outlet | Mains rocker + 10 A** mains fuses (2 lines) | 3-core 2.0 mm² (14 AWG eq.) | Line + neutral fused |
+| Wall outlet (grid mode) | **Changeover switch, position A** | 2.0 mm² 3-core | upstream breaker |
+| Inverter AC output (battery mode) | **Changeover switch, position B** | 2.0 mm² 3-core | inverter overload protection |
+| Changeover common out | **RCD/GFCI** | 2.0 mm² | 30 mA life protection — mandatory |
+| Changeover 2nd pole | Inverter remote pin → GND when in position A (wall) | 22 AWG | grounds the remote in wall mode = inverter OFF |
+| RCD outlet | Mains rocker + 10 A mains fuses (2 lines) | 3-core 2.0 mm² (14 AWG eq.) | Line + neutral fused |
 | Fused line 1 | SSR-40DA #1 OUT → heater-fan 1 plug/socket | 2.0 mm² | 10 A |
 | Fused line 2 | SSR-40DA #2 OUT → heater-fan 2 plug/socket | 2.0 mm² | 10 A |
 | Mains rocker (second gang) | 12" Omni exhaust fan plug | 2.0 mm² | 10 A |
@@ -47,23 +51,28 @@ Note: the 12" exhaust fan has **no Mega control channel** — it switches with t
 **1500 W = 6.8 A at 220V.** SSR-40DA (40 A) per heater = 5.9x margin; the 10 A branch fuses protect wiring. SSRs mount on a **heatsink** (7–10 W each dissipated at 6.8 A) inside the electrical box, away from the chamber heat.
 
 ### Mains safety rules (non-negotiable)
-1. **GFCI/RCD-protected outlet only.**
-2. Every mains terminal inside a **closed grounded metal electrical box**; earth the box, the chamber frame, and both appliance chassis.
-3. SSR fail-short now means an **AC heater stuck ON**: mitigated by RCD + branch fuses + PTC self-regulation + the **mains rocker as the manual kill** (not the battery rocker).
-4. The appliance plugs stay accessible — unplug before any chamber service.
-5. Thermal cutoffs in each heater-fan appliance stay in circuit (they are built in).
+1. **The changeover switch is the only point where the two sources meet — and they never meet electrically.** Break-before-make only; never wire the wall outlet and inverter output to the same node directly.
+2. **In wall mode the inverter must be OFF** — verified by its remote pin being grounded through the changeover's second pole. Confirm before the first heat: interlock drill in `docs/SETUP.md`.
+3. **GFCI/RCD downstream of the changeover** — it protects the loads on either source.
+4. Every mains terminal inside a **closed grounded metal electrical box**; earth the box, the chamber frame, both appliance chassis, **and the inverter chassis**.
+5. SSR fail-short now means an **AC heater stuck ON**: mitigated by RCD + branch fuses + PTC self-regulation + the **mains rocker as the manual kill** (not the battery rocker).
+6. The appliance plugs stay accessible — unplug before any chamber service.
+7. Thermal cutoffs in each heater-fan appliance stay in circuit (they are built in).
 
-## 3. 12V DC domain (battery)
+## 3. 12V DC domain (battery bank)
 
 | From | To | Wire | Protection |
 |---|---|---|---|
-| Battery + | DC rocker → 25 A main fuse → barrier MAIN | 16 AWG | 25 A |
+| Battery + (parallel bank) | DC rocker → 25 A main fuse → barrier MAIN | 16 AWG | 25 A — motors + logic only |
+| Battery + | **250 A ANL fuse → inverter DC+** | **1/0 AWG, ≤ 1 m** | 250 A |
+| Unit A ↔ Unit B parallel links | battery-to-battery bus | 4 AWG | — |
+| Inverter DC− | single-point DC ground | 1/0 AWG | — |
 | MAIN | Station branches x3: 3 A fuse → relay COM→NO → motor + | 18 AWG | 3 A each |
 | MAIN | Logic: 3 A fuse → buck IN+ | 16 AWG | 3 A |
 | Motor − / relay GND | Ground rail (DC) | — | single point |
 | Buck OUT+ (5 V) | Mega 5V, relay VCCs, sensors, LCD | 22 AWG | set 5.00 V first |
 
-Load check: 3 motors 3.6 A + logic ~0.8 A ≈ **4.4 A steady** — BMS 30 A now has a huge margin; runtime is battery-limited only (384 Wh ÷ ~14 W ≈ days; realistic limit = mains availability).
+Load check: wall mode = 3 motors 3.6 A + logic ~0.8 A ≈ **4.4 A steady**. Battery mode adds the inverter feed: 188 A steady / ~210 A surge at the stage-1 cap (heater 1 + fan), so ≈ **221 A peak vs 400 A BMS aggregate (1.8×)** — and the 3 motor stalls do not coincide with full heater duty in practice. Keep the inverter feed cables short, thick, and fused at the battery end.
 
 ## 4. Component terminal tables
 
@@ -85,6 +94,22 @@ Boot-safe inputs: the 2-CH relay boards are active-LOW (LOW pin = relay ON) so t
 | IN1–IN4 | Mega D6–D8 (3 used) + spare |
 | COM/NO | 12 V station branches |
 
+### 3000W pure sine inverter (battery mode source)
+| Inverter terminal | Goes to |
+|---|---|
+| DC+ | 250 A ANL fuse → battery+ bus (1/0 AWG, ≤ 1 m) |
+| DC− | single-point DC ground |
+| AC output | Changeover switch, position B |
+| Remote pin | Changeover 2nd pole (grounded in wall mode) |
+| Chassis | earth |
+
+### Changeover switch 2P 63A (the source interlock)
+| Pole | Position A (wall) | Position B (battery) |
+|---|---|---|
+| Pole 1 — line + neutral | wall outlet | inverter AC output |
+| Pole 2 | inverter remote pin → GND (inverter OFF) | remote released (inverter runs) |
+| Aux contact | Mega D14 → GND (LOW = wall mode) | open (D14 HIGH = battery mode) |
+
 ### Appliances
 - **2x 1500W PTC heater-fans (220V):** plug/socket on each SSR output; built-in thermostat + thermal cutoff stay in circuit.
 - **Omni 12" exhaust fan (220V):** its own fused mains gang on the mains rocker, NOT SSR-controlled.
@@ -94,8 +119,10 @@ Boot-safe inputs: the 2-CH relay boards are active-LOW (LOW pin = relay ON) so t
 ## 5. Rules that keep this wiring safe
 
 1. **Two separate kill switches:** mains rocker (AC domain) and DC rocker (battery) — label both.
-2. Mega never sees mains or 12V — only buck 5 V and sensor-level signals.
-3. SSR heatsinks sized for 7–10 W each; thermal paste; vertical fins; inside the closed box.
-4. Slow duty cycling on the SSRs too (zero-cross DA type tolerates kHz poorly at load; keep 2–5 s period).
-5. Single-point DC ground; mains earth separate and complete (box, frame, chassis).
-6. Every chamber wall pass-through gets a grommet; keep appliance cords off the hot floor side.
+2. **Never parallel the two AC sources** — the changeover is the only path to the RCD; the inverter remote interlock must be verified before the first heated cycle.
+3. Mega never sees mains or 12V — only buck 5 V and sensor-level signals.
+4. SSR heatsinks sized for 7–10 W each; thermal paste; vertical fins; inside the closed box.
+5. Slow duty cycling on the SSRs too (zero-cross DA type tolerates kHz poorly at load; keep 2–5 s period).
+6. Single-point DC ground; mains earth separate and complete (box, frame, chassis, inverter chassis).
+7. Every chamber wall pass-through gets a grommet; keep appliance cords off the hot floor side.
+8. Inverter DC feed: 1/0 AWG, ≤ 1 m, 250 A ANL at the battery end — voltage drop and heat live in long thin cables.

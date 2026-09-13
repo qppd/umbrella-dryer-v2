@@ -1,4 +1,4 @@
-# 3D Model Views (Rev 5)
+# 3D Model Views (Rev 6)
 
 Engineering-style views of the drying chamber and its three motor stations, with measurements in millimeters.
 

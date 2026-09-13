@@ -5,7 +5,7 @@
 **Project:** Smart Umbrella Dryer (PUP Santa Maria, BS CpE capstone)
 **Sourcing policy:** Makerlab PH first — verified trusted Lazada store (98% seller rating, 845.6K items sold, 10-Year Store, Bulacan). Items Makerlab doesn't carry → trusted third-party sellers with high rating/sold counts only.
 **Prices verified:** 2026-09-12 (Lazada prices move — re-check before ordering)
-**Rev 5 quantities:** 3× worm gear motors (one per umbrella station) · **2× Fotek SSR-40DA (AC output — mains heaters)** + 2× 2-CH relay modules · **2× 1500W 220V PTC heater-fans + 12" Omni exhaust fan** · mains kit (RCD, grounded box, 10A fuses, 2.0mm² wire) · 3× shafts / bearing sets / couplings · 25A DC main fuse · MLX90614 removed.
+**Rev 6 quantities:** 3× worm gear motors (one per umbrella station) · **2× Fotek SSR-40DA (AC output — mains heaters)** + 2× 2-CH relay modules · **2× 1500W 220V PTC heater-fans + 12" Omni exhaust fan** · **3000W pure sine inverter + 2P changeover switch + 250A ANL kit** · mains kit (RCD, grounded box, 10A fuses, 2.0mm² wire) · **2× 200Ah LiFePO4 + 14.6V 20A charger** · 3× shafts / bearing sets / couplings · 25A DC main fuse · MLX90614 removed.
 
 ## All components sourced
 
@@ -28,10 +28,10 @@
 - URL: https://www.lazada.com.ph/products/pdp-i100047444.html
 - Qty 2 → 4 channels: 3 worm-motor stations (1 ch each) + 1 spare. Coils fed from the LM2596S 5V rail; Mega drives only the optocoupler LEDs.
 
-**LiFePO4 Battery 12.8V 30Ah w/ BMS (PowMr)**  pre-order flag
-- Listing: PowMr 12.8V 30AH LiFePO4 Battery Built-in BMS | 152.9K store sold
-- URL: https://www.lazada.com.ph/products/pdp-i4660631878.html
-- PDP-verified: **LiFePO4 chemistry, 12.8V, 30Ah, BMS**. ExpertPower 35Ah (paper's choice) is NOT on Lazada PH — this PowMr 30Ah is the best local equivalent (spec re-check: 30Ah = ~4 cycles/charge instead of 5).
+**LiFePO4 Battery 12.8V 200Ah w/ BMS (PowMr) ×2 — parallel bank**  verify stock
+- Listing: PowMr 12.8V 200AH LiFePO4 Battery Built-in BMS 6000 Deep Cycles | 4.8 (22)
+- URL: https://h5.lazada.com.ph/products/powmr-12v-200ah-lifepo4-battery-lithium-battery-built-in-bms-6000-deep-cycles-rechargeable-solar-battery-i5047514166.html
+- PDP-verified: **LiFePO4 chemistry, 12.8V, 200Ah, BMS**. Two in parallel = 5,120Wh — feeds the 3000W inverter (battery mode) plus motors + control. The old 30Ah plan could not carry the inverter.
 - Price varies by promo — check PDP. Scout noted a **pre-order / ship-in-60-days flag** — confirm stock before committing, or order early.
 
 **Blade fuses + holder — ₱122.53 + ₱25**
@@ -43,7 +43,7 @@
 - URL: https://www.lazada.com.ph/products/pdp-i2272943066.html
 - Rating is AC. At 12V DC, arcing is worse — derate ~50%. **Recommended wiring: rocker switches the control side (buck input + relay coils), NOT the full battery load.** The AC mains rocker is a separate 2-gang part from the hardware kit.
 
-### Mains AC kit (Rev 5)
+### Mains AC kit + power conversion (Rev 6)
 
 **2× 1500W PTC industrial heater-fan, 220V — ₱1,395.35 ea**
 - Listing: Portable Industrial Electric Heater Fan Commercial Thermostat Air Warm Heater Blower
@@ -60,6 +60,8 @@
 - URL: https://makerlab.ph/products/original-solid-state-relay-ssr-40da-ssr-75da-ssr-25dd-4-32v-dc-input
 
 **Hardware-store additions (EST, add at checkout):** RCD/GFCI 30mA outlet or breaker · grounded metal electrical box · 2-gang mains rocker + plate · 2.0mm² 3-core wire + plug/socket set · 2× SSR heatsink profiles.
+
+**Rev 6 power-conversion additions (EST, add at checkout):** 3000W pure sine inverter 12V→220V 60Hz with remote/enable pin (search "local stock pure sine inverter 3000W") · 2P 63A changeover switch · ANL 250A fuse + holder + 1/0 AWG inverter cable + 4 AWG battery links · 14.6V 20A LiFePO4 charger (search "LiFePO4 charger 20a", ~₱2,000–2,700).
 
 ### Sensors
 
@@ -118,9 +120,11 @@
 ## Watch-outs (read before ordering)
 
 1. **Relay contacts are 30VDC-rated** — never on mains AC; heater uses slow duty cycling only (2–5s period).
-2. **Battery lead time:** PowMr 30Ah flagged pre-order (~60 days). Order FIRST or find local stock. 30Ah ≈ 3–4 cycles/charge with 3 motor stations.
-3. **Rocker DC derating:** don't push a 16A AC-rated switch on the battery load — switch the control side instead.
-4. **Motor torque:** the JGY370 Lazada listing is ~25 kg·cm — under the 60 kg·cm spec. Makerlab's SGM-A58SW31ZYS (site-only, qty 3) is the spec-correct choice.
+2. **Inverter listing traps:** "4000W/6000W" on cheap units is usually surge rating or modified sine. Buy pure sine with a **3000W continuous** rating and a remote pin — the exhaust fan is an induction motor.
+3. **Battery lead time:** PowMr 200Ah units flagged pre-order (~60 days). Order BOTH FIRST or find local stock. 2× 200Ah ≈ 6–8 stage-1 cycles per charge in battery mode.
+4. **Rocker DC derating:** don't push a 16A AC-rated switch on the battery load — switch the control side instead.
+5. **Motor torque:** the JGY370 Lazada listing is ~25 kg·cm — under the 60 kg·cm spec. Makerlab's SGM-A58SW31ZYS (site-only, qty 3) is the spec-correct choice.
+6. **Never parallel the two AC sources** — the changeover switch is the only path to the RCD; the inverter remote interlock must be verified before the first heated cycle.
 
 ## One-stop alternatives
 

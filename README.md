@@ -12,7 +12,7 @@ Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air 
 3. **DHT22** (humidity) + **DS18B20** (heater-zone temp) drive the duty-cycling controller on the **Arduino Mega 2560** — heaters run only while chamber humidity is above threshold (the "energy efficient control" of the study).
 4. When chamber humidity drops below threshold → auto-shutoff + buzzer + green LED. Condensate drains passively (sloped floor → drain tube → drip tray).
 
-## Core components (Rev 5)
+## Core components (Rev 6)
 
 | Subsystem | Component |
 |---|---|
@@ -20,12 +20,12 @@ Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air 
 | Heat | **2× 1500W PTC heater-fans (220V mains)** switched by **2× Fotek SSR-40DA** (heatsinked, staged on/off) |
 | Air exchange | **Omni 12-inch industrial exhaust fan (220V)** on the mains rocker |
 | Rotation | **3× SGM-A58SW31ZY worm gear motors** 12V (60 kg·cm each, one per umbrella) via **2-CH relay modules w/ optocoupler** (fixed 16 RPM) |
-| Power | **220V mains** for heat + fan (RCD-protected) · **LiFePO4 12.8V 30Ah** for motors + control → LM2596S buck → 5V logic |
+| Power | **220V from wall outlet OR 3000W pure sine inverter** via changeover (RCD-protected) · **2× LiFePO4 12.8V 200Ah** for motors, control, and battery-mode heat → LM2596S buck → 5V logic |
 | Sensors | DHT22 · DS18B20 waterproof |
 | UI | 16×2 LCD (I2C), 3 status LEDs, buzzer, start button, 2 labeled rockers (MAINS / DC) |
 | Mechanical | 3× 8mm steel shafts, 6× KP08 pillow blocks, 3× 8×8 couplings, aluminum chassis |
 
-> Rev 5 change: heating moved to mains (2× 1500W PTC heater-fans via SSR-40DAs, 12" exhaust fan) — cycle time drops to ~15–45 min; the battery now carries motors + control only (~27 h autonomy). Rev 4: 3 independent stations replaced the single-motor carousel; relays replaced the SSR + BTS7960 (12V era). MLX90614 removed.
+> Rev 6 change: dual-source power — wall outlet or 3000W pure sine inverter (2× 200Ah LiFePO4 bank) via a changeover switch; firmware caps battery mode at stage 1. Rev 5: heating moved to mains (2× 1500W PTC heater-fans via SSR-40DAs, 12" exhaust fan). Rev 4: 3 independent stations replaced the single-motor carousel; relays replaced the SSR + BTS7960 (12V era). MLX90614 removed.
 
 ## Where to start (read in this order)
 
@@ -46,7 +46,7 @@ Reference material (dip in as needed): `docs/SYSTEM-ARCHITECTURE.md`, `docs/FLOW
 
 | Doc | Contents |
 |---|---|
-| [docs/BOM.md](docs/BOM.md) | Rev 5 component analysis & compatibility verification, itemized Lazada BOM, printable shopping checklist (Appendix A) |
+| [docs/BOM.md](docs/BOM.md) | Rev 6 component analysis & compatibility verification, itemized Lazada BOM, printable shopping checklist (Appendix A) |
 | [docs/SOURCING-ANNEX.md](docs/SOURCING-ANNEX.md) | Sourcing annex: seller ratings, backup listings, watch-outs |
 | [docs/HARDWARE.md](docs/HARDWARE.md) | Hardware reference — part ratings, module spec sheets, build standards |
 | [docs/STACKS.md](docs/STACKS.md) | Technology stacks — firmware/libraries, power chain, tooling |
@@ -59,10 +59,10 @@ Reference material (dip in as needed): `docs/SYSTEM-ARCHITECTURE.md`, `docs/FLOW
 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Symptom → cause → fix per subsystem |
 | [model/README.md](model/README.md) | Dimensioned 3D model views (PNG): exploded, front, side, top, front-right, front-left + generator script |
 
-## Verified performance (Rev 5 analysis)
+## Verified performance (Rev 6 analysis)
 
 - **Cycle:** ≈ 15–25 min (light rain) – ~45 min (fully soaked), humidity auto-stop
-- **Energy:** ≈ 0.6–1.0 kWh per 3-umbrella cycle from mains (staged control, no dry heating); battery runs motors + control ≈ 27 h per charge (25+ cycles)
+- **Energy:** wall mode ≈ 0.6–1.0 kWh per 3-umbrella cycle; battery mode ≈ 0.4–0.6 kWh stage-1-only → ~6–8 cycles per charge (staged control, no dry heating)
 - **Margins:** SSR-40DA 5.9× per heater (40A vs 6.8A) · motor torque ≥20× per station · BMS 5.7× vs worst-case DC draw · RCD 30mA life protection on the mains domain
 
 ## Team

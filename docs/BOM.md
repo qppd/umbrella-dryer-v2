@@ -1,6 +1,6 @@
-# Smart Umbrella Dryer — Component & Material Validation (Rev 5)
+# Smart Umbrella Dryer — Component & Material Validation (Rev 6)
 
-**Revision 5 — design changes from Rev 4:** heating moves to **220V AC mains** — **2× 1500W PTC heater-fans** switched by **2× Fotek SSR-40DA**, and the 120mm DC fan is replaced by a **12-inch Omni industrial exhaust fan (220V)** · the 12V LiFePO4 battery now powers **motors + control only** · the DC heater relay and 100W PTC are removed · a **mains safety layer** is added (RCD/GFCI, 10A branch fuses, earthing, separate mains kill switch) · still **3 independent worm-motor stations**, DHT22 + DS18B20 control, gravity drain.
+**Revision 6 — design change from Rev 5:** dual-source power with a **changeover switch** — the 220V loads (2× 1500W PTC heater-fans, 12" Omni exhaust fan) run either from the **wall outlet** or from a **single 3000W pure sine inverter** fed by the **2× 200Ah LiFePO4 battery bank** — never both. The changeover switch grounds the inverter's remote pin in wall-outlet mode (inverter OFF, zero idle draw); in battery mode the inverter supplies the RCD and everything downstream unchanged. The Mega senses the mode (D14) and applies the battery-mode economy rule (battery mode never enters stage 2 — one heater + fan ≈ 2.1kW, within the 3000W inverter).
 
 ## Study Overview
 
@@ -23,7 +23,7 @@
 | Flash / SRAM | 256 KB / 8 KB |
 | I2C | SDA=20, SCL=21 |
 
-**v5 pin audit:** 2 SSR inputs (D4/D5) + 3 motor relay channels (D6/D7/D8) + 3 LEDs + buzzer + button + LCD I2C + 2 sensors ≈ **10 digital + 2 I2C** — far inside capacity. The exhaust fan has **no** Mega channel (mains rocker). COMPATIBLE
+**v6 pin audit:** 2 SSR inputs (D4/D5) + 3 motor relay channels (D6/D7/D8) + 3 LEDs + buzzer + button + LCD I2C + 2 sensors + mode input (D14) ≈ **11 digital + 2 I2C** — far inside capacity. The exhaust fan has **no** Mega channel (mains rocker). COMPATIBLE
 
 **Powering the Mega:** buck 5V → 5V pin only (never the DC jack; never mains anything).
 
@@ -31,23 +31,34 @@ Listing: `makerlab.ph/products/mega-2560-r3-with-usb-cable-compatible-with-ardui
 
 ---
 
-## 2. Power — two sources, three domains
+## 2. Power — two selectable sources, three domains
 
-### 2a. 12V battery — motors + control only
+### 2a. 12V battery bank — motors + control + (via inverter) 220V loads in battery mode
 
-PowMr LiFePO4 12.8V 30Ah (384Wh, BMS 30A). Worst-case DC draw: 3 motors at stall 10.5A + logic ~0.8A ≈ **11.3A peak → BMS 5.7× margin**. Steady running ≈ **4.4A**. Battery runtime for control + rotation ≈ 384Wh ÷ 14W ≈ 27 h — the battery is no longer the cycle limiter.
+2× PowMr LiFePO4 12.8V 200Ah parallel (5,120Wh, 200A BMS each → 400A aggregate). Worst-case DC draw in battery mode: inverter 188A steady (~210A surge, stage 1: heater 1 + fan ≈ 2.05kW) + 3 motors at stall 10.5A + logic ~0.8A ≈ **221A peak → 1.8× BMS margin**. In wall-outlet mode: ≈ 11.3A peak.
 
-**DC fuse plan (v5):** 25A main · 3A ×3 station branches · 3A logic. Wire: 16 AWG main/logic feed, 18 AWG stations, 22 AWG logic.
+**DC fuse plan (v6):** 25A main · 3A ×3 station branches · 3A logic · **250A ANL on the inverter feed (1/0 AWG, ≤ 1 m)** · 4 AWG battery links. Wire: 16 AWG main/logic feed, 18 AWG stations, 22 AWG logic.
 
-### 2b. 220V AC — heat + exhaust fan (NEW domain)
+**Charging:** 14.6V 20A LiFePO4 charger → ~10 h recharge from 80% depth. Keep the FOXSUR 6A as the backup/top-off charger.
 
-Wall outlet → **RCD/GFCI** → mains rocker (2-gang) → per-branch **10A fuses**:
+### 2b. Source selection — changeover switch (the Rev 6 core idea)
+
+A 2-position changeover (transfer) switch feeds the RCD from **either** the wall outlet **or** the inverter output — never both. In wall-outlet mode, the switch's second pole grounds the inverter's **remote/enable pin** through its supplied mode jumper, so the inverter is fully OFF with zero idle draw; in battery mode the pin is released and the inverter runs.
+
+Wall outlet → changeover position A —↘
+Inverter output → changeover position B —↗ **RCD/GFCI** → mains rocker (2-gang) → per-branch **10A fuses** → loads
+
+Mega D14 senses the position via the switch's auxiliary contact (LOW = wall-outlet mode). Mode rules: battery mode never enters stage 2 (heater 1 + exhaust fan stay ≤ 2050W on the 3000W inverter — 68%); battery mode adds inverter idle 20–30W to the consumption math.
+
+### 2c. 220V AC domain — heat + exhaust fan (source-agnostic downstream)
 
 | Branch | Load | Current @220V | Switch |
 |---|---|---|---|
 | Heater 1 | 1500W PTC heater-fan | 6.8A | SSR-40DA #1 (D4) |
 | Heater 2 | 1500W PTC heater-fan | 6.8A | SSR-40DA #2 (D5) |
 | Exhaust | 12" Omni fan | ~1.5–2.5A | mains rocker gang (no SSR) |
+
+Note: the exhaust fan runs whenever its mains rocker gang is ON in either source mode — that is stage 1 airflow, and it is intentional (air must move whenever heat can).
 
 ---
 
@@ -87,7 +98,23 @@ Appliances keep their **built-in thermostats + thermal cutoffs** — a fourth pr
 | **Cycle time** | **≈ 15–25 min typical · ~30–45 min soaked** (humidity auto-stop) |
 | Chamber air temp | 40–60C held by staging; DS18B20 cutoff 65C |
 
-30× the heat plus forced air exchange is far beyond the old 100W loop — cycle time is now limited by moisture transport, not energy. The energy-efficiency claim shifts to **control efficiency**: heaters never run dry (humidity staging + auto-shutoff), which is where duty cycling still saves real power.
+30× the heat plus forced air exchange is far beyond the old 100W loop — cycle time is now limited by moisture transport, not energy. The energy-efficiency claim shifts to **control efficiency**: heaters never run dry (humidity staging + auto-shutoff), which is where duty cycling still saves real power. In battery mode, staging is also what keeps the inverter inside its rating and the BMS budget — stage 2 is disabled by firmware (D14 mode input).
+
+### 3d. Inverter — 1× pure sine 3000W, 12V DC → 220V AC 60Hz
+
+| Parameter | Value | Design check |
+|---|---|---|
+| Type | **pure sine wave** — mandatory | the exhaust fan is an AC induction motor; modified sine overheats it |
+| Rating | **3000W continuous** (6000W-class surge) | battery-mode stage-1 load = heater 1 (1500W) + fan (~550W) ≈ 2050W = **68%** — comfortable headroom; stage 2 exists in wall mode only |
+| Input | 12V DC | matches the battery bank |
+| Output | 220VAC 60Hz | matches the appliances |
+| Efficiency | ~88–90% | see the battery-mode energy math in §10 |
+| Idle draw | ~20–30W | grounded remote pin in wall-outlet mode = 0W |
+| Remote pin | remote/enable via the supplied mode jumper | grounded by the changeover's second pole in wall-outlet mode |
+| DC input | **1/0 AWG feed, ≤ 1 m, 250A ANL fuse** | 188A steady / 210A surge at full stage-1 load |
+| Why one inverter | two high-power inverters cannot be paralleled (wavephase mismatch) — and one 3000W is cheaper than two 2000W | firmware keeps battery mode in stage 1 |
+
+**Never backfeed:** the inverter output appears only on changeover position B. In wall-outlet mode its remote pin is grounded — the inverter is off — so the RCD is fed solely by the wall outlet. Two sources on one RCD input would destroy the inverter and backfeed the street.
 
 ---
 
@@ -144,8 +171,8 @@ Sloped floor (3–5°) → drain tube → drip tray (100–300mL/cycle; 500mL tr
 
 | Domain | Worst case | Protection | Margin |
 |---|---|---|---|
-| AC | 6.8A ×2 heaters + ~2A fan ≈ **15.6A** on the outlet | RCD 30mA + 10A branch fuses + 20A-class breaker upstream | branch fuses sized to wire |
-| 12V | 11.3A peak (3 stalls + logic) | 25A main + 3A branches, BMS 30A | 5.7× BMS |
+| AC | 15.6A via the changeover — from the wall outlet (grid mode) or from the inverter (battery mode) | RCD 30mA + 10A branch fuses + breaker upstream | branch fuses sized to wire |
+| 12V | ≈ 221A peak in battery mode (inverter 210A surge + 3 stalls + logic — stalls do not coincide with full heater duty); ≈ 11.3A in wall mode | 200A BMS ×2 + 250A ANL inverter fuse + 25A main + 3A branches | 1.8× peak (firmware caps battery mode at stage 1) |
 | 5V | ~0.7A | 3A branch, buck 3A | 4.3× |
 
 ---
@@ -154,12 +181,15 @@ Sloped floor (3–5°) → drain tube → drip tray (100–300mL/cycle; 500mL tr
 
 | Item | Value |
 |---|---|
-| Energy per 3-umbrella cycle (mains) | ≈ **0.6–1.0 kWh** (staged control; auto-shutoff prevents dry running) |
-| Cost per cycle | ≈ ₱7–12 at ₱12/kWh |
-| Battery | powers ~27 h of control + rotation; 25+ cycles per charge (motors only) |
-| Cycle rate | limited by mains presence + operator, not battery |
+| Wall-outlet mode: energy per 3-umbrella cycle | ≈ **0.6–1.0 kWh** (staged control; auto-shutoff prevents dry running) |
+| Wall-outlet mode: cost per cycle | ≈ ₱7–12 at ₱12/kWh |
+| Battery mode: usable AC energy | 5,120Wh × 80% DoD × 88% inverter eff ≈ **3,600Wh** |
+| Battery mode: stage 1-only cycle | ≈ 0.4–0.6 kWh → **~6–8 cycles per charge** (firmware caps battery mode at stage 1 via D14) |
+| Full-heat cycles | wall mode only (stage 2 = 3.4kW exceeds the battery-mode cap) |
+| Motors + control | ~14W — days of autonomy on either source |
+| Inverter idle | 0W in wall-outlet mode (remote pin grounded by the changeover); 20–30W in battery mode |
 
-**Honest framing for the paper:** absolute energy per cycle is higher than the 12V design (bigger heaters dry much faster); the efficiency contribution of the controller is **eliminating idle/dry heating** via humidity staging and auto-shutoff, plus battery-backed low-power control.
+**Honest framing for the paper:** absolute energy per cycle is higher than the 12V design (bigger heaters dry much faster); the efficiency contribution of the controller is **eliminating idle/dry heating** via humidity staging and auto-shutoff. The changeover adds **source flexibility**: full performance from the grid, or grid-independent operation from the battery bank with a firmware-enforced economy cap.
 
 ---
 
@@ -167,8 +197,13 @@ Sloped floor (3–5°) → drain tube → drip tray (100–300mL/cycle; 500mL tr
 
 ```mermaid
 flowchart TB
-    subgraph AC["220V AC domain"]
-        OUT["RCD/GFCI outlet"]
+    subgraph SRC["220V source selection"]
+        OUT["Wall outlet 220V"]
+        INV["3000W pure sine inverter<br/>remote pin grounded in wall mode"]
+        CHO["Changeover switch 2P<br/>A: wall / B: inverter"]
+    end
+    subgraph AC["220V AC domain (source-agnostic downstream)"]
+        RCD["RCD/GFCI"]
         MSW["Mains rocker 2-gang"]
         MF1["10A fuse line 1"]
         MF2["10A fuse line 2"]
@@ -179,7 +214,8 @@ flowchart TB
         EFAN["12in Omni exhaust fan"]
     end
     subgraph DC["12V DC domain"]
-        BAT["LiFePO4 12.8V 30Ah BMS"]
+        BAT["2x LiFePO4 12.8V 200Ah parallel<br/>BMS 200A each"]
+        IFUSE["ANL fuse 250A x2"]
         DSW["DC rocker"]
         F1["Fuse 25A main"]
         FA["3A st1"] 
@@ -198,9 +234,15 @@ flowchart TB
     LCD["LCD I2C - 20/21"]
     HMI["LEDs D9-D11 + buzzer D12 + button D13"]
 
-    OUT --> MSW --> MF1 --> SSR1 --> H1
+    OUT --> CHO
+    INV --> CHO
+    CHO --> RCD
+    RCD --> MSW
+    MSW --> MF1 --> SSR1 --> H1
     MSW --> MF2 --> SSR2 --> H2
     MSW --> EFAN
+    BAT --> IFUSE --> INV
+    MEGA -. "mode sense D14" .-> CHO
     MEGA -. "DC inputs" .-> SSR1
     MEGA -. "DC inputs" .-> SSR2
     BAT --> DSW --> F1
@@ -221,18 +263,20 @@ flowchart TB
 
 ---
 
-## 12. Compatibility Matrix (v5)
+## 12. Compatibility Matrix (v6)
 
 | Component | Domain | Margin | Interface | Verdict |
 |---|---|---|---|---|
-| Arduino Mega 2560 | 5V buck | pin fit 10+2 | SSR inputs + opto LEDs + sensors | PASS |
+| Arduino Mega 2560 | 5V buck | pin fit 11+2 | SSR inputs + opto LEDs + sensors + D14 mode sense | PASS |
 | Fotek SSR-40DA ×2 | 220VAC out / 3–32VDC in | 5.9× per heater | Mega D4/D5, 10kΩ pull-downs, heatsinked | PASS |
 | 1500W PTC heater-fans ×2 | 220VAC | 6.8A each | SSR output + plug/socket | PASS |
 | Omni 12" exhaust fan | 220VAC | ~2A on 10A branch | mains rocker (no SSR) | PASS |
+| 1× 3000W pure sine inverter | 12V→220V | 2050W stage-1 load vs 3000W (68%) | remote-pin interlock + 250A ANL feed | PASS |
+| 2P changeover switch 63A | 220VAC | 2.3× branch current | wall A / inverter B → RCD; D14 aux | PASS (source interlock) |
 | RCD/GFCI + mains kit | 220VAC | life-safety | — | PASS (mandatory) |
 | 3× worm motors | 12V | ≥20× torque | relay channels D6–D8 | PASS |
 | 2× 2-CH relay boards | 12V contacts | 2.9× at stall | opto LEDs, coils on 5V rail | PASS |
-| LiFePO4 30Ah BMS | 12V | 5.7× peak | — | PASS |
+| LiFePO4 200Ah ×2, BMS 200A ea | 12V | 1.8× peak battery mode; unlimited wall mode | 4 AWG links + 250A ANL inverter feed | PASS |
 | LM2596S | 12.8→5V | 4.3× | — | PASS |
 | DHT22 / DS18B20 | 5V | mA | D2 / D3 | PASS |
 | LCD + LEDs + buzzer + button | 5V | — | I2C + digital | PASS |
@@ -240,11 +284,13 @@ flowchart TB
 
 ---
 
-## 13. Safety Validation (v5) — mains era
+## 13. Safety Validation (v6) — dual source
 
 | Hazard | Mitigation | Status |
 |---|---|---|
-| **Electric shock (new)** | RCD/GFCI 30mA + grounded metal box + earthed frame and chassis + plugs accessible | primary control |
+| **Two sources on one bus (new)** | 2P changeover — breaks before makes; inverter remote pin grounded in wall mode; interlock drill in SETUP before first heat | interlocked |
+| **Inverter overload / DC wiring fault (new)** | 3000W vs 2050W stage-1 load; firmware stage-1 cap in battery mode; 250A ANL; 1/0 AWG short runs; BMS 200A ×2 | managed |
+| **Electric shock** | RCD/GFCI 30mA + grounded metal box + earthed frame and chassis + plugs accessible | primary control |
 | **SSR fail-short (heater stuck ON, AC)** | Mains rocker kill + 10A branch fuse + appliance thermostat + DS18B20 cutoff + RCD | five layers |
 | Over-temperature | Appliance thermostat → DS18B20 65C latched cutoff → PTC self-regulation | triple |
 | SSR overheating | 7–10W each on heatsink, thermal paste, closed box | managed |
@@ -281,6 +327,9 @@ flowchart TB
 | 1 | Grounded metal electrical box + DIN/plate | houses SSRs, fuses, terminals | ~₱300–600 EST | hardware | (add at checkout) |
 | 1 | Heatsink profile for SSRs (2 pc or 1 shared) | ≥100×100mm contact each | ~₱150–300 EST | Lazada "SSR heatsink" | (add at checkout) |
 | 1 | 2.0mm² (14 AWG eq.) 3-core wire + plug/socket set | mains branches | ~₱400–700 EST | hardware / Lazada | (add at checkout) |
+| 1 | **Pure sine inverter 3000W, 12V→220V 60Hz, remote pin** | MUST be pure sine (induction fan); verify continuous (not surge) rating | ~₱5,500–8,500 EST | Lazada "local stock pure sine inverter 3000W" | (add at checkout) |
+| 1 | **Changeover switch 2P 63A** (wall / inverter → RCD) | break-before-make; second pole grounds the inverter remote in wall mode + D14 sense | ~₱300–800 EST | hardware / Lazada | (add at checkout) |
+| 1 | **ANL fuse kit 250A + holder + 1/0 AWG inverter cable + 4 AWG battery links + lugs** | one 250A fuse on the inverter feed, ≤ 1 m runs | ~₱500–1,000 EST | Lazada "ANL fuse kit 250A" / "1/0 welding cable" | (add at checkout) |
 | 3 | Worm gear motor SGM-A58SW31ZY 12V 16RPM | 60 kg·cm, self-locking — one per station | ₱1,249 ea = ₱3,747 | makerlab.ph (site) | https://makerlab.ph/products/dc-worm-gear-motor-sgm-a58sw31zys-12v-16rpm-80rpm-sgm-370-12v-40rpm-160rpm-dc-motor |
 | 3 | 304 SS shaft 8mm × 300mm | ground finish | ₱222.40 ea = ₱667.20 | (19), 77 sold | https://www.lazada.com.ph/products/pdp-i4473127402.html |
 | 3 | KP08 pillow block 2-pc set | 8mm bore — select KP08 | ₱310/set = ₱930 | Bulacan | https://www.lazada.com.ph/products/pdp-i5039609084.html |
@@ -291,36 +340,40 @@ flowchart TB
 | 1 | Heat-shrink kit | splices | ₱111 | Toolstar | https://www.lazada.com.ph/products/pdp-i1085866956.html |
 | 1 | Resistor kit 300pc | 220Ω LED, 4.7kΩ DS18B20, 10kΩ pull-ups | ₱69 | (73) | https://www.lazada.com.ph/products/pdp-i4888115298.html |
 | 1 | Nylon standoff kit | board mounting | ₱97 | (252) | https://www.lazada.com.ph/products/pdp-i2946710217.html |
-| 1 | LiFePO4 12.8V 30Ah w/ BMS (PowMr) | control + rotation; ORDER FIRST (~60 days) | ~₱3,500–4,500 | PowMr, 152.9K sold | https://www.lazada.com.ph/products/pdp-i4660631878.html |
-| 1 | FOXSUR 14.6V/6A LiFePO4 charger | never lead-acid | ₱945 | (615), 1.6K sold | https://www.lazada.com.ph/products/pdp-i2019767534.html |
+| 2 | **LiFePO4 12.8V 200Ah w/ BMS 200A (PowMr)** | parallel bank, 5,120Wh — feeds inverter + DC; ORDER FIRST | ~₱8,900 ea = ~₱17,800 | PowMr, 4.8 (22) | https://h5.lazada.com.ph/products/powmr-12v-200ah-lifepo4-battery-lithium-battery-built-in-bms-6000-deep-cycles-rechargeable-solar-battery-i5047514166.html |
+| 1 | **LiFePO4 charger 14.6V 20A** | recharge ≈ 10 h — verify 14.6V output + LiFePO4 mode; never lead-acid | ~₱2,000–2,700 EST | Lazada (435 rated, 4.8) | https://www.lazada.com.ph/tag/lifepo4-charger-20a/ |
 | 1 | Blade fuse kit 100pc + 1 panel holder | 25A main, 3A ×4 | ₱122.53 + ₱25 | (5022) | https://www.lazada.com.ph/products/pdp-i4214903852.html + https://www.lazada.com.ph/products/pdp-i2502994973.html |
 | 1 | Aluminum plate 6061 6mm | motor plate + mounts | ₱760 | (52) | https://www.lazada.com.ph/products/pdp-i4449859085.html |
 | 1 | Zip ties, M3/M4 screws, sealant, drip tray, velcro, grommets | consumables | ~₱490 | hardware | (any order) |
 
-### Cart totals (Rev 5)
+### Cart totals (Rev 6)
 
 | Group | Subtotal |
 |---|---|
 | Electronics (Mega, SSR ×2, relays, sensors, UI, buck) | ≈ ₱3,952 |
-| Mains kit (RCD, box, heatsinks, 2.0mm² wire, plug/socket, AC rocker) | ≈ ₱2,600 EST |
+| Mains kit (RCD, box, heatsinks, 2.0mm² wire, plug/socket, AC rocker, changeover) | ≈ ₱3,200–3,700 EST |
 | Appliances (2× heater-fan ₱2,791 + Omni 12" ~₱1,200 EST) | ≈ ₱3,990 |
+| Power conversion (1× pure sine inverter 3000W) | ≈ ₱5,500–8,500 EST |
+| Battery bank (2× 200Ah) + 20A charger | ≈ ₱19,800–20,500 |
 | Drivetrain (3 stations) | ≈ ₱5,510 |
-| Battery + charger | ≈ ₱4,445–5,445 |
-| Wiring, fuses, chassis, consumables | ≈ ₱2,090 |
-| **TOTAL** | **≈ ₱22,500–23,600** (≈ +₱8,000 vs Rev 4 — heaters, SSRs, mains kit, exhaust fan) |
+| Wiring, fuses (incl. 250A ANL kit), chassis, consumables | ≈ ₱2,700–3,300 |
+| **TOTAL** | **≈ ₱45,000–49,500** (≈ +₱23,000 vs Rev 5 — inverter, 200Ah bank, 20A charger, changeover, ANL kit) |
 
-## Rev-5 order notes
+## Rev-6 order notes
 
-1. **SSR type: DA (AC output) only now.** The DD type cannot switch these AC heaters. Double-check the marking before wiring: SSR-40DA.
-2. **Mains work must follow the RCD + grounded-box + earthing rules** in `wiring/README.md` — when in doubt, have a licensed electrician wire the AC side.
-3. **Heaters and exhaust fan are appliances with plugs** — keep plugs accessible; unplug before chamber service.
-4. The 12" Omni listing spans 12/14/16-inch variants — **select 12-inch**.
-5. Battery still has the ~60-day lead time — order first, as always.
-6. DHT22: select the "DHT22 Black" ₱69 variant.
+1. **Inverter: pure sine, continuous rating ≥ 3000W, 12V, 60Hz, remote/enable pin.** Many "4000W" listings are surge-only or modified sine — check the fine print; the exhaust fan is an induction motor.
+2. **Never parallel the two sources.** The changeover switch is the only path to the RCD. In wall mode the inverter remote pin is grounded (inverter OFF). Test the interlock drill in SETUP before the first heated cycle.
+3. **Inverter sizing:** 3000W **continuous** (many listings are surge-only). Battery mode is stage-1-only by firmware — heater 1 + fan ≈ 2.05kW = 68%. Stage 2 (3.4kW) is wall-mode only.
+4. **SSR type: DA (AC output) only.** The DD type cannot switch these AC heaters. Double-check the marking before wiring: SSR-40DA.
+5. **Mains work must follow the RCD + grounded-box + earthing rules** in `wiring/README.md` — when in doubt, have a licensed electrician wire the AC side.
+6. **Heaters and exhaust fan are appliances with plugs** — keep plugs accessible; unplug before chamber service.
+7. The 12" Omni listing spans 12/14/16-inch variants — **select 12-inch**.
+8. Battery still has the ~60-day lead time — order first, as always.
+9. DHT22: select the "DHT22 Black" ₱69 variant.
 
 ---
 
-## 15. Pin Map (v5 final)
+## 15. Pin Map (v6 final)
 
 | Pin | Connection |
 |---|---|
@@ -334,6 +387,7 @@ flowchart TB
 | D9 / D10 / D11 | Green / Yellow / Red LED (220Ω) |
 | D12 | Buzzer |
 | D13 | Start button (INPUT_PULLUP) |
+| D14 | in — source mode sense from the changeover aux contact (LOW = wall-outlet mode; INPUT_PULLUP internally) |
 | 20 / 21 | LCD I2C |
 | — | 10kΩ pull-downs on D4/D5 (SSR inputs, active-HIGH — hold OFF at boot); 10kΩ pull-ups on D6–D8 to relay VCC (active-LOW boards) |
 | — | Mains rocker + RCD + 10A fuses: AC domain (no Mega channel) |
@@ -341,25 +395,27 @@ flowchart TB
 
 ---
 
-## 16. Final Verdict (Rev 5)
+## 16. Final Verdict (Rev 6)
 
-### THE v5 SYSTEM IS COMPATIBLE AND CAN DRY 3 UMBRELLAS PER CYCLE — IN 15–45 MINUTES ON MAINS HEAT, WITH BATTERY-BACKED CONTROL
+### THE v6 SYSTEM IS COMPATIBLE AND CAN DRY 3 UMBRELLAS PER CYCLE — IN 15–45 MINUTES FROM THE WALL OUTLET OR THE BATTERY BANK, WITH CHANGEOVER-SELECTED POWER
 
-- 2× 1500W mains heater-fans staged by humidity, switched by SSR-40DAs (correct AC Fotek type) with five over-temp/shock protection layers.
-- 12" exhaust fan gives real air exchange; battery now carries only the 3 stations + control for ~27 h.
-- Cycle time drops ~4×; energy-efficiency claim rests on staged control + auto-shutoff (no dry heating).
-- All-12V inside the chamber; mains stays in a closed, earthed, RCD-protected box outside.
+- 2× 1500W heater-fans staged by humidity, switched by SSR-40DAs (correct AC Fotek type) with five over-temp/shock protection layers.
+- Dual source via a 2P changeover: wall outlet (full performance, stage 1+2) or one 3000W pure sine inverter on the 2× 200Ah bank (grid-independent, stage 1 capped by firmware).
+- Battery mode budget: inverter 188A steady / 210A surge + stalls 10.5A + logic ≈ 221A peak vs 400A BMS aggregate (1.8×) — and firmware stage-1 capping keeps the inverter at 68% continuous.
+- The exhaust fan has no Mega channel; it follows the mains rocker in either source mode (stage 1 airflow is intentional).
+- All-12V inside the chamber; the AC box stays closed, earthed, and RCD-protected; the changeover is the single point where the two sources meet — and they never meet electrically.
 
-*Paper figure updates for Rev 5: Fig 11/12 (heater chain → 2× SSR-40DA + mains domain), block diagram (AC domain), safety chapter (RCD/earthing), energy chapter (staged control framing).*
+*Paper figure updates for Rev 6: Fig 11/12 (heater chain → SSR-40DAs + source selection), block diagram (SRC domain), safety chapter (changeover interlock, inverter DC feed), energy chapter (two-mode consumption).*
 
 ---
 
-# Appendix A — Printable Shopping Checklist (Rev 5)
+# Appendix A — Printable Shopping Checklist (Rev 6)
 
 ### Order sequence
-1. FIRST: PowMr battery (pre-order ~60 days)
+1. FIRST: 2× PowMr 200Ah batteries (pre-order ~60 days)
 2. SECOND: 3× motors + 2× SSR-40DA (makerlab.ph, one order)
-3. Everything else (Lazada + hardware)
+3. THIRD: 3000W pure sine inverter + changeover switch (verify continuous rating)
+4. Everything else (Lazada + hardware)
 
 ### Variant picking
 | Item | Select |
@@ -369,6 +425,8 @@ flowchart TB
 | Pillow blocks | KP08 |
 | Steel shaft | 8mm × 300mm |
 | SSR | **SSR-40DA** (AC) — never DD for these heaters |
+| Inverter | pure sine, **3000W continuous**, 12V, 60Hz, remote pin |
+| Charger | 14.6V output, LiFePO4 mode, ≥ 20A |
 
 ### Cart A — makerlab.ph website
 - [ ] 3× Worm gear motor SGM-A58SW31ZY 12V **16RPM** = ₱3,747
@@ -382,19 +440,24 @@ flowchart TB
 - [ ] DHT22 Black — ₱69 · DS18B20 — ₱105 · LCD I2C — ₱165 · LEDs — ₱29 · buzzer — ₱35 · buttons — ₱79 · DC rocker — ₱72 · buck — ₱155
 - [ ] 3× shaft 8×300 — ₱667.20 · 3× KP08 sets — ₱930 · 2× coupling sets — ₱165.68
 - [ ] Silicone wire — ₱218 · dupont — ₱45 · terminal block — ₱106 · heat-shrink — ₱111 · resistors — ₱69 · standoffs — ₱97
-- [ ] PowMr 30Ah — ORDER FIRST · FOXSUR charger — ₱945
+- [ ] 2× PowMr 200Ah — ORDER FIRST — https://h5.lazada.com.ph/products/powmr-12v-200ah-lifepo4-battery-lithium-battery-built-in-bms-6000-deep-cycles-rechargeable-solar-battery-i5047514166.html
+- [ ] LiFePO4 charger 20A — ~₱2,000–2,700 — https://www.lazada.com.ph/tag/lifepo4-charger-20a/
 - [ ] Blade fuse kit + holder — ₱147.53 · aluminum plate — ₱760
 
 ### Cart C — hardware (mains kit + consumables)
 - [ ] RCD/GFCI outlet or breaker (30mA)
 - [ ] Grounded metal electrical box + plate
 - [ ] 2-gang mains rocker + plate
+- [ ] **Changeover switch 2P 63A** (wall / inverter)
 - [ ] 2.0mm² 3-core wire + plug/socket set
 - [ ] 2× SSR heatsink profile
+- [ ] **ANL fuse kit 250A ×2 + holders; 2AWG inverter wire, 4AWG battery links, lugs**
 - [ ] Zip ties, M3/M4 screws, silicone sealant, drip tray, velcro, grommets (~₱490)
 
 ### Sign-off before checkout
 - [ ] SSRs marked **DA**, not DD
+- [ ] Inverter: **pure sine**, **3000W continuous** (not surge), 12V, 60Hz, remote pin present
+- [ ] Changeover switch on the list — never direct-wire both sources
 - [ ] Omni fan is the 12-inch variant
 - [ ] Battery pre-order confirmed, ordered first
 - [ ] RCD + grounded box on the list (non-negotiable)

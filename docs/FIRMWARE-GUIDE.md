@@ -1,4 +1,4 @@
-# Firmware Guide (Rev 5)
+# Firmware Guide (Rev 6)
 
 How the Mega's sketch is organized, how the energy-efficient duty cycling works, and every constant you may tune. Behavior spec: `docs/FLOWCHART.md`. Wiring: `docs/BLOCK-DIAGRAM.md`.
 
@@ -16,6 +16,7 @@ How the Mega's sketch is organized, how the energy-efficient duty cycling works,
 | D9/D10/D11 | out | Green / Yellow / Red LED (220Ω) |
 | D12 | out | Buzzer |
 | D13 | in | Start button, INPUT_PULLUP |
+| D14 | in | Source mode sense — LOW = wall-outlet mode, HIGH = battery mode (changeover aux contact; INPUT_PULLUP) |
 | 20/21 | I2C | LCD 16×2 (scan 0x27 / 0x3F) |
 
 Libraries: `DHT sensor library`, `OneWire`, `DallasTemperature`, `LiquidCrystal I2C`.
@@ -55,6 +56,7 @@ void applyHeaterDuty(int ssrPin, float duty /*0..100*/) {
 
 - **Stage 1** (light load / holding 40–60C): heater 1 duty-cycles from the humidity error; heater 2 stays off — this is where the energy is saved.
 - **Stage 2** (wet 3-umbrella load or pull-down): heater 1 runs steady, heater 2 duty-cycles.
+- **Battery-mode cap (D14 HIGH):** stage 2 is disabled — SSR2 is forced OFF regardless of humidity error. Heater 1 + exhaust fan ≈ 2.05kW stays inside the 3000W inverter (68%); stage 2 exists in wall-outlet mode only.
 - **Auto-shutoff:** humidity at/below target for `H_STEADY_MS` (5 min) → COMPLETE; DS18B20 > 65C latches both SSRs OFF until < 50C.
 - Each appliance's own thermostat + thermal cutoff remain in circuit as the independent hardware layer.
 
@@ -64,7 +66,7 @@ The 12" exhaust fan has no controller channel — it runs on the mains rocker wh
 
 1. **Sensor validity:** 3 consecutive failed DHT22/DS18B20 reads → FAULT state (heater OFF, red LED, buzzer).
 2. **Over-temp cutoff:** `T > T_CUT` → heater OFF **latched** until `T < T_RESET` (hysteresis stops chatter around the threshold). Stations + fan keep running to purge heat.
-3. **SSR-vs-state audit:** either heater may be ON only if (cycle active) ∧ (humidity demand) ∧ (no over-temp latch) ∧ (sensors valid). Any false → both SSRs follow the staging table down to OFF. The heater-fans' built-in blowers run with their heaters; the exhaust fan is on the mains rocker.
+3. **SSR-vs-state audit:** either heater may be ON only if (cycle active) ∧ (humidity demand) ∧ (no over-temp latch) ∧ (sensors valid) ∧ (stage 2 requested only while D14 = wall mode). Any false → both SSRs follow the staging table down to OFF. The heater-fans' built-in blowers run with their heaters; the exhaust fan is on the mains rocker.
 
 ## 5. Tunables
 

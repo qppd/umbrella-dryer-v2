@@ -1,4 +1,4 @@
-# Hardware Reference (Rev 5)
+# Hardware Reference (Rev 6)
 
 Spec sheets for what was actually bought (sources & prices: `docs/BOM.md` §14). Use this during assembly and testing when you need a part's ratings, dimensions, or limits — not the store listing.
 
@@ -15,7 +15,7 @@ Spec sheets for what was actually bought (sources & prices: `docs/BOM.md` §14).
 | Power input | **5V pin from buck only** | Never 12V on the barrel jack (Makerlab warning) |
 | Serial | USB + Serial0 (pins 0/1), 115200 debug | Keep 0/1 free while debugging |
 
-### Solid-state relays — 2× Fotek SSR-40DA (mains heat switching, Rev 5)
+### Solid-state relays — 2× Fotek SSR-40DA (mains heat switching, Rev 6)
 
 | Spec | Value | Note |
 |---|---|---|
@@ -37,7 +37,7 @@ Spec sheets for what was actually bought (sources & prices: `docs/BOM.md` §14).
 | Protection | Built-in flyback diode |
 | Limits | DC only, 30VDC max contacts; slow switching only (≥2 s period) |
 
-### Heaters + air exchange (220V mains, Rev 5)
+### Heaters + air exchange (220V dual source, Rev 6)
 
 | Spec | 2× 1500W PTC heater-fan | Omni 12" exhaust fan |
 |---|---|---|
@@ -67,19 +67,20 @@ Spec sheets for what was actually bought (sources & prices: `docs/BOM.md` §14).
 | Coupling | 8×8 mm rigid clamp sleeve — grub screws on motor flat + shaft, thread-check after first run |
 | Umbrella holder | Fabricated, one per station; canopy tip clearance ≥ 5 cm between stations and chamber walls |
 
-### Battery system (control + rotation only since Rev 5)
+### Battery bank + power conversion (Rev 6)
 
-| Spec | PowMr 12.8V 30Ah | FOXSUR charger |
-|---|---|---|
-| Chemistry | LiFePO4, 384 Wh | LiFePO4 profile, **14.6 V / 6 A** |
-| BMS | 30 A continuous | — |
-| Role | 3 motors + logic ≈ 14 W → ~27 h autonomy | never a 13.8 V lead-acid charger |
+| Spec | 2× PowMr 12.8V 200Ah (parallel) | 3000W pure sine inverter | 14.6V 20A charger |
+|---|---|---|---|
+| Energy / rating | 5,120 Wh bank; BMS 200 A each | 3000 W continuous, 12 V in, 220 V 60 Hz out, remote pin | ~10 h recharge from 80% DoD |
+| Role | motors + control always; heaters + fan in battery mode (stage 1 capped, D14) | battery-mode AC source via changeover B | LiFePO4 profile — never a 13.8 V lead-acid charger |
+| Wiring | 4 AWG parallel links | 1/0 AWG feed ≤ 1 m, 250 A ANL at the battery end | verify 14.6 V output on arrival |
 
-### Mains AC domain (Rev 5)
+### Mains AC domain (Rev 6)
 
 | Element | Spec |
 |---|---|
-| RCD/GFCI | 30 mA class — mandatory on the outlet feeding the system |
+| Changeover switch | 2P 63A break-before-make — wall A / inverter B → RCD; 2nd pole grounds the inverter remote in wall mode |
+| RCD/GFCI | 30 mA class — mandatory downstream of the changeover (protects either source) |
 | Branch fuses | 10 A per heater line; fan shares the rocker gang |
 | Enclosure | grounded metal box for SSRs, fuses, terminals; box + chamber frame + appliance chassis all earthed |
 | Wire | 2.0 mm² (14 AWG eq.) 3-core mains branches |
@@ -128,3 +129,4 @@ Spec sheets for what was actually bought (sources & prices: `docs/BOM.md` §14).
 | Rev 3 | Relays replace SSR + driver; MLX90614 dropped |
 | **Rev 4** | **3 independent stations** (3× motors, shafts, KP08 sets); 25A main fuse; per-station 3A fuses |
 | **Rev 5** | **Mains heat: 2× 1500W PTC heater-fans via 2× SSR-40DA; 12" Omni exhaust fan; battery = motors + control only; RCD + earthing added** |
+| **Rev 6** | **Dual source: wall outlet OR 3000W pure sine inverter via 2P changeover; 2× 200Ah LiFePO4 bank + 20A charger; firmware caps battery mode at stage 1 (D14)** |

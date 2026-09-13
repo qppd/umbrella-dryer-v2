@@ -1,4 +1,4 @@
-# Technology Stacks (Rev 5)
+# Technology Stacks (Rev 6)
 
 The full stack from silicon to tooling. Firmware behavior lives in `docs/FIRMWARE-GUIDE.md`; part ratings in `docs/HARDWARE.md`.
 
@@ -12,19 +12,21 @@ The full stack from silicon to tooling. Firmware behavior lives in `docs/FIRMWAR
 | Library | `OneWire` (Paul Stoffregen) | Latest stable | DS18B20 bus |
 | Library | `DallasTemperature` (Miles Burton) | Latest stable | DS18B20 high-level reads |
 | Library | `LiquidCrystal I2C` (Frank de Brabander / marcoschwartz) | Latest stable | LCD @ 0x27/0x3F |
-| Application | `umbrella-dryer.ino` (this repo) | Rev 5 | State machine + duty-cycle control |
+| Application | `umbrella-dryer.ino` (this repo) | Rev 6 | State machine + duty-cycle control |
 
 **Toolchain:** Arduino IDE 2.x (Boards Manager → *Arduino Mega or Mega 2560*, Processor → *ATmega2560*) or `arduino-cli` for scripted builds. SRAM discipline: wrap LCD/Serial string literals in `F()` — 8 KB SRAM fills fast with menus.
 
 **Reproducibility (for the capstone defense):** record core + library versions at flash time (`arduino-cli lib list`, IDE 2 shows them in Library Manager) and paste them into the paper's appendix.
 
-## 2. Power stack (Rev 5)
+## 2. Power stack (Rev 6)
 
 | Stage | Component | In → Out |
 |---|---|---|
+| Source selection | **2P changeover switch** — wall outlet A / inverter B; 2nd pole grounds the inverter remote in wall mode | one source → RCD, never both |
+| AC generation (battery mode) | **3000W pure sine inverter**, remote pin | 12.8 V → 220 V 60 Hz (stage-1 capped) |
 | AC heat | RCD 30mA → mains rocker → 10A fuses → **2× SSR-40DA** | 220V → 2× 1500W heater-fans |
 | AC exhaust | mains rocker gang | 220V → 12" Omni fan |
-| Storage | LiFePO4 12.8V 30Ah w/ BMS (30 A) | — → 12.8 V (motors + control only) |
+| Storage | 2× LiFePO4 12.8V 200Ah parallel w/ BMS 200 A each | — → 12.8 V bus (motors, control, inverter feed) |
 | DC main | DC rocker + 25 A fuse | 12.8 V → station + logic branches |
 | Actuation rail | 3 A ×3 station branches → 2× 2-CH relays | 3 worm motors |
 | Logic rail | LM2596S buck + 3 A fuse | 12.8 V → **5.0 V @ 3 A** → Mega 5V pin + relay coils |
