@@ -1,0 +1,6 @@
+# Capstone reference materials (kept locally, not in repo)
+references/
+
+# OS junk
+Thumbs.db
+.DS_Store

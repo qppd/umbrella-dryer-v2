@@ -1,424 +1,362 @@
-# Smart Umbrella Dryer — Component & Material Validation
+# Smart Umbrella Dryer — Component & Material Validation (Rev 4)
+
+**Revision 4 — design changes from Rev 2:** Fotek SSR-25DD + BTS7960 **replaced by optocoupler relay modules** (heater and motors only need on/off switching — saves ~₱1,900) · water pump and MOSFET **removed** (gravity drain) · **MLX90614 IR sensor removed from the design** · **single-motor carousel replaced by 3 independent worm-gear-motor stations (one motor per umbrella)** · system re-verified for **3 umbrellas simultaneously**.
 
 ## Study Overview
 
 **Title:** Smart Umbrella Dryer: Design and Development of a Multi-Umbrella Drying System with Energy Efficient Control
 
 **Key Requirements:**
-1. Dry multiple umbrellas simultaneously
-2. Energy-efficient operation (backup battery support)
+1. Dry **3 umbrellas** simultaneously (any 1–3 mix per cycle)
+2. Energy-efficient operation (battery backup support)
 3. Smart/automated control via sensors
 4. Safe operating temperatures for umbrella materials
 
 ---
 
-## 1. Microcontroller — Arduino Mega 2560
+## 0. Change Summary (v2 → v4)
+
+| Change | Rev 2 | Rev 4 | Reason |
+|---|---|---|---|
+| Heater switching | Fotek SSR-25DD (₱1,800) | **1-CH 30A relay module w/ optocoupler (₱113)** | On/off + slow duty cycling only — a relay contact does the job |
+| Motor driver | BTS7960 43A (₱305) | **2× 2-CH relay modules w/ optocoupler (₱178)** | 16 RPM fixed is the design speed — no PWM needed |
+| Rotation | 1 worm motor driving a shared carousel | **3× worm gear motors — one per umbrella station** | Independent stations: any 1–3 umbrellas, per-station control, no imbalance across a crossbar |
+| Water pump | REMOVED | REMOVED — gravity drain + drip tray | Pump was the only flood-failure component |
+| MLX90614 IR sensor | Optional (kept) | **REMOVED from the design** | Non-essential; DHT22 + DS18B20 fully cover the control loop |
+| Main fuse | 20A | **25A** | 3-motor stall worst case exceeds 20A headroom at battery sag |
+| Motor-branch fuses | 5A (shared) | **3A per station (×3)** | One jammed station cannot take down the others |
+| Capacity target | 3 umbrellas (shared carousel) | 3 umbrellas — **independent stations** | Study requirement |
+
+---
+
+## 1. Microcontroller — Arduino Mega 2560 ✅ UNCHANGED
 
 | Parameter | Value |
 |---|---|
 | Processor | ATmega2560 |
-| Digital I/O Pins | 54 (15 PWM) |
-| Analog Pins | 16 |
-| Flash Memory | 256 KB |
-| SRAM | 8 KB |
-| Clock Speed | 16 MHz |
-| Operating Voltage | 5V |
-| Input Voltage | 7–12V |
-| I2C Support | Yes (SDA/SCL) |
-| UART | 4 Hardware Serial |
+| Digital I/O | 54 (15 PWM) |
+| Analog pins | 16 |
+| Flash / SRAM | 256 KB / 8 KB |
+| Clock | 16 MHz |
+| I2C | SDA=20, SCL=21 |
 
-### ✅ Compatibility Assessment — **COMPATIBLE**
-- **Pin Count:** The project requires connections for DHT22 (1 digital), DS18B20 (1 digital + 4.7kΩ pull-up), BTS7960 (4 PWM + 2 enable = 6 pins), LCD I2C (2 pins shared I2C), LEDs (3–4 digital), buzzer (1 digital), buttons (2 digital), water pump relay (1 digital), rocker switch (1 digital). **Total ≈ 18–22 pins** — well within Arduino Mega's 54 digital + 16 analog pins.
-- **I2C Bus:** LCD I2C (typically 0x27 or 0x3F) uses I2C. MLX90614 (if used, address 0x5A) shares I2C bus with no conflict. DS18B20 uses 1-Wire (separate bus).
-- **1-Wire Bus:** DS18B20 uses a dedicated 1-Wire bus (1 digital pin). Multiple DS18B20 sensors can share this bus if needed.
-- **PWM Channels:** BTS7960 motor driver needs PWM for speed control. Arduino Mega has 15 PWM pins — sufficient.
-- **Flash/SRAM:** 256 KB flash and 8 KB SRAM are more than enough for the sensor reading, motor control, display, and logic code.
+**v4 pin audit:** heater relay (1) + 3 motor relays (3) + 3 station status LEDs (3) + buzzer + start button + LCD I2C + 2 sensors ≈ **11 digital + 2 I2C** — far inside the Mega's capacity. ✅ COMPATIBLE
 
-### ⚠️ Concerns
-- None significant. Arduino Mega is well-suited for this application.
+**Powering the Mega:** Makerlab's Mega listing explicitly warns *"do not supply with 12V on DC jack"*. Feed the Mega from the **LM2596S 5V output → Mega 5V pin** (or USB), not the DC jack from battery voltage.
+
+Listing: `makerlab.ph/products/mega-2560-r3-with-usb-cable-compatible-with-arduino-do-not-supply-with-12v-on-dc-jack` — ₱1,199
 
 ---
 
-## 2. Power Supply — ExpertPower 12.8V 35Ah LiFePO4 Battery
+## 2. Power Supply — LiFePO4 12.8V 30Ah w/ BMS (PowMr) — REPLACED ExpertPower 35Ah
 
-| Parameter | Value |
-|---|---|
-| Nominal Voltage | 12.8V |
-| Capacity | 35Ah (448 Wh) |
-| Chemistry | LiFePO4 (Lithium Iron Phosphate) |
-| Weight | ~4.5 kg |
-| Cycle Life | 2000–5000 cycles |
-| Operating Temp | -20°C to 60°C |
-| Max Continuous Discharge | ~35A (typically 1C) |
-| BMS | Built-in (overcharge, over-discharge, short circuit, over-temp) |
+ExpertPower 35Ah (the paper's original pick) is not stocked on Lazada PH; the PowMr 12.8V 30Ah is the verified local equivalent: **384 Wh, BMS with 30A max continuous discharge** (per PowMr's published spec sheet), overcharge/over-discharge/short/over-temp protection.
 
-### Power Budget Analysis
+**Worst-case draw check:** heater 8.3A + 3 motors at stall 10.5A + fan 0.25A + logic ~0.2A ≈ **13.1A peak** → BMS 30A = **2.3× margin**. ✅ (Stall is transient — seconds per start.)
 
-| Component | Voltage | Current Draw | Power |
-|---|---|---|---|
-| PTC 12V 120W Air Heater Fan | 12V | 10A | 120W |
-| DC Gear Motor 12V | 12V | 0.5–2A | 6–24W |
-| 120mm DC Cooling Fan 12V | 12V | 0.2–0.3A | 2.4–3.6W |
-| DC Water Pump 12V | 12V | 0.3–0.5A | 3.6–6W |
-| Arduino Mega 5V (via buck converter) | 5V | 0.2A | 1W |
-| Sensors (DHT22 + MLX90614) | 3.3–5V | 0.003A | 0.015W |
-| LCD I2C Display | 5V | 0.02A | 0.1W |
-| LEDs + Buzzer | 5V | 0.05A | 0.25W |
-| **Total** | — | — | **~134–155W** |
+**Fuse plan (v4):**
 
-### Runtime on Battery
-- **Energy Available:** 448 Wh
-- **At max load (~155W):** 448 ÷ 155 ≈ **2.9 hours**
-- **At typical load (~100W, heater cycling):** 448 ÷ 100 ≈ **4.5 hours**
-
-### ✅ Compatibility Assessment — **COMPATIBLE**
-- The 12.8V nominal voltage matches the 12V components (PTC heater, motor, fans, pump) directly.
-- 35Ah capacity provides adequate backup for 2.9–4.5 hours of operation.
-- Built-in BMS protects against overcharge/over-discharge.
-- LiFePO4 chemistry is safe (no thermal runaway), suitable for an enclosed drying system.
-
-### ⚠️ Concerns
-- **Buck Converter Required:** LM2596S buck converter steps down 12V → 5V for Arduino and sensors. Must be rated ≥ 3A to handle Arduino + sensors + LCD + LEDs safely.
-- **Heater Dominates Power Budget:** The 120W PTC heater accounts for ~80% of total power. If energy efficiency is critical, PWM-based duty cycling of the heater is essential (which the Arduino Mega can provide).
-
----
-
-## 3. Heating Element — PTC 12V 120W Air Heater Fan
-
-| Parameter | Value |
-|---|---|
-| Voltage | 12V DC |
-| Power | 120W |
-| Current | 10A |
-| Type | PTC (Positive Temperature Coefficient) ceramic |
-| Self-Regulating | Yes — auto-limits temperature |
-| Typical Surface Temp | 150–250°C (self-limiting) |
-| Airflow | Integrated fan blower |
-
-### ✅ Compatibility Assessment — **COMPATIBLE**
-- **Self-Regulating Safety:** PTC heaters are inherently safe — they auto-limit temperature when resistance increases at the Curie point. No external thermostat required for the heater itself.
-- **12V Direct Drive:** Can be powered directly from the LiFePO4 battery (12.8V nominal is within PTC 12V tolerance).
-- **120W Output:** Sufficient heat for drying umbrellas in an enclosed chamber. Umbrella fabric (nylon/polyester) dries effectively at 40–60°C air temperature.
-- **Integrated Fan:** Provides forced-air convection, improving drying speed.
-
-### ⚠️ Concerns
-- **10A Current Draw:** Requires thick wiring (at least 16 AWG) from battery to heater. A MOSFET or relay rated ≥ 15A should switch the heater, controlled by the Arduino.
-- **Over-Temperature Protection:** Although PTC is self-regulating, an additional software safety cutoff via DS18B20 sensor (mounted near heater) is recommended as a redundant safeguard.
-- **Voltage Drop:** At 10A through thin wires, voltage drop could be significant. Keep wire runs short.
-
----
-
-## 4. Humidity Sensor — DHT22 (AM2302)
-
-| Parameter | Value |
-|---|---|
-| Humidity Range | 0–100% RH |
-| Humidity Accuracy | ±2% RH |
-| Humidity Resolution | 0.1% RH |
-| Temperature Range | -40°C to 80°C |
-| Temperature Accuracy | ±0.5°C |
-| Operating Voltage | 3.3–5.5V |
-| Current | 1–1.5 mA (measuring), 40–50 µA (standby) |
-| Interface | Single-wire digital |
-| Sampling Rate | 1 reading every 2 seconds |
-
-### ✅ Compatibility Assessment — **COMPATIBLE**
-- **Dual Function:** Measures both humidity and temperature — ideal for monitoring drying progress.
-- **Humidity Feedback Loop:** Core sensor for the energy-efficient control system. When humidity drops below a threshold (e.g., < 40% RH), the system can turn off the heater.
-- **5V Compatible:** Directly interfaces with Arduino Mega without level shifting.
-- **Low Power:** Negligible power consumption (~1.5 mA).
-
-### ⚠️ Concerns
-- **Response Time:** DHT22 has a 2-second sampling interval — adequate for slow-changing humidity, but not for real-time rapid feedback.
-- **Placement:** Must be placed inside the drying chamber but away from direct heat/steam from the PTC heater to avoid false readings. A radiation shield or distant mounting is recommended.
-- **Condensation Risk:** In a high-humidity drying environment, condensation on the sensor can cause errors. A breather hole or waterproof housing is advised.
-
----
-
-## 5a. Temperature Sensor (Heater Zone) — DS18B20 Waterproof Probe
-
-| Parameter | Value |
-|---|---|
-| Temperature Range | -55°C to +125°C |
-| Accuracy | ±0.5°C (from -10°C to +85°C) |
-| Resolution | Configurable 9–12 bits (0.0625°C at 12-bit) |
-| Interface | 1-Wire Digital (single data pin) |
-| Supply Voltage | 3.0–5.5V |
-| Current | 1–1.5 mA (active), 1 µA (standby) |
-| Probe Type | Waterproof stainless steel |
-| Response Time | ~750ms (12-bit) |
-
-### ✅ Compatibility Assessment — **COMPATIBLE**
-- **Waterproof Probe:** Stainless steel probe can be mounted directly near the PTC heater or inside the drying chamber without risk of moisture damage.
-- **Wide Range:** -55°C to +125°C covers the full operating range of the drying chamber (40–80°C) and heater zone (up to 120°C near PTC).
-- **High Precision:** ±0.5°C accuracy is sufficient for temperature monitoring and safety cutoff.
-- **1-Wire Interface:** Only requires 1 digital pin on Arduino Mega + 4.7kΩ pull-up resistor — minimal wiring.
-- **Low Cost:** ~₱50–80 per unit — very budget-friendly.
-- **Multi-Sensor Bus:** Multiple DS18B20 sensors can share the same 1-Wire bus (each has a unique 64-bit address) — ideal for monitoring multiple zones.
-
-### ⚠️ Concerns
-- **750ms Response Time:** At 12-bit resolution, each reading takes ~750ms. This is fast enough for temperature monitoring (temperatures don't change rapidly) but not for real-time control loops.
-- **Probe Placement:** Mount the stainless steel probe near the PTC heater outlet to monitor heated air temperature, not directly on the PTC surface (which can exceed 150°C).
-
----
-
-## 5b. Umbrella Surface Temperature Sensor — MLX90614 (Optional)
-
-| Parameter | Value |
-|---|---|
-| Object Temp Range | -70°C to 382.2°C |
-| Ambient Temp Range | -40°C to 85°C |
-| Accuracy | ±0.5°C (room temp) |
-| Resolution | 0.02°C |
-| Field of View | 90° |
-| Interface | I2C (SMBus), default address 0x5A |
-| Supply Voltage | 3.3–5.5V |
-| Current | < 2 mA |
-
-### ✅ Compatibility Assessment — **COMPATIBLE (Optional)**
-- **Non-Contact Sensing:** Measures umbrella surface temperature without physical contact — ideal for a rotating mechanism.
-- **High Precision:** 0.02°C resolution for accurate surface temperature monitoring.
-- **I2C Interface:** Shares the I2C bus with LCD display (different addresses — no conflict).
-- **Note:** This is an **optional** sensor. The DS18B20 + DHT22 combination already provides sufficient temperature/humidity monitoring. The MLX90614 adds value only if umbrella surface temperature monitoring is critical for the study.
-
-### Recommended Sensor Configuration
-
-| Sensor | Purpose | Location | Priority |
-|---|---|---|---|
-| **DS18B20** | Air temperature near heater | Inside chamber, near PTC heater outlet | **Required** |
-| **DHT22** | Humidity + ambient temperature | Inside chamber, away from direct heat | **Required** |
-| **MLX90614** | Umbrella surface temperature (non-contact) | Pointed at umbrella from chamber wall | **Optional** |
-
----
-
-## 6. Motor & Drive System
-
-### 6a. DC Gear Motor (12V)
-
-| Parameter | Estimated Value |
-|---|---|
-| Voltage | 12V DC |
-| Type | Geared DC motor |
-| Speed | Low RPM (geared down for torque) |
-| Torque | High (suitable for rotating umbrella mechanism) |
-
-### 6b. BTS7960 Motor Driver
-
-| Parameter | Value |
-|---|---|
-| Operating Voltage | 5–27V |
-| Max Current | 43A (peak), 25A (continuous) |
-| Logic Voltage | 5V |
-| Control | 2 PWM inputs (speed) + 2 direction inputs |
-| Features | Over-temperature shutdown, under-voltage lockout |
-
-### 6c. Mechanical Transmission
-
-| Component | Specification |
-|---|---|
-| Steel Shaft | 8mm–12mm |
-| Pillow Block Bearing | KP08 (8mm bore) |
-| Shaft Coupling | 8mm × 10mm |
-| Aluminum Plate | Structural chassis |
-
-### ✅ Compatibility Assessment — **COMPATIBLE**
-- **BTS7960 is Over-Spec'd (in a good way):** At 43A peak capacity, it can easily handle the small DC gear motor's current (likely 0.5–2A). This provides a huge safety margin and reliable operation.
-- **PWM Speed Control:** Arduino Mega's PWM signals control motor speed smoothly via BTS7960 RPWM/LPWM pins.
-- **Direction Control:** RPWM/LPWM pins allow bidirectional motor control — useful for rotating the umbrella mechanism in both directions.
-- **Mechanical Components:** KP08 pillow block bearing with 8mm bore matches the steel shaft. Shaft coupling connects motor to mechanism. Aluminum plate provides rigid chassis.
-
-### ⚠️ Concerns
-- **Motor Current vs. BTS7960 Sense Pins:** The BTS7960 has current sense outputs (RIS/LIS) proportional to motor current. These could be connected to Arduino analog pins for motor load monitoring — a useful but optional feature.
-- **Mechanical Alignment:** Ensure shaft coupling properly aligns motor output shaft to the umbrella rotation mechanism. Misalignment causes vibration and premature bearing wear.
-
----
-
-## 7. Voltage Regulation — LM2596S Buck Converter
-
-| Parameter | Value |
-|---|---|
-| Input Voltage | 4.5–40V |
-| Output Voltage | Adjustable (typically set to 5V) |
-| Max Output Current | 3A |
-| Efficiency | ~80–92% |
-| Switching Frequency | 150 kHz |
-
-### ✅ Compatibility Assessment — **COMPATIBLE**
-- **Input:** Accepts 12.8V from LiFePO4 battery — within the 4.5–40V range.
-- **Output:** Adjustable to 5V for Arduino Mega and sensors.
-- **Current:** 3A output is sufficient for Arduino Mega (~0.5A max) + sensors + LCD + LEDs + buzzer (~0.3A total) = ~0.8A. Well within 3A rating.
-- **Efficiency:** 80–92% efficiency minimizes power loss — aligns with the energy-efficient design goal.
-
-### ⚠️ Concerns
-- **Heat Dissipation:** At full 3A load, the LM2596S may get warm. At the expected ~0.8A load, heat is minimal.
-- **Output Capacitor:** Ensure proper output capacitors are in place for stable 5V output — noise on the 5V rail can cause Arduino resets or sensor reading errors.
-
----
-
-## 8. Water Management — DC Water Pump
-
-| Parameter | Estimated Value |
-|---|---|
-| Voltage | 12V DC |
-| Current | 0.3–0.5A |
-| Type | Small submersible or centrifugal pump |
-| Purpose | Remove condensate/drainage water |
-
-### ✅ Compatibility Assessment — **COMPATIBLE**
-- **12V Direct Drive:** Powered directly from the battery through a relay/MOSFET controlled by Arduino.
-- **Low Power:** 3.6–6W is minimal in the overall power budget.
-- **Function:** Essential for removing water that condenses or drips from drying umbrellas, preventing water accumulation inside the chamber.
-
-### ⚠️ Concerns
-- **Pump Protection:** Should include a check valve or anti-siphon mechanism to prevent backflow.
-- **Auto-Activation:** The pump should be triggered by a water level sensor or timed intervals — relying solely on Arduino timing is acceptable but a float switch would be more robust.
-
----
-
-## 9. User Interface Components
-
-### 9a. LCD I2C Display
-
-| Parameter | Value |
-|---|---|
-| Type | 16×2 or 20×4 character LCD |
-| Interface | I2C (SDA/SCL) |
-| Address | Typically 0x27 or 0x3F |
-| Backlight | LED |
-
-### 9b. LEDs (Status Indicators)
-
-| LED | Purpose |
-|---|---|
-| Green | Drying complete / System ready |
-| Yellow | Drying in progress |
-| Red | Error / Over-temperature |
-
-### 9c. Piezoelectric Buzzer
-
-| Parameter | Value |
-|---|---|
-| Voltage | 3.3–5V |
-| Current | ~30 mA |
-| Purpose | Audio alert when drying is complete |
-
-### 9d. User Input
-
-| Component | Purpose |
-|---|---|
-| Rocker Switch | Main power ON/OFF |
-| Momentary Push Button | Start drying cycle / Reset |
-
-### 9e. Rotary Latch
-
-| Purpose |
-|---|
-| Secure the drying chamber door |
-
-### ✅ Compatibility Assessment — **COMPATIBLE**
-- **LCD I2C:** Shares I2C bus with MLX90614 (different addresses). Only 2 wires needed — clean wiring.
-- **LEDs:** Simple digital outputs from Arduino — no issues.
-- **Buzzer:** Low current draw, can be driven directly from an Arduino digital pin (with a transistor for louder output if needed).
-- **Rocker Switch:** Hardware power switch — essential for safety and power conservation.
-- **Push Button:** Simple input with internal pull-up resistor — no external resistor needed.
-- **Rotary Latch:** Mechanical component — ensures chamber door stays closed during operation.
-
----
-
-## 10. Structural & Mechanical Components
-
-| Component | Purpose | Compatibility |
+| Branch | Load | Fuse |
 |---|---|---|
-| 8mm–12mm Steel Shaft | Rotation axis for umbrella mechanism | ✅ Rigid, durable |
-| Pillow Block Bearing KP08 | Supports shaft rotation, reduces friction | ✅ 8mm bore matches shaft |
-| 8mm × 10mm Shaft Coupling | Connects motor shaft to mechanism shaft | ✅ Matches motor/mechanism |
-| Aluminum Plate | Chassis / structural frame | ✅ Lightweight, corrosion-resistant |
+| Main battery line | 13.1A worst case | **25A** |
+| Heater branch (through 30A relay) | 8.3A | 15A |
+| Motor branch ×3 (one per station) | 1.2A rated / 3.5A stall each | **3A each** |
+| Logic branch (LM2596S) | ~0.5A | 3A |
 
-### ✅ Compatibility Assessment — **COMPATIBLE**
-- All mechanical components are dimensionally compatible (8mm shaft system).
-- Aluminum is ideal for the chassis — lightweight, easy to machine, and corrosion-resistant (important in a humid environment).
-- Pillow block bearings are designed for radial loads — suitable for supporting the rotating umbrella mechanism.
-
-### ⚠️ Concerns
-- **Corrosion:** In a humid drying environment, steel shaft and bearings should be stainless steel or coated to prevent rust. If plain steel is used, apply anti-corrosion treatment.
-- **Vibration:** Ensure proper alignment to minimize vibration during rotation.
+Wire gauge: **16 AWG** main + heater (8.3A), **18 AWG** motor branches (stall 3.5A), **22 AWG** sensors/logic.
 
 ---
 
-## Overall Compatibility Matrix
+## 3. Heating — PTC 12V 100W Air Heater Fan — switched by 30A relay module
 
-| Component | Voltage Match | Current Sufficient | Interface Compatible | Physical Fit | Safety | Verdict |
-|---|---|---|---|---|---|---|
-| Arduino Mega | ✅ (via 5V buck) | ✅ | ✅ (I2C, PWM, Digital) | ✅ | ✅ | ✅ PASS |
-| ExpertPower Battery | ✅ (12.8V) | ✅ (35Ah) | N/A | ✅ | ✅ (BMS) | ✅ PASS |
-| PTC 120W Heater | ✅ (12V) | ✅ (10A) | Needs relay/MOSFET | ✅ | ✅ (self-reg) | ✅ PASS |
-| DHT22 Sensor | ✅ (5V) | ✅ (1.5mA) | ✅ (1-wire) | ✅ | ✅ | ✅ PASS |
-| MLX90614 Sensor | ✅ (3.3–5V) | ✅ (2mA) | ✅ (I2C 0x5A) | ✅ | ✅ | ✅ PASS |
-| DC Gear Motor | ✅ (12V) | ✅ | Via BTS7960 | ✅ | ✅ | ✅ PASS |
-| BTS7960 Driver | ✅ (5–27V) | ✅ (43A peak) | ✅ (PWM) | ✅ | ✅ | ✅ PASS |
-| LM2596S Buck | ✅ (in: 12.8V, out: 5V) | ✅ (3A) | N/A | ✅ | ✅ | ✅ PASS |
-| DC Water Pump | ✅ (12V) | ✅ (0.5A) | Via relay | ✅ | ✅ | ✅ PASS |
-| LCD I2C | ✅ (5V) | ✅ (40mA) | ✅ (I2C) | ✅ | ✅ | ✅ PASS |
-| LEDs + Buzzer | ✅ (5V) | ✅ (<100mA) | ✅ (Digital) | ✅ | ✅ | ✅ PASS |
-| Mechanical Parts | N/A | N/A | N/A | ✅ (8mm system) | ✅ | ✅ PASS |
+Self-regulating ceramic PTC (auto-limits at Curie point), integrated blower, **8.3A @ 12V** (100W). Air at 40–60°C dries umbrella fabric (nylon/polyester) safely. Lazada's max 12V variant is 100W (no 120W exists — cycle runs ~20% longer than the Rev 2 math; see §9b). See §9 for 3-umbrella thermal verification.
+
+**1-CH 30A relay module integration details**
+
+| Parameter | Value | Design check |
+|---|---|---|
+| Contact rating | 30A @ 30VDC | 3.6× the 8.3A heater ✅ |
+| Coil | 5V, ~70mA, driven from LM2596S rail | NOT from a Mega pin ✅ |
+| Input | optocoupler LED, low-level trigger, ~2–5mA | direct Mega pin (≤20mA source) ✅ |
+| Flyback | built-in diode on coil + opto isolation | no transient paths to logic ✅ |
+
+**Duty-cycle strategy:** **slow time-proportional control** (2–5s period) on a plain digital pin. Mechanical relays tolerate slow cycling; do NOT use fast PWM (490Hz+) — contact arcing and wear will destroy the relay.
 
 ---
 
-## Energy Efficiency Validation
+## 4. Sensors — DHT22 + DS18B20 ✅ (MLX90614 REMOVED)
 
-The study claims **energy efficient control**. Here's the analysis:
+| Sensor | Role | Interface | Status |
+|---|---|---|---|
+| **DHT22 (AM2302)** | Chamber humidity — core feedback for duty cycling + auto-shutoff | 1-wire digital, D2 | Required — ₱69 (FU-LABS module) |
+| **DS18B20 waterproof** | Heater-zone air temp — redundant over-temp cutoff | 1-Wire, D3 + 4.7kΩ pull-up | Required — ₱105 (Circuitrocks) |
+| ~~MLX90614~~ | ~~Non-contact umbrella surface temp~~ | ~~I2C~~ | **REMOVED from the design** — surface temp is inferable from chamber air temp + cycle model; frees an I2C address and ~₱1,349 |
 
-### Control Strategy
-1. **Sensor-Based Heating:** DHT22 monitors humidity → Heater cycles ON only when humidity > threshold → Reduces duty cycle.
-2. **Temperature Monitoring:** MLX90614 monitors surface temp → Prevents overheating → Safety + efficiency.
-3. **Auto-Shutoff:** When humidity drops below threshold (umbrella is dry), system turns off heater and motor → No wasted energy.
-4. **PTC Self-Regulation:** The PTC heater inherently reduces power as it reaches operating temperature → Built-in efficiency.
-
-### Estimated Duty Cycle
-- **Continuous Heating:** 120W × 1 hour = 120 Wh
-- **With 50% Duty Cycling:** 60W average → 448 Wh ÷ 60W ≈ **7.5 hours** runtime on battery
-- **With 30% Duty Cycling:** 36W average → 448 Wh ÷ 36W ≈ **12.4 hours** runtime on battery
-
-### Verdict: ✅ Energy Efficient Design Confirmed
-The combination of PTC self-regulation + sensor-based duty cycling + auto-shutoff provides genuine energy savings compared to always-on heaters.
+The I2C bus now carries only the LCD (0x27/0x3F). ✅ No conflicts.
 
 ---
 
-## Safety Validation
+## 5. Motor & Drive — 3× worm gear motors, one per station (Rev 4 core change)
+
+### 5a. Motors: 3× DC Worm Gear Motor SGM-A58SW31ZY, 12V, 16RPM (makerlab.ph, ₱1,249 each)
+
+| Parameter | Value |
+|---|---|
+| Voltage range / rated | 6–12V / 12V |
+| No-load speed / current | 16 RPM / 240mA |
+| **Rated load** | 11 RPM @ **1.2A**, **60 kg·cm torque** |
+| Stall torque / stall current | **70 kg·cm** / 3.5A |
+| Shaft | **8mm diameter × 15mm** |
+| Body | 115×40×35.7mm, 357g |
+
+Why one motor per umbrella (vs Rev 2/3's single shared-carousel motor):
+- **Independent stations** — any 1–3 umbrellas can be dried per run; per-station start/stop as each umbrella dries.
+- **Load per motor drops to ≤3 kg·cm** (one umbrella + holder, worst case) → **≥20× torque margin** (Rev 3 shared-carousel math needed 8–10 kg·cm against one 60 kg·cm motor).
+- **Fault isolation** — a jammed umbrella stalls one motor only; the other stations keep running, each protected by its own 3A fuse.
+- **No crossbar imbalance** — each station carries only its own umbrella; mounting positions no longer affect torque.
+- **Self-locking** — the worm cannot be back-driven, so each station holds position when off.
+- 16 RPM direct = gentle rotation (no centrifugal water loss); no external reduction.
+
+Variant notes: 80RPM variant (₱1,299) available; dual-shaft +₱50. Recommended: **Single Shaft 16RPM (₱1,249) ×3 — order all three from makerlab.ph in one order.** The Lazada JGY370 (~25 kg·cm, different shaft) is NOT an acceptable substitute.
+
+Listing: `makerlab.ph/products/dc-worm-gear-motor-sgm-a58sw31zys-12v-16rpm-80rpm-sgm-370-12v-40rpm-160rpm-dc-motor`
+
+### 5b. Drivers: 2× 2-CH relay modules w/ optocoupler (₱89 each) — REPLACED BTS7960
+
+- 3 of the 4 channels drive the motors (1.2A rated / 3.5A stall vs 10A@30VDC contacts → **2.9× margin at stall** per channel). ✅
+- 4th channel drives the 120mm circulation fan (0.25A). ✅
+- Relay coils from the LM2596S 5V rail; Mega drives only the optocoupler LEDs (~2–5mA per channel). ✅
+- Each motor channel sits in its own 3A-fused station branch — a stalled motor pops only its own fuse. ✅
+- Lost vs BTS7960: PWM speed control (not needed — 16 RPM is the design speed) and current-sense telemetry (replaced by per-station fuse + relay-state logic: a drawn 3A fuse with the relay commanded on = jam indication at the UI).
+
+### 5c. Mechanical transmission — 3 independent stations
+
+| Component | v4 spec | Note |
+|---|---|---|
+| Steel shaft | **3× 8mm × 300mm** (304 SS, ground) | one per station; 8mm system-wide matches motor shaft & KP08 bore |
+| Pillow block bearing | **6× KP08** (2 per station) | radial rating ≫ single-umbrella load; >30× margin |
+| Shaft coupling | **3× 8×8 rigid** (2 sets cover it + spare) | motor 8mm shaft × station 8mm shaft |
+| Umbrella holder | **3× holders, one per station shaft** | aluminum plate fabrication |
+
+---
+
+## 6. Voltage Regulation — LM2596S ✅ UNCHANGED
+
+12.8V → 5V @ 3A. v4 logic load: Mega (~0.2A) + DHT22 + DS18B20 + LCD (~0.04A) + LEDs + buzzer + **4 relay coils (~70mA each = 0.28A)** ≈ **0.7–0.8A** — still only ~27% of the 3A rating. Power the Mega via its **5V pin**, not the DC jack. ✅ (Rev 3 estimate was 0.45A; the added relay coils are the difference — still comfortable.)
+
+---
+
+## 7. Water Management — PASSIVE (pump removed) ✅ UNCHANGED
+
+1. **Chamber floor sloped ~3–5°** toward one corner.
+2. **Slotted drain hole + silicone drain tube** exiting the chamber wall.
+3. **Removable drip tray** outside the chamber base — emptied per use (3 umbrellas shed roughly 100–300mL per cycle; a 500mL tray covers it).
+4. Optional: hydrophobic mesh liner on the floor so drips funnel to the drain.
+
+Trade-off accepted: condensate removal is manual (empty the tray) in exchange for a simpler, cheaper, fault-free chamber. The humidity-based auto-shutoff logic is unaffected. ✅ COMPATIBLE
+
+---
+
+## 8. User Interface ✅ UNCHANGED (minus MLX90614)
+
+- **LCD 16×2 I2C** (₱165, addr 0x27/0x3F) — sole I2C device now.
+- **LEDs:** green = ready/complete, yellow = drying, red = error/over-temp (station status ×3 + system).
+- **Piezo buzzer:** cycle-complete alert, direct from a Mega pin.
+- **Momentary push button** (INPUT_PULLUP): start/reset cycle.
+- **Rocker switch:** hardware main power battery→fuse — also the manual kill for a fail-short heater relay.
+
+---
+
+## 9. THREE-UMBRELLA CAPACITY VERIFICATION ⭐ (Rev 4: three stations)
+
+### 9a. Mechanical — per-station torque ✅ PASS
+
+| Quantity | Value | Check |
+|---|---|---|
+| Rotating mass per station | 1 umbrella (0.4–0.7kg) + holder ≈ **1.2–1.7kg** | KP08 dynamic load ≈ 160kgf → >90× margin ✅ |
+| Bearing friction torque per station | ≈ μ·F·r ≈ 0.003 × 15N × 0.01m ≈ **0.05 kg·cm** | — |
+| Design allowance per station (imbalance, seal drag, wet fabric, startup) | ≈ **≤3 kg·cm** | — |
+| Motor rated torque (each station) | **60 kg·cm** | **≥20× margin** ✅ |
+| Stall torque | 70 kg·cm | tolerates a jammed umbrella ✅ |
+| Rotation speed | 16 RPM direct | gentle, no centrifugal water loss ✅ |
+| Station independence | any 1–3 stations run per cycle | matches the multi-umbrella study claim ✅ |
+
+### 9b. Thermal — heater sizing ✅ PASS (100W, realistic cycle time)
+
+| Quantity | Value |
+|---|---|
+| Water retained per umbrella (after shaking, open in chamber) | ≈ 30–100g (folding) up to 150g (golf) |
+| Water for 3 umbrellas | ≈ **90–300g typical** (worst case 450g soaked) |
+| Latent heat of vaporization | ≈ 2,260 J/g |
+| Evaporation energy needed | 90g → 57Wh · 300g → 188Wh · 450g → 283Wh |
+| PTC heat delivered | 100W, chamber transfer ~70–85% → **≈ 70–85W effective** |
+| Cycle time (all 3 simultaneously) | **≈ 50 min (light rain) → ~2.5 h (fully soaked)**, humidity sensor auto-stops at threshold |
+
+**Verdict: 100W PTC dries 3 umbrellas simultaneously in ≈50–150 minutes** with per-station rotation + forced air at 40–60°C. Slower than commercial 400–1000W spinner dryers — by design: the study's core claim is **energy-efficient control**. Per-station motors add a small benefit: late-finishing umbrellas can stop rotating, trimming parasitic motor losses. **Recommendation: keep 1× 100W heater.**
+
+### 9c. Electrical — simultaneous worst-case ✅ PASS
+
+| Load | Current @12V | Notes |
+|---|---|---|
+| PTC heater (relay ON) | 8.3A | 100W |
+| Worm motors | 3.6A rated (10.5A stall, seconds) | 3 × 1.2A |
+| 120mm fan | 0.25A | 3W |
+| Relay coils (4) | 0.28A | from 5V rail ≈ 0.06A reflected on 12V |
+| Logic (via LM2596S, 5V ~0.5A) | ≈ 0.22A | 2.8W |
+| **Total steady (heater ON, 3 motors running)** | **≈ 12.5A ≈ 155W** | BMS 30A → 2.4× margin ✅ |
+| **Peak (3 motor stalls + heater on)** | ≈ 13.1A (≈15.6A at 10.5V sag) | < 25A main fuse ✅ |
+
+---
+
+## 10. Runtime on Battery (3-umbrella cycles)
+
+Energy available: **384Wh** (30Ah × 12.8V). Typical 3-umbrella cycle ≈ 70 min at ~60% heater duty:
+
+| Scenario | Avg power | Runtime |
+|---|---|---|
+| Everything full-on (155W) | 155W | ≈ **2.5 h** |
+| Typical cycle (~60% duty) | ≈ 95W | ≈ **4.0 h → ~3–4 full cycles per charge** |
+| Aggressive duty cycling (30%) | ≈ 52W | ≈ 7.4 h |
+
+**Energy per 3-umbrella cycle ≈ 90–95Wh ≈ ₱0 equivalent from battery** — the headline number for the study's energy-efficiency chapter.
+
+---
+
+## 11. System Block Diagram
+
+```mermaid
+flowchart TB
+    subgraph POWER["Power domain"]
+        BAT["Battery 12.8V 30Ah LiFePO4 with BMS 30A"]
+        SW["Rocker switch main power"]
+        F1["Fuse 25A main"]
+        F2["Fuse 15A heater branch"]
+        FM1["Fuse 3A station 1"]
+        FM2["Fuse 3A station 2"]
+        FM3["Fuse 3A station 3"]
+        BUCK["LM2596S buck to 5V"]
+    end
+
+    subgraph LOADS["Power loads"]
+        RH["1-CH 30A relay - heater"]
+        PTC["PTC heater 12V 100W with blower"]
+        RM["2x 2-CH relay modules - 3 motor ch + 1 fan ch"]
+        M1["Worm motor station 1 - 60kg-cm 16RPM"]
+        M2["Worm motor station 2 - 60kg-cm 16RPM"]
+        M3["Worm motor station 3 - 60kg-cm 16RPM"]
+        FAN["120mm circulation fan 12V"]
+    end
+
+    subgraph SENSE["Sensing and user interface"]
+        DHT["DHT22 humidity + temp"]
+        DS18B["DS18B20 waterproof probe"]
+        LCD["LCD 16x2 I2C"]
+        HMI["LEDs x3 stations + buzzer + start button"]
+        DRAIN["Gravity drain + drip tray - passive"]
+    end
+
+    MEGA["Arduino Mega 2560"]
+
+    BAT --> SW --> F1
+    F1 --> F2 --> RH --> PTC
+    F1 --> FM1 --> M1
+    F1 --> FM2 --> M2
+    F1 --> FM3 --> M3
+    F1 --> FAN
+    F1 --> BUCK --> MEGA
+    MEGA -- "1 heater on-off" --> RH
+    MEGA -- "2 motor on-off x3 + fan" --> RM
+    MEGA -- "3 status outputs" --> HMI
+    HMI -- "4 start button" --> MEGA
+    DHT -- "5 humidity" --> MEGA
+    DS18B -- "6 heater temp" --> MEGA
+    MEGA <-. "7 I2C display" .-> LCD
+    DRAIN -. "passive condensate" .- PTC
+```
+
+---
+
+## 12. Compatibility Matrix (v4)
+
+| Component | Voltage | Current margin | Interface | 3-umbrella fit | Verdict |
+|---|---|---|---|---|---|
+| Arduino Mega 2560 | 5V via buck | ✅ | 11 dig + 2 I2C | ✅ | ✅ PASS |
+| LiFePO4 12.8V 30Ah (PowMr) | 12V native | 2.4× BMS margin | — | ✅ 3–4 cycles | ✅ PASS |
+| PTC 100W heater | 12V | 8.3A | via 30A relay | ✅ 50–150min cycle | ✅ PASS |
+| 1-CH 30A relay (heater) | 30VDC contacts | 3.6× (30A vs 8.3A) | optocoupler LED | ✅ | ✅ PASS |
+| 2× 2-CH relays (motors + fan) | 30VDC contacts | 2.9× at stall per ch | optocoupler LED | ✅ 1 ch per motor | ✅ PASS |
+| **3× worm motors 60kg·cm** | 12V | ≥20× torque margin per station | relay on/off | ✅ one per umbrella | ✅ PASS |
+| LM2596S | 12.8→5V | 3.75× (3A vs 0.8A) | — | ✅ | ✅ PASS |
+| DHT22 / DS18B20 | 3.3–5.5V | mA | 1-wire / 1-Wire | ✅ | ✅ PASS |
+| LCD I2C + LEDs + buzzer + button | 5V | ✅ | I2C + digital | ✅ | ✅ PASS |
+| 3× KP08 pairs + 8mm shafts + 8×8 couplings | N/A | >90× load per station | 8mm system | ✅ 3 stations | ✅ PASS |
+| Gravity drain + drip tray (no pump) | N/A | N/A | passive | ✅ 100–300mL/cycle | ✅ PASS |
+
+---
+
+## 13. Safety Validation (v4)
 
 | Hazard | Mitigation | Status |
 |---|---|---|
-| Overheating | PTC self-regulation + DS18B20 software cutoff | ✅ Dual protection |
-| Overcurrent | BTS7960 built-in overcurrent protection | ✅ Protected |
-| Battery Overdischarge | ExpertPower BMS built-in | ✅ Protected |
-| Short Circuit | ExpertPower BMS + fuse recommended | ✅ Protected |
-| Water Damage | DC pump removes condensate | ✅ Managed |
-| Fire Risk | PTC is self-limiting (no open-element risk) | ✅ Low risk |
-| Electrical Shock | 12V DC system (extra-low voltage) | ✅ Safe |
+| Overheating | PTC self-regulation + DS18B20 software cutoff | ✅ dual protection |
+| **Heater relay fail-short** (heater stuck on) | Rocker switch (hard kill) + 15A branch fuse + PTC self-regulating | ✅ triple backup |
+| Relay coil/transient noise | Optocoupler isolation + built-in flyback diodes | ✅ |
+| Overcurrent | 25A main + branch fuses (15A heater, 3A ×3 stations, 3A logic) | ✅ |
+| Battery overdischarge | PowMr BMS | ✅ |
+| **Single-station jam** | Only that station's 3A fuse blows; other stations keep drying; worm drive stall-rated 70 kg·cm | ✅ fault isolation |
+| Fire risk | PTC self-limiting (no open element) + all-extra-low-voltage 12VDC | ✅ low |
+| Water accumulation | Gravity drain + drip tray (manual empty) | ✅ managed |
+| Electrical shock | 12V DC system (extra-low voltage) | ✅ safe |
+| Relay contacts on AC | 30VDC-rated contacts — mains use prohibited by design | ✅ documented |
 
 ---
 
-## Potential Improvements / Recommendations
+## 14. Bill of Materials (v4 summary)
 
-1. **Add a fuse** (15A) on the main battery line for overcurrent protection.
-2. **Use stainless steel shaft/bearings** to prevent corrosion in the humid environment.
-3. **Add a water level float switch** as a backup to timed pump activation.
-4. **Consider a DHT22 radiation shield** to prevent condensation on the sensor.
-5. **Add a rotary encoder or limit switch** on the motor shaft to detect jam/overload.
-6. **Wire gauge:** Use at least 16 AWG for the PTC heater circuit (10A) and 18 AWG for motor circuit.
+Full verified listings in `BOM.md` / `docs/PROCUREMENT.md`. Key figures:
+
+| Group | Est. cost |
+|---|---|
+| Electronics (Mega, 3 relay modules, sensors, UI, buck, heater, fan) | ≈ ₱2,816 |
+| Wiring, fuses, interconnect | ≈ ₱819 |
+| Drivetrain — 3 stations (3× motor + 3× shaft + 6× KP08 + couplings) | ≈ ₱5,510 |
+| Battery + charger (PowMr 30Ah + FOXSUR) | ≈ ₱4,445–5,445 |
+| Chassis + consumables | ≈ ₱1,300 |
+| **TOTAL (core)** | **≈ ₱14,890–15,890** (battery ≈ a third) |
 
 ---
 
-## Final Verdict
+## 15. Pin Map (v4 final)
 
-### ✅ ALL COMPONENTS ARE COMPATIBLE AND CAPABLE OF DRYING UMBRELLAS
+| Pin | Connection |
+|---|---|
+| D2 | DHT22 data |
+| D3 | DS18B20 data (+4.7kΩ pull-up to 5V) |
+| D4 | Heater 30A relay input (optocoupler LED) — time-proportional duty (2–5s period) |
+| D5 | Motor relay ch1 — station 1 |
+| D6 | Motor relay ch2 — station 2 |
+| D7 | Motor relay ch3 — station 3 |
+| D8 | Fan relay ch4 (2nd 2-CH module) |
+| D9 / D10 / D11 | Green / Yellow / Red LEDs (station 1; replicate pattern on D22–D27 for stations 2–3) |
+| D12 | Piezo buzzer |
+| D13 | Start/Reset push button (INPUT_PULLUP) |
+| 20 / 21 (SDA/SCL) | LCD 16×2 I2C (sole I2C device) |
+| GND | common ground rail (all relay inputs, sensors) |
+| — | Rocker switch + 25A main fuse: battery → distribution |
 
-The selected components form a well-integrated system:
-- **Power:** LiFePO4 battery (12.8V/35Ah) provides adequate energy for 3–12 hours of operation depending on duty cycle.
-- **Heating:** PTC 120W heater with integrated fan provides sufficient, self-regulating heat for umbrella drying.
-- **Control:** Arduino Mega with DHT22 + MLX90614 sensors enables smart, energy-efficient feedback control.
-- **Mechanics:** DC motor + BTS7960 driver + shaft/bearing system enables reliable umbrella rotation.
-- **Safety:** Multi-layered protection (PTC self-regulation, sensor monitoring, BMS, motor driver protection).
-- **Energy Efficiency:** Sensor-based duty cycling reduces average power consumption significantly.
+---
 
-The system is viable for drying multiple umbrellas in a compact, safe, and energy-efficient manner.
+## 16. Final Verdict (Rev 4)
+
+### ✅ THE v4 SYSTEM IS COMPATIBLE AND CAN DRY 3 UMBRELLAS PER CYCLE — ON THREE INDEPENDENT STATIONS
+
+- **Relay architecture** (1× 30A heater relay + 2× 2-CH motor/fan relays, all optocoupler-isolated) safely switches every load; slow duty cycling only.
+- **3× worm gear motors (60 kg·cm each)** — one per umbrella — give ≥20× torque margin per station, fault isolation via per-station 3A fuses, and self-locking position hold.
+- **MLX90614 removed** — the DHT22 + DS18B20 pair fully covers the control loop; I2C carries only the LCD.
+- **25A main fuse** sized for the 3-motor stall worst case; BMS 30A has 2.4× margin.
+- **3-umbrella cycle:** ≈50–150 min (humidity auto-shutoff), ≈90–95Wh per cycle, **3–4 cycles per battery charge**.
+- All-12V extra-low-voltage safety, triple heater-failure backup, passive condensate handling.
+
+---
+
+*Related: `../references/FINALFINAL_SUD_CHAPTER-1-3.docx` (paper chapters 1–3). Figures affected by Rev 4 for the paper's next revision: Fig 11 (single motor → 3× worm gear motor stations), Fig 12 caption (BTS7960 → relay modules), **Fig 19 (DC water pump — remove)**, add new figure for the 30A relay module, **remove MLX90614 from Fig 10 and the I2C diagram**, update block diagram to 3 stations + 25A main fuse.*
