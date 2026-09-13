@@ -85,18 +85,18 @@ Spec sheets for what was actually bought (sources & prices: `docs/BOM.md` §14).
 | Condensate zone | No bare copper below 5 cm above the floor; silicone-sealed seams; drain tube 6–8 mm ID |
 | Environment | All-12V extra-low voltage; keep every connector ≥ 5 cm from the heater body |
 
-## 3. Station layout — design targets (team decision pending)
+## 3. Station layout — decided (Rev 4)
 
-The chamber geometry was not fixed in the paper's Rev 2. Constraints from the verified design:
-
-| Constraint | Value |
+| Parameter | Decision |
 |---|---|
-| Open canopy Ø | ≈ 0.9–1.0 m (commuter/golf umbrella) |
-| Tip clearance | ≥ 5 cm between canopies and to walls |
-| Hanging length | Umbrella hangs from holder; heater blows across the canopy underside |
-| Layout options | **A) Staggered row:** stations offset horizontally + vertically (pitch ≈ 0.75 m) — compact chamber. **B) Triangular:** two front, one rear, height-offset — fits a square floor. Both satisfy the clearance rule; pick per chamber box availability |
+| Canopy state when drying | **Half-open** — projected Ø ≈ 650 mm. A fully-open commuter canopy spans 950–1000 mm, and three in a row would need a ~3.2 m chamber; half-open exposes the full wet surface with airflow across it and keeps the box realistic |
+| Chamber internal W × D × H | **2200 × 800 × 1300 mm** (walls +20 mm → cut panels 2240 × 840 × 1340) |
+| Station layout | Single row of 3 stations on the long axis, pitch **700 mm** |
+| Clearance check | Canopy edge at 700 + 325 = 1025 mm from center vs wall at 1100 mm → 75 mm each side; between adjacent canopies 700 − 650 = 50 mm — both pass the ≥50 mm rule |
+| Hanging length | Umbrella hangs from the holder; heater blows across the canopy underside |
+| Services | Heater 200×100 left wall, low (center 150 mm above floor); 120 mm fan right wall, low; DHT22 mid-chamber; DS18B20 probe in the heater air stream |
 
-> The verification math (`docs/BOM.md` §9) is layout-independent: each motor sees only its own umbrella's ≤3 kg·cm, and airflow crosses all stations regardless of arrangement.
+> The verification math (`docs/BOM.md` §9) is layout-independent: each motor sees only its own umbrella's ≤3 kg·cm, and airflow crosses all stations regardless of arrangement. If the team later prefers fully-open canopies, re-run the width check in `model/generate_models.py` before committing to a box size.
 
 ## 4. Revision history of the hardware set
 

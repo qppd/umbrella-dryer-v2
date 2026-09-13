@@ -1,6 +1,6 @@
 # 3D Model Views (Rev 4)
 
-Engineering-style views of the drying chamber and its three motor stations, with measurements in millimeters. These are representative reference views for the build and the capstone paper — the paper does not fix chamber dimensions, so the sizes below are design targets that satisfy the verified clearances in `HARDWARE.md` section 3.
+Engineering-style views of the drying chamber and its three motor stations, with measurements in millimeters. These match the decided Rev 4 chamber (see `HARDWARE.md` section 3): umbrellas dry **half-open** (projected diameter 650 mm), three stations in a row inside a 2200 x 800 x 1300 mm internal chamber — the smallest realistic box that keeps the 50 mm canopy clearance rule.
 
 ## Files
 
@@ -13,20 +13,20 @@ Engineering-style views of the drying chamber and its three motor stations, with
 | `front-right-view.png` | Axonometric from front-right |
 | `front-left-view.png` | Axonometric from front-left |
 
-## Dimension table (all mm, representative — adjust to your chamber)
+## Dimension table (all mm, decided Rev 4 — change only with a re-run of the clearance check)
 
 | Parameter | Value | Notes |
 |---|---|---|
-| Chamber internal W x D x H | 1400 x 800 x 1200 | Fits 3 open canopies with clearance |
+| Chamber internal W x D x H | 2200 x 800 x 1300 | Real chamber box; cut wall panels 2240 x 840 x 1340 (20 mm walls) |
 | Wall thickness | 20 | Panel material allowance |
-| Station pitch (X) | 750 | 3 stations, equally spaced |
+| Station pitch (X) | 700 | 3 stations, single row on the long axis |
 | Motor (worm gear) | 115 x 40 x 36 | SGM-A58SW31ZY, 60 kg-cm, 16 RPM |
 | Motor plate (6061) | 6 thick | Spans chamber top |
 | Shaft | 8 dia x 300 long | 304 SS, ground |
 | Coupling | 8 x 8, 25 long | Rigid clamp |
 | Bearings | 2x KP08 per station | Near each shaft end |
-| Canopy (open) | 550 dia x 150 deep | Representative commuter umbrella |
-| Min canopy clearance | 50 | Between canopies and to walls |
+| Canopy (half-open, projected) | 650 dia x 200 deep | Umbrellas dry half-open; fully-open commuter canopy is 950-1000 dia |
+| Min canopy clearance | 50 (75 at walls, 50 between canopies) | Verified against the 2200 box |
 | Floor slope | 3-5 degrees | To drain corner |
 | Drain tube | 8 dia | Silicone, to drip tray |
 | Drip tray | 500 x 400 x 60 | 500 mL+ capacity |

@@ -17,15 +17,15 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 # ------------------------- CONSTANTS (mm) -------------------------
-CH_W, CH_D, CH_H = 1400.0, 800.0, 1200.0   # chamber internal W(x) D(y) H(z)
+CH_W, CH_D, CH_H = 2200.0, 800.0, 1300.0   # chamber internal W(x) D(y) H(z) - REAL chamber box
 WALL = 20.0
 PLATE_T = 6.0                                # 6061 aluminum motor plate
-PITCH = 750.0                                # station spacing along X
+PITCH = 700.0                                # station spacing along X (real: 3-station row)
 MOTOR_L, MOTOR_W, MOTOR_H = 115.0, 40.0, 36.0
 SHAFT_DIA, SHAFT_LEN = 8.0, 300.0
 COUP_L = 25.0
 KP08 = (42.0, 22.0, 34.0)                    # bracket approx
-CANOPY_D, CANOPY_DEPTH = 550.0, 150.0        # umbrella open (representative)
+CANOPY_D, CANOPY_DEPTH = 650.0, 200.0        # umbrella HALF-OPEN projected (fully open is 950-1000)
 TRAY = (500.0, 400.0, 60.0)
 HEATER = (200.0, 100.0, 100.0)
 FAN_D = 120.0
@@ -186,7 +186,7 @@ labels = [
     (0, 0, CH_H + PLATE_T/2 + 25, "motor plate 6061, 6 mm"),
     (ST_X[1], 0, PLATE_Z - 60, "8x8 coupling + 8 mm shaft x 300 + 2x KP08 per station"),
     (ST_X[1], 0, PLATE_Z - SHAFT_LEN - 60, "umbrella holder (fabricated)"),
-    (ST_X[1], 0, PLATE_Z - SHAFT_LEN - CANOPY_DEPTH - 40, "umbrella open, canopy dia 550 (representative)"),
+    (ST_X[1], 0, PLATE_Z - SHAFT_LEN - CANOPY_DEPTH - 40, "umbrella half-open, projected dia 650 (fully open 950-1000)"),
     (-CH_W/2 + 130, 0, 150, "PTC heater 100 W 12 V (left wall, low)"),
     (CH_W/2 - 130, 0, 150, "120 mm circulation fan (right wall, low)"),
     (0, -CH_D/2 - 60, -160, "drip tray 500x400x60 (drain tube to corner)"),
@@ -199,10 +199,10 @@ save(fig, "exploded-view.png")
 # 2. front view (looking -Y)
 view("front-view.png", 0, -90, "Front view",
     dimlines=[
-        ((-W2, 0, -120), (W2, 0, -120), "1400 chamber W", (0, 0, -45)),
-        ((-W2-70, 0, 0), (-W2-70, 0, CH_H), "1200 H", (0, 0, 0)),
-        ((ST_X[0], 0, CH_H + PLATE_T + MOTOR_H + 95), (ST_X[1], 0, CH_H + PLATE_T + MOTOR_H + 95), "750 pitch", (0, 0, 35)),
-        ((ST_X[1]-275, 0, 640), (ST_X[1]+275, 0, 640), "canopy 550 dia", (0, 0, -40)),
+        ((-W2, 0, -120), (W2, 0, -120), "2200 chamber W", (0, 0, -45)),
+        ((-W2-70, 0, 0), (-W2-70, 0, CH_H), "1300 H", (0, 0, 0)),
+        ((ST_X[0], 0, CH_H + PLATE_T + MOTOR_H + 95), (ST_X[1], 0, CH_H + PLATE_T + MOTOR_H + 95), "700 pitch", (0, 0, 35)),
+        ((ST_X[1]-325, 0, 640), (ST_X[1]+325, 0, 640), "canopy 650 dia half-open", (0, 0, -40)),
         ((ST_X[1], 0, PLATE_Z - 40), (ST_X[1], 0, PLATE_Z - 40 - SHAFT_LEN), "shaft 300, dia 8", (95, 0, 0)),
     ],
     notes="front view (-Y)\nplate t=6 | coupling 8x8\nmin canopy clearance 50")
@@ -211,7 +211,7 @@ view("front-view.png", 0, -90, "Front view",
 view("side-view.png", 0, 0, "Side view",
     dimlines=[
         ((0, -CH_D/2, -120), (0, CH_D/2, -120), "800 D", (0, 0, -45)),
-        ((0, -CH_D/2-70, 0), (0, -CH_D/2-70, CH_H), "1200 H", (0, 0, 0)),
+        ((0, -CH_D/2-70, 0), (0, -CH_D/2-70, CH_H), "1300 H", (0, 0, 0)),
         ((0, 0, 150), (0, 0, 150), "", (0, 0, 0)),
     ],
     notes="side view (-X)\nfloor slope 3-5 deg to drain corner\ndrain tube dia 8 | tray 500x400x60\nheater 200x100 left wall | fan dia 120 right wall\nDHT22 mid-chamber | DS18B20 in heater stream")
@@ -221,14 +221,14 @@ view("top-view.png", 90, -90, "Top view (plan)",
     dimlines=[
         ((-W2, -CH_D/2, CH_H + 160), (W2, -CH_D/2, CH_H + 160), "1400 W", (0, 0, 45)),
         ((W2 + 70, -CH_D/2, CH_H + 60), (W2 + 70, CH_D/2, CH_H + 60), "800 D", (60, 0, 0)),
-        ((ST_X[0], -60, CH_H + 60), (ST_X[1], -60, CH_H + 60), "750", (0, -80, 0)),
+        ((ST_X[0], -60, CH_H + 60), (ST_X[1], -60, CH_H + 60), "700", (0, -80, 0)),
     ],
-    notes="top view\nstations on X axis, pitch 750\ncanopy dia 550 dashed = swing envelope\nplate outline dashed")
+    notes="top view\nstations on X axis, pitch 700\ncanopy dia 650 half-open, dashed = swing envelope\nplate outline dashed")
 
 # 5-6. front-right / front-left
 view("front-right-view.png", 14, -55, "Front-right view",
-    notes="axonometric\nkey dims: chamber 1400x800x1200\npitch 750 | canopy dia 550\nshaft 8x300 | plate 6 mm\nall mm, representative")
+    notes="axonometric\nkey dims: chamber 2200x800x1300 (real box)\npitch 700 | canopy dia 650 half-open\nshaft 8x300 | plate 6 mm\nall mm")
 view("front-left-view.png", 14, -125, "Front-left view",
-    notes="axonometric\nkey dims: chamber 1400x800x1200\npitch 750 | canopy dia 550\nshaft 8x300 | plate 6 mm\nall mm, representative")
+    notes="axonometric\nkey dims: chamber 2200x800x1300 (real box)\npitch 700 | canopy dia 650 half-open\nshaft 8x300 | plate 6 mm\nall mm")
 
 print("done - 6 views written")
