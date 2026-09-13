@@ -14,20 +14,6 @@
 
 ---
 
-## 0. Change Summary (v4 → v5)
-
-| Change | Rev 4 | Rev 5 | Reason |
-|---|---|---|---|
-| Heaters | 1× 12V 100W PTC (battery) | **2× 220V 1500W PTC heater-fans (mains)** | 30× the heat: cycle time drops from ~1–2.5 h to ~15–45 min; battery cannot supply 3000W (would be 250A at 12V) |
-| Heater switching | 1-CH 30A DC relay module | **2× Fotek SSR-40DA (AC output, heatsinked)** | Silent, no contact wear, fast zero-cross switching of AC; 5.9× current margin per heater |
-| Circulation | 120mm 12V fan | **12" Omni industrial exhaust fan (220V)** | High-volume air exchange pulls humid air out — drying accelerates; runs on the mains rocker |
-| Battery role | All loads (heater + motors) | **Motors + control only (~14W)** | BMS margin becomes huge; runtime limited by mains availability, not battery |
-| Kill switches | 1 (DC rocker) | **2 (mains rocker + DC rocker), labeled** | Separate domains need separate kills |
-| New safety layer | extra-low voltage only | **RCD/GFCI outlet, 10A branch fuses, grounded metal box, earthed frame + chassis** | Mains voltage now present — life-safety first |
-| Unchanged | 3× worm stations, DHT22 + DS18B20, LCD/LEDs/buzzer/button, buck, gravity drain, 25A/3A fusing | — | — |
-
----
-
 ## 1. Microcontroller — Arduino Mega 2560 — UNCHANGED
 
 | Parameter | Value |
