@@ -1,5 +1,7 @@
 # PROCUREMENT — Verified Component Sourcing (Lazada PH)
 
+> **Annex to [`docs/BOM.md`](BOM.md) §14** — this file carries the per-listing detail: backup listings, seller ratings and reasoning, and watch-outs. The consolidated order cart lives in BOM.md Appendix A.
+
 **Project:** Smart Umbrella Dryer (PUP Santa Maria, BS CpE capstone)
 **Sourcing policy:** Makerlab PH first — verified trusted Lazada store (98% seller rating, 845.6K items sold, 10-Year Store, Bulacan). Items Makerlab doesn't carry → trusted third-party sellers with high rating/sold counts only.
 **Prices verified:** 2026-09-12 (Lazada prices move — re-check before ordering)
