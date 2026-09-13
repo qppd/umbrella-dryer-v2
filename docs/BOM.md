@@ -29,7 +29,7 @@
 
 ---
 
-## 1. Microcontroller — Arduino Mega 2560 ✅ UNCHANGED
+## 1. Microcontroller — Arduino Mega 2560  UNCHANGED
 
 | Parameter | Value |
 |---|---|
@@ -40,7 +40,7 @@
 | Clock | 16 MHz |
 | I2C | SDA=20, SCL=21 |
 
-**v4 pin audit:** heater relay (1) + 3 motor relays (3) + 3 station status LEDs (3) + buzzer + start button + LCD I2C + 2 sensors ≈ **11 digital + 2 I2C** — far inside the Mega's capacity. ✅ COMPATIBLE
+**v4 pin audit:** heater relay (1) + 3 motor relays (3) + 3 station status LEDs (3) + buzzer + start button + LCD I2C + 2 sensors ≈ **11 digital + 2 I2C** — far inside the Mega's capacity.  COMPATIBLE
 
 **Powering the Mega:** Makerlab's Mega listing explicitly warns *"do not supply with 12V on DC jack"*. Feed the Mega from the **LM2596S 5V output → Mega 5V pin** (or USB), not the DC jack from battery voltage.
 
@@ -52,7 +52,7 @@ Listing: `makerlab.ph/products/mega-2560-r3-with-usb-cable-compatible-with-ardui
 
 ExpertPower 35Ah (the paper's original pick) is not stocked on Lazada PH; the PowMr 12.8V 30Ah is the verified local equivalent: **384 Wh, BMS with 30A max continuous discharge** (per PowMr's published spec sheet), overcharge/over-discharge/short/over-temp protection.
 
-**Worst-case draw check:** heater 8.3A + 3 motors at stall 10.5A + fan 0.25A + logic ~0.2A ≈ **13.1A peak** → BMS 30A = **2.3× margin**. ✅ (Stall is transient — seconds per start.)
+**Worst-case draw check:** heater 8.3A + 3 motors at stall 10.5A + fan 0.25A + logic ~0.2A ≈ **13.1A peak** → BMS 30A = **2.3× margin**.  (Stall is transient — seconds per start.)
 
 **Fuse plan (v4):**
 
@@ -75,16 +75,16 @@ Self-regulating ceramic PTC (auto-limits at Curie point), integrated blower, **8
 
 | Parameter | Value | Design check |
 |---|---|---|
-| Contact rating | 30A @ 30VDC | 3.6× the 8.3A heater ✅ |
-| Coil | 5V, ~70mA, driven from LM2596S rail | NOT from a Mega pin ✅ |
-| Input | optocoupler LED, low-level trigger, ~2–5mA | direct Mega pin (≤20mA source) ✅ |
-| Flyback | built-in diode on coil + opto isolation | no transient paths to logic ✅ |
+| Contact rating | 30A @ 30VDC | 3.6× the 8.3A heater  |
+| Coil | 5V, ~70mA, driven from LM2596S rail | NOT from a Mega pin  |
+| Input | optocoupler LED, low-level trigger, ~2–5mA | direct Mega pin (≤20mA source)  |
+| Flyback | built-in diode on coil + opto isolation | no transient paths to logic  |
 
 **Duty-cycle strategy:** **slow time-proportional control** (2–5s period) on a plain digital pin. Mechanical relays tolerate slow cycling; do NOT use fast PWM (490Hz+) — contact arcing and wear will destroy the relay.
 
 ---
 
-## 4. Sensors — DHT22 + DS18B20 ✅ (MLX90614 REMOVED)
+## 4. Sensors — DHT22 + DS18B20  (MLX90614 REMOVED)
 
 | Sensor | Role | Interface | Status |
 |---|---|---|---|
@@ -92,7 +92,7 @@ Self-regulating ceramic PTC (auto-limits at Curie point), integrated blower, **8
 | **DS18B20 waterproof** | Heater-zone air temp — redundant over-temp cutoff | 1-Wire, D3 + 4.7kΩ pull-up | Required — ₱105 (Circuitrocks) |
 | ~~MLX90614~~ | ~~Non-contact umbrella surface temp~~ | ~~I2C~~ | **REMOVED from the design** — surface temp is inferable from chamber air temp + cycle model; frees an I2C address and ~₱1,349 |
 
-The I2C bus now carries only the LCD (0x27/0x3F). ✅ No conflicts.
+The I2C bus now carries only the LCD (0x27/0x3F).  No conflicts.
 
 ---
 
@@ -123,10 +123,10 @@ Listing: `makerlab.ph/products/dc-worm-gear-motor-sgm-a58sw31zys-12v-16rpm-80rpm
 
 ### 5b. Drivers: 2× 2-CH relay modules w/ optocoupler (₱89 each) — REPLACED BTS7960
 
-- 3 of the 4 channels drive the motors (1.2A rated / 3.5A stall vs 10A@30VDC contacts → **2.9× margin at stall** per channel). ✅
-- 4th channel drives the 120mm circulation fan (0.25A). ✅
-- Relay coils from the LM2596S 5V rail; Mega drives only the optocoupler LEDs (~2–5mA per channel). ✅
-- Each motor channel sits in its own 3A-fused station branch — a stalled motor pops only its own fuse. ✅
+- 3 of the 4 channels drive the motors (1.2A rated / 3.5A stall vs 10A@30VDC contacts → **2.9× margin at stall** per channel).
+- 4th channel drives the 120mm circulation fan (0.25A).
+- Relay coils from the LM2596S 5V rail; Mega drives only the optocoupler LEDs (~2–5mA per channel).
+- Each motor channel sits in its own 3A-fused station branch — a stalled motor pops only its own fuse.
 - Lost vs BTS7960: PWM speed control (not needed — 16 RPM is the design speed) and current-sense telemetry (replaced by per-station fuse + relay-state logic: a drawn 3A fuse with the relay commanded on = jam indication at the UI).
 
 ### 5c. Mechanical transmission — 3 independent stations
@@ -140,24 +140,24 @@ Listing: `makerlab.ph/products/dc-worm-gear-motor-sgm-a58sw31zys-12v-16rpm-80rpm
 
 ---
 
-## 6. Voltage Regulation — LM2596S ✅ UNCHANGED
+## 6. Voltage Regulation — LM2596S  UNCHANGED
 
-12.8V → 5V @ 3A. v4 logic load: Mega (~0.2A) + DHT22 + DS18B20 + LCD (~0.04A) + LEDs + buzzer + **4 relay coils (~70mA each = 0.28A)** ≈ **0.7–0.8A** — still only ~27% of the 3A rating. Power the Mega via its **5V pin**, not the DC jack. ✅ (Rev 3 estimate was 0.45A; the added relay coils are the difference — still comfortable.)
+12.8V → 5V @ 3A. v4 logic load: Mega (~0.2A) + DHT22 + DS18B20 + LCD (~0.04A) + LEDs + buzzer + **4 relay coils (~70mA each = 0.28A)** ≈ **0.7–0.8A** — still only ~27% of the 3A rating. Power the Mega via its **5V pin**, not the DC jack.  (Rev 3 estimate was 0.45A; the added relay coils are the difference — still comfortable.)
 
 ---
 
-## 7. Water Management — PASSIVE (pump removed) ✅ UNCHANGED
+## 7. Water Management — PASSIVE (pump removed)  UNCHANGED
 
 1. **Chamber floor sloped ~3–5°** toward one corner.
 2. **Slotted drain hole + silicone drain tube** exiting the chamber wall.
 3. **Removable drip tray** outside the chamber base — emptied per use (3 umbrellas shed roughly 100–300mL per cycle; a 500mL tray covers it).
 4. Optional: hydrophobic mesh liner on the floor so drips funnel to the drain.
 
-Trade-off accepted: condensate removal is manual (empty the tray) in exchange for a simpler, cheaper, fault-free chamber. The humidity-based auto-shutoff logic is unaffected. ✅ COMPATIBLE
+Trade-off accepted: condensate removal is manual (empty the tray) in exchange for a simpler, cheaper, fault-free chamber. The humidity-based auto-shutoff logic is unaffected.  COMPATIBLE
 
 ---
 
-## 8. User Interface ✅ UNCHANGED (minus MLX90614)
+## 8. User Interface  UNCHANGED (minus MLX90614)
 
 - **LCD 16×2 I2C** (₱165, addr 0x27/0x3F) — sole I2C device now.
 - **LEDs:** green = ready/complete, yellow = drying, red = error/over-temp (station status ×3 + system).
@@ -167,21 +167,21 @@ Trade-off accepted: condensate removal is manual (empty the tray) in exchange fo
 
 ---
 
-## 9. THREE-UMBRELLA CAPACITY VERIFICATION ⭐ (Rev 4: three stations)
+## 9. THREE-UMBRELLA CAPACITY VERIFICATION  (Rev 4: three stations)
 
-### 9a. Mechanical — per-station torque ✅ PASS
+### 9a. Mechanical — per-station torque  PASS
 
 | Quantity | Value | Check |
 |---|---|---|
-| Rotating mass per station | 1 umbrella (0.4–0.7kg) + holder ≈ **1.2–1.7kg** | KP08 dynamic load ≈ 160kgf → >90× margin ✅ |
+| Rotating mass per station | 1 umbrella (0.4–0.7kg) + holder ≈ **1.2–1.7kg** | KP08 dynamic load ≈ 160kgf → >90× margin  |
 | Bearing friction torque per station | ≈ μ·F·r ≈ 0.003 × 15N × 0.01m ≈ **0.05 kg·cm** | — |
 | Design allowance per station (imbalance, seal drag, wet fabric, startup) | ≈ **≤3 kg·cm** | — |
-| Motor rated torque (each station) | **60 kg·cm** | **≥20× margin** ✅ |
-| Stall torque | 70 kg·cm | tolerates a jammed umbrella ✅ |
-| Rotation speed | 16 RPM direct | gentle, no centrifugal water loss ✅ |
-| Station independence | any 1–3 stations run per cycle | matches the multi-umbrella study claim ✅ |
+| Motor rated torque (each station) | **60 kg·cm** | **≥20× margin**  |
+| Stall torque | 70 kg·cm | tolerates a jammed umbrella  |
+| Rotation speed | 16 RPM direct | gentle, no centrifugal water loss  |
+| Station independence | any 1–3 stations run per cycle | matches the multi-umbrella study claim  |
 
-### 9b. Thermal — heater sizing ✅ PASS (100W, realistic cycle time)
+### 9b. Thermal — heater sizing  PASS (100W, realistic cycle time)
 
 | Quantity | Value |
 |---|---|
@@ -194,7 +194,7 @@ Trade-off accepted: condensate removal is manual (empty the tray) in exchange fo
 
 **Verdict: 100W PTC dries 3 umbrellas simultaneously in ≈50–150 minutes** with per-station rotation + forced air at 40–60°C. Slower than commercial 400–1000W spinner dryers — by design: the study's core claim is **energy-efficient control**. Per-station motors add a small benefit: late-finishing umbrellas can stop rotating, trimming parasitic motor losses. **Recommendation: keep 1× 100W heater.**
 
-### 9c. Electrical — simultaneous worst-case ✅ PASS
+### 9c. Electrical — simultaneous worst-case  PASS
 
 | Load | Current @12V | Notes |
 |---|---|---|
@@ -203,8 +203,8 @@ Trade-off accepted: condensate removal is manual (empty the tray) in exchange fo
 | 120mm fan | 0.25A | 3W |
 | Relay coils (4) | 0.28A | from 5V rail ≈ 0.06A reflected on 12V |
 | Logic (via LM2596S, 5V ~0.5A) | ≈ 0.22A | 2.8W |
-| **Total steady (heater ON, 3 motors running)** | **≈ 12.5A ≈ 155W** | BMS 30A → 2.4× margin ✅ |
-| **Peak (3 motor stalls + heater on)** | ≈ 13.1A (≈15.6A at 10.5V sag) | < 25A main fuse ✅ |
+| **Total steady (heater ON, 3 motors running)** | **≈ 12.5A ≈ 155W** | BMS 30A → 2.4× margin  |
+| **Peak (3 motor stalls + heater on)** | ≈ 13.1A (≈15.6A at 10.5V sag) | < 25A main fuse  |
 
 ---
 
@@ -280,17 +280,17 @@ flowchart TB
 
 | Component | Voltage | Current margin | Interface | 3-umbrella fit | Verdict |
 |---|---|---|---|---|---|
-| Arduino Mega 2560 | 5V via buck | ✅ | 11 dig + 2 I2C | ✅ | ✅ PASS |
-| LiFePO4 12.8V 30Ah (PowMr) | 12V native | 2.4× BMS margin | — | ✅ 3–4 cycles | ✅ PASS |
-| PTC 100W heater | 12V | 8.3A | via 30A relay | ✅ 50–150min cycle | ✅ PASS |
-| 1-CH 30A relay (heater) | 30VDC contacts | 3.6× (30A vs 8.3A) | optocoupler LED | ✅ | ✅ PASS |
-| 2× 2-CH relays (motors + fan) | 30VDC contacts | 2.9× at stall per ch | optocoupler LED | ✅ 1 ch per motor | ✅ PASS |
-| **3× worm motors 60kg·cm** | 12V | ≥20× torque margin per station | relay on/off | ✅ one per umbrella | ✅ PASS |
-| LM2596S | 12.8→5V | 3.75× (3A vs 0.8A) | — | ✅ | ✅ PASS |
-| DHT22 / DS18B20 | 3.3–5.5V | mA | 1-wire / 1-Wire | ✅ | ✅ PASS |
-| LCD I2C + LEDs + buzzer + button | 5V | ✅ | I2C + digital | ✅ | ✅ PASS |
-| 3× KP08 pairs + 8mm shafts + 8×8 couplings | N/A | >90× load per station | 8mm system | ✅ 3 stations | ✅ PASS |
-| Gravity drain + drip tray (no pump) | N/A | N/A | passive | ✅ 100–300mL/cycle | ✅ PASS |
+| Arduino Mega 2560 | 5V via buck |  | 11 dig + 2 I2C |  |  PASS |
+| LiFePO4 12.8V 30Ah (PowMr) | 12V native | 2.4× BMS margin | — |  3–4 cycles |  PASS |
+| PTC 100W heater | 12V | 8.3A | via 30A relay |  50–150min cycle |  PASS |
+| 1-CH 30A relay (heater) | 30VDC contacts | 3.6× (30A vs 8.3A) | optocoupler LED |  |  PASS |
+| 2× 2-CH relays (motors + fan) | 30VDC contacts | 2.9× at stall per ch | optocoupler LED |  1 ch per motor |  PASS |
+| **3× worm motors 60kg·cm** | 12V | ≥20× torque margin per station | relay on/off |  one per umbrella |  PASS |
+| LM2596S | 12.8→5V | 3.75× (3A vs 0.8A) | — |  |  PASS |
+| DHT22 / DS18B20 | 3.3–5.5V | mA | 1-wire / 1-Wire |  |  PASS |
+| LCD I2C + LEDs + buzzer + button | 5V |  | I2C + digital |  |  PASS |
+| 3× KP08 pairs + 8mm shafts + 8×8 couplings | N/A | >90× load per station | 8mm system |  3 stations |  PASS |
+| Gravity drain + drip tray (no pump) | N/A | N/A | passive |  100–300mL/cycle |  PASS |
 
 ---
 
@@ -298,16 +298,16 @@ flowchart TB
 
 | Hazard | Mitigation | Status |
 |---|---|---|
-| Overheating | PTC self-regulation + DS18B20 software cutoff | ✅ dual protection |
-| **Heater relay fail-short** (heater stuck on) | Rocker switch (hard kill) + 15A branch fuse + PTC self-regulating | ✅ triple backup |
-| Relay coil/transient noise | Optocoupler isolation + built-in flyback diodes | ✅ |
-| Overcurrent | 25A main + branch fuses (15A heater, 3A ×3 stations, 3A logic) | ✅ |
-| Battery overdischarge | PowMr BMS | ✅ |
-| **Single-station jam** | Only that station's 3A fuse blows; other stations keep drying; worm drive stall-rated 70 kg·cm | ✅ fault isolation |
-| Fire risk | PTC self-limiting (no open element) + all-extra-low-voltage 12VDC | ✅ low |
-| Water accumulation | Gravity drain + drip tray (manual empty) | ✅ managed |
-| Electrical shock | 12V DC system (extra-low voltage) | ✅ safe |
-| Relay contacts on AC | 30VDC-rated contacts — mains use prohibited by design | ✅ documented |
+| Overheating | PTC self-regulation + DS18B20 software cutoff |  dual protection |
+| **Heater relay fail-short** (heater stuck on) | Rocker switch (hard kill) + 15A branch fuse + PTC self-regulating |  triple backup |
+| Relay coil/transient noise | Optocoupler isolation + built-in flyback diodes |  |
+| Overcurrent | 25A main + branch fuses (15A heater, 3A ×3 stations, 3A logic) |  |
+| Battery overdischarge | PowMr BMS |  |
+| **Single-station jam** | Only that station's 3A fuse blows; other stations keep drying; worm drive stall-rated 70 kg·cm |  fault isolation |
+| Fire risk | PTC self-limiting (no open element) + all-extra-low-voltage 12VDC |  low |
+| Water accumulation | Gravity drain + drip tray (manual empty) |  managed |
+| Electrical shock | 12V DC system (extra-low voltage) |  safe |
+| Relay contacts on AC | 30VDC-rated contacts — mains use prohibited by design |  documented |
 
 ---
 
@@ -315,10 +315,9 @@ flowchart TB
 
 > **Sourcing policy:** Makerlab PH first (98% seller, 10-yr store) → trusted third-party Lazada sellers. All URLs Lazada PH except the worm motors (makerlab.ph website). Prices verified 2026-09-12 — re-check at checkout. Per-listing backups and seller reasoning: `PROCUREMENT.md`.
 
-
 | Qty | Item | Spec | Price | Seller / Trust | URL |
 |---|---|---|---|---|---|
-| 1 | Arduino Mega 2560 R3 | ATmega2560, 54 DIO, 256KB flash | ₱1,215 (no cable) / ₱1,265 (w/ USB) | Makerlab PH, ⭐4.8 (331), 2.4K sold | https://www.lazada.com.ph/products/pdp-i5989151.html |
+| 1 | Arduino Mega 2560 R3 | ATmega2560, 54 DIO, 256KB flash | ₱1,215 (no cable) / ₱1,265 (w/ USB) | Makerlab PH, 4.8 (331), 2.4K sold | https://www.lazada.com.ph/products/pdp-i5989151.html |
 
 ### 14.2 Switching — relay modules w/ optocoupler
 
@@ -327,37 +326,37 @@ flowchart TB
 | 1 | 1-Channel 30A relay module, optocoupler isolation | 30A@30VDC — 100W PTC heater (8.3A) at 3.6× margin | ₱113 | (14), 99 sold | https://www.lazada.com.ph/products/pdp-i5037406294.html |
 | 2 | 2-Channel relay module 5V, optocoupler, low-level trigger | 10A@30VDC contacts — 1 channel per worm motor (1.2A each); 4th channel = circulation fan (0.25A) | ₱89 ea | Bulacan, (330), 2.5K sold | https://www.lazada.com.ph/products/pdp-i100047444.html |
 
-> **Rev-4 wiring notes:** relay coils run off the LM2596S 5V rail, NOT Mega pins — the Mega drives only the optocoupler LEDs (~2–5mA each). Heater relay NO contact sits in the 15A-fused heater branch; each motor relay channel sits in its own 3A-fused station branch (stations 1–3). All modules have built-in flyback diodes. **Contacts are 30VDC-rated — never use on mains AC.**
+> **Rev-4 wiring notes:** relay coils run off the LM2596S 5V rail, NOT Mega pins — the Mega drives only the optocoupler LEDs (~2–5mA each). Heater relay NO contact sits in the 15A-fused heater branch; each motor relay channel sits in its own 3A-fused station branch (stations 1–3). All modules have built-in flyback diodes. Unpowered relay boards float their inputs — the firmware writes de-energized levels FIRST at boot, and 10k pull-ups to the de-energized level are fitted on each optocoupler input. **Contacts are 30VDC-rated — never use on mains AC.**
 
 ### 14.3 Sensors
 
 | Qty | Item | Spec | Price | Seller / Trust | URL |
 |---|---|---|---|---|---|
-| 1 | DHT22 temp/humidity module | Chamber humidity — core feedback (select **"DHT22 Black"** variant) | ₱69 | FU-LABS 98%, ⭐5.0 (34), 549 sold | https://www.lazada.com.ph/products/pdp-i4888079786.html |
+| 1 | DHT22 temp/humidity module | Chamber humidity — core feedback (select **"DHT22 Black"** variant) | ₱69 | FU-LABS 98%, 5.0 (34), 549 sold | https://www.lazada.com.ph/products/pdp-i4888079786.html |
 | 1 | DS18B20 waterproof probe 3m | Heater-zone air temp, over-temp cutoff (+4.7kΩ pull-up) | ₱105 | Circuitrocks, (24), 325 sold | https://www.lazada.com.ph/products/pdp-i111662523.html |
 
 ### 14.4 Heater & airflow
 
 | Qty | Item | Spec | Price | Seller / Trust | URL |
 |---|---|---|---|---|---|
-| 1 | PTC air heater 12V w/ fan, **100W** | Self-regulating ceramic — Lazada's max 12V variant | ₱546.67 | PTCYIDU 99%, ⭐4.9 (39), 2.6K sold | https://www.lazada.com.ph/products/pdp-i2108420762.html |
-| 1 | 120mm 12V fan | Chamber air circulation | ₱54 | Allan Head 97%, ⭐4.7 (760) | https://www.lazada.com.ph/products/pdp-i1022138302.html |
+| 1 | PTC air heater 12V w/ fan, **100W** | Self-regulating ceramic — Lazada's max 12V variant | ₱546.67 | PTCYIDU 99%, 4.9 (39), 2.6K sold | https://www.lazada.com.ph/products/pdp-i2108420762.html |
+| 1 | 120mm 12V fan | Chamber air circulation — wire on the heater branch so it runs with the PTC blower; 4th relay channel (D8) optional for purge-only control | ₱54 | Allan Head 97%, 4.7 (760) | https://www.lazada.com.ph/products/pdp-i1022138302.html |
 
 ### 14.5 Logic power
 
 | Qty | Item | Spec | Price | Seller / Trust | URL |
 |---|---|---|---|---|---|
-| 1 | LM2596S buck w/ 7-seg display | 12.8V→5V @3A; Mega via 5V pin (never the DC jack) | ₱155 | Makerlab PH, ⭐4.8 (264), 1.3K sold | https://www.lazada.com.ph/products/pdp-i127879071.html |
+| 1 | LM2596S buck w/ 7-seg display | 12.8V→5V @3A; Mega via 5V pin (never the DC jack) | ₱155 | Makerlab PH, 4.8 (264), 1.3K sold | https://www.lazada.com.ph/products/pdp-i127879071.html |
 
 ### 14.6 UI & indicators
 
 | Qty | Item | Spec | Price | Seller / Trust | URL |
 |---|---|---|---|---|---|
-| 1 | LCD 16×2 w/ I2C backpack | HD44780, addr 0x27/0x3F | ₱165 | Makerlab PH, ⭐4.9 (681), 5.8K sold | https://www.lazada.com.ph/products/pdp-i104139284.html |
+| 1 | LCD 16×2 w/ I2C backpack | HD44780, addr 0x27/0x3F | ₱165 | Makerlab PH, 4.9 (681), 5.8K sold | https://www.lazada.com.ph/products/pdp-i104139284.html |
 | 1 | 5mm LED kit 10pc multi-color | Green/yellow/red status ×3 stations | ₱29 | (433), 3.0K sold, Bulacan | https://www.lazada.com.ph/products/pdp-i3105641040.html |
-| 1 | Active buzzer module | Cycle-complete alert | ₱35 | Makerlab PH, ⭐4.9 (78), 537 sold | https://www.lazada.com.ph/products/pdp-i3474748260.html |
-| 1 | Tactile push buttons 12mm ×10 | Start/reset (D13 INPUT_PULLUP) | ₱79 | Makerlab PH, ⭐4.9 (92) | https://www.lazada.com.ph/products/pdp-i118682689.html |
-| 1 | Rocker switch 16A 4-pin | Main power — **control-side switching only** (AC-rated part derated on DC; don't push full battery load through it) | ₱72 | Unnicoco 97%, 111.4K store sold | https://www.lazada.com.ph/products/pdp-i2272943066.html |
+| 1 | Active buzzer module | Cycle-complete alert | ₱35 | Makerlab PH, 4.9 (78), 537 sold | https://www.lazada.com.ph/products/pdp-i3474748260.html |
+| 1 | Tactile push buttons 12mm ×10 | Start/reset (D13 INPUT_PULLUP) | ₱79 | Makerlab PH, 4.9 (92) | https://www.lazada.com.ph/products/pdp-i118682689.html |
+| 1 | Rocker switch 16A 4-pin | Main power — switches the **buck/relay-coil control side** only (AC-rated part derates ~50% on DC; never the full battery load) | ₱72 | Unnicoco 97%, 111.4K store sold | https://www.lazada.com.ph/products/pdp-i2272943066.html |
 
 ### 14.7 Drivetrain — 3 independent stations (Rev 4 core change)
 
@@ -385,14 +384,14 @@ flowchart TB
 
 | Qty | Item | Spec | Price | Seller / Trust | URL |
 |---|---|---|---|---|---|
-| 1 | LiFePO4 12.8V 30Ah w/ BMS (PowMr) | 384Wh — ~3–4 cycles/charge with 3 motors. BMS 30A continuous ≥ 13.1A worst case (2.3×). ⚠ **pre-order flag (~60 days) — order FIRST** | ~₱3,500–4,500 (promo varies) | PowMr store, 152.9K sold | https://www.lazada.com.ph/products/pdp-i4660631878.html |
-| 1 | Smart charger 14.6V/6A, LiFePO4 mode (FOXSUR) | NOT a lead-acid 13.8V charger | ₱945 | ⭐(615), 1.6K sold | https://www.lazada.com.ph/products/pdp-i2019767534.html |
+| 1 | LiFePO4 12.8V 30Ah w/ BMS (PowMr) | 384Wh — ~3–4 cycles/charge with 3 motors. BMS 30A continuous ≥ 13.1A worst case (2.3×).  **pre-order flag (~60 days) — order FIRST** | ~₱3,500–4,500 (promo varies) | PowMr store, 152.9K sold | https://www.lazada.com.ph/products/pdp-i4660631878.html |
+| 1 | Smart charger 14.6V/6A, LiFePO4 mode (FOXSUR) | NOT a lead-acid 13.8V charger | ₱945 | (615), 1.6K sold | https://www.lazada.com.ph/products/pdp-i2019767534.html |
 
 ### 14.10 Fuses
 
 | Qty | Item | Spec | Price | Seller / Trust | URL |
 |---|---|---|---|---|---|
-| 1 | Blade fuse assortment 100pcs (2–35A) + box | **25A main**, 15A heater, 3A ×3 motor branches, 3A logic | ₱122.53 | QC, ⭐4.9 (5022), 14.3K sold | https://www.lazada.com.ph/products/pdp-i4214903852.html |
+| 1 | Blade fuse assortment 100pcs (2–35A) + box | **25A main**, 15A heater, 3A ×3 motor branches, 3A logic | ₱122.53 | QC, 4.9 (5022), 14.3K sold | https://www.lazada.com.ph/products/pdp-i4214903852.html |
 | 2 | Panel-mount fuse holder 15A | Heater branch + main (motor-branch 3A fuses use inline holders from the assortment) | ₱25 ea | Makerlab listing | https://www.lazada.com.ph/products/pdp-i2502994973.html |
 
 ### 14.11 Chassis & structure
@@ -462,7 +461,7 @@ flowchart TB
 
 ## 16. Final Verdict (Rev 4)
 
-### ✅ THE v4 SYSTEM IS COMPATIBLE AND CAN DRY 3 UMBRELLAS PER CYCLE — ON THREE INDEPENDENT STATIONS
+###  THE v4 SYSTEM IS COMPATIBLE AND CAN DRY 3 UMBRELLAS PER CYCLE — ON THREE INDEPENDENT STATIONS
 
 - **Relay architecture** (1× 30A heater relay + 2× 2-CH motor/fan relays, all optocoupler-isolated) safely switches every load; slow duty cycling only.
 - **3× worm gear motors (60 kg·cm each)** — one per umbrella — give ≥20× torque margin per station, fault isolation via per-station 3A fuses, and self-locking position hold.
@@ -473,19 +472,18 @@ flowchart TB
 
 ---
 
-
 ## Appendix A — Printable Shopping Checklist (Rev 4)
 
 **Print date:** 2026-09-12 · **Source:** `docs/BOM.md` §14 (prices verified 2026-09-12 — re-check at checkout)
 **Grand total (core): ≈ ₱14,890–15,890** · 3 orders: 1× makerlab.ph + 1× Lazada + 1× hardware run
 
-### ⚠️ ORDER SEQUENCE — do in this order
+###  ORDER SEQUENCE — do in this order
 
 1. **FIRST:** PowMr battery (Lazada) — **pre-order ~60 days lead time**, blocks everything
 2. **SECOND:** 3× worm motors (makerlab.ph) — spec-critical, not on Lazada
 3. Everything else (Lazada + hardware) can arrive any time
 
-### ⚠️ VARIANT PICKING — select these on the PDP before checkout
+###  VARIANT PICKING — select these on the PDP before checkout
 
 | Item | Select |
 |---|---|
@@ -497,81 +495,81 @@ flowchart TB
 
 ---
 
-### 🏪 CART A — makerlab.ph website (1 order)
+###  CART A — makerlab.ph website (1 order)
 
-| ☐ | Qty | Item | Price | Notes |
+|  | Qty | Item | Price | Notes |
 |---|---|---|---|---|
-| ☐ | 3 | Worm gear motor SGM-A58SW31ZY 12V **16RPM** single shaft | ₱1,249 ea → **₱3,747** | One per umbrella station. ⚠ NOT sold on their Lazada store. 80RPM variant ₱1,299 exists — we want **16RPM**. JGY370 (~25 kg·cm) is NOT an acceptable substitute. |
+|  | 3 | Worm gear motor SGM-A58SW31ZY 12V **16RPM** single shaft | ₱1,249 ea → **₱3,747** | One per umbrella station.  NOT sold on their Lazada store. 80RPM variant ₱1,299 exists — we want **16RPM**. JGY370 (~25 kg·cm) is NOT an acceptable substitute. |
 | | | **CART A TOTAL** | **₱3,747** | |
 
 URL: https://makerlab.ph/products/dc-worm-gear-motor-sgm-a58sw31zys-12v-16rpm-80rpm-sgm-370-12v-40rpm-160rpm-dc-motor
 
 ---
 
-### 🏪 CART B — Lazada PH (one big cart — group by seller to minimize packages)
+###  CART B — Lazada PH (one big cart — group by seller to minimize packages)
 
 #### B1 · Makerlab PH Lazada store (98% rating, 10-yr store, Bulacan)
 
-| ☐ | Qty | Item | Price | URL |
+|  | Qty | Item | Price | URL |
 |---|---|---|---|---|
-| ☐ | 1 | Arduino Mega 2560 R3 | ₱1,215 | https://www.lazada.com.ph/products/pdp-i5989151.html |
-| ☐ | 1 | LM2596S buck w/ 7-seg display | ₱155 | https://www.lazada.com.ph/products/pdp-i127879071.html |
-| ☐ | 1 | LCD 16×2 w/ I2C backpack | ₱165 | https://www.lazada.com.ph/products/pdp-i104139284.html |
-| ☐ | 1 | Active buzzer module | ₱35 | https://www.lazada.com.ph/products/pdp-i3474748260.html |
-| ☐ | 1 | Tactile buttons 12mm ×10 | ₱79 | https://www.lazada.com.ph/products/pdp-i118682689.html |
-| ☐ | 2 | 15A panel-mount fuse holder | ₱25 ea → ₱50 | https://www.lazada.com.ph/products/pdp-i2502994973.html |
+|  | 1 | Arduino Mega 2560 R3 | ₱1,215 | https://www.lazada.com.ph/products/pdp-i5989151.html |
+|  | 1 | LM2596S buck w/ 7-seg display | ₱155 | https://www.lazada.com.ph/products/pdp-i127879071.html |
+|  | 1 | LCD 16×2 w/ I2C backpack | ₱165 | https://www.lazada.com.ph/products/pdp-i104139284.html |
+|  | 1 | Active buzzer module | ₱35 | https://www.lazada.com.ph/products/pdp-i3474748260.html |
+|  | 1 | Tactile buttons 12mm ×10 | ₱79 | https://www.lazada.com.ph/products/pdp-i118682689.html |
+|  | 2 | 15A panel-mount fuse holder | ₱25 ea → ₱50 | https://www.lazada.com.ph/products/pdp-i2502994973.html |
 
 **B1 subtotal ≈ ₱1,699**
 
 #### B2 · Other trusted sellers
 
-| ☐ | Qty | Item | Price | URL |
+|  | Qty | Item | Price | URL |
 |---|---|---|---|---|
-| ☐ | 1 | 1-CH 30A relay module (optocoupler) — heater | ₱113 | https://www.lazada.com.ph/products/pdp-i5037406294.html |
-| ☐ | 2 | 2-CH relay module 5V (optocoupler, low-level trig) — 3 motors + fan | ₱89 ea → ₱178 | https://www.lazada.com.ph/products/pdp-i100047444.html |
-| ☐ | 1 | DHT22 — ⚠ **"DHT22 Black"** variant | ₱69 | https://www.lazada.com.ph/products/pdp-i4888079786.html |
-| ☐ | 1 | DS18B20 waterproof probe 3m | ₱105 | https://www.lazada.com.ph/products/pdp-i111662523.html |
-| ☐ | 1 | PTC air heater 12V — ⚠ **100W** variant | ₱546.67 | https://www.lazada.com.ph/products/pdp-i2108420762.html |
-| ☐ | 1 | 120mm 12V fan | ₱54 | https://www.lazada.com.ph/products/pdp-i1022138302.html |
-| ☐ | 1 | 5mm LED kit 10pc | ₱29 | https://www.lazada.com.ph/products/pdp-i3105641040.html |
-| ☐ | 1 | Rocker switch 16A 4-pin | ₱72 | https://www.lazada.com.ph/products/pdp-i2272943066.html |
-| ☐ | 3 | 304 SS shaft 8mm × 300mm — ⚠ variant | ₱222.40 ea → ₱667.20 | https://www.lazada.com.ph/products/pdp-i4473127402.html |
-| ☐ | 3 | KP08 pillow block 2-pc sets — ⚠ **KP08** variant | ₱310/set → ₱930 | https://www.lazada.com.ph/products/pdp-i5039609084.html |
-| ☐ | 2 | Rigid coupling set (use 8×8) | ₱82.84 ea → ₱165.68 | https://www.lazada.com.ph/products/pdp-i2734273953.html |
-| ☐ | 1 | Silicone wire 6–18AWG | ₱218 | https://www.lazada.com.ph/products/pdp-i4880482146.html |
-| ☐ | 1 | Dupont jumper kit 40-pin | ₱45 | https://www.lazada.com.ph/products/pdp-i245055558.html |
-| ☐ | 1 | Terminal block 15A barrier | ₱106 | https://www.lazada.com.ph/products/pdp-i2818578034.html |
-| ☐ | 1 | Heat-shrink kit 3–6mm | ₱111 | https://www.lazada.com.ph/products/pdp-i1085866956.html |
-| ☐ | 1 | Resistor kit 300pc 1/4W 1% | ₱69 | https://www.lazada.com.ph/products/pdp-i4888115298.html |
-| ☐ | 1 | Nylon standoff kit M2–M4 | ₱97 | https://www.lazada.com.ph/products/pdp-i2946710217.html |
-| ☐ | 1 | 🔴 **PowMr LiFePO4 12.8V 30Ah w/ BMS — ORDER FIRST (pre-order ~60 days)** | ~₱3,500–4,500 | https://www.lazada.com.ph/products/pdp-i4660631878.html |
-| ☐ | 1 | FOXSUR charger 14.6V/6A **LiFePO4 mode** (never lead-acid 13.8V) | ₱945 | https://www.lazada.com.ph/products/pdp-i2019767534.html |
-| ☐ | 1 | Blade fuse assortment 100pc 2–35A + box | ₱122.53 | https://www.lazada.com.ph/products/pdp-i4214903852.html |
-| ☐ | 1 | Aluminum plate 6061 6mm | ₱760 | https://www.lazada.com.ph/products/pdp-i4449859085.html |
+|  | 1 | 1-CH 30A relay module (optocoupler) — heater | ₱113 | https://www.lazada.com.ph/products/pdp-i5037406294.html |
+|  | 2 | 2-CH relay module 5V (optocoupler, low-level trig) — 3 motors + fan | ₱89 ea → ₱178 | https://www.lazada.com.ph/products/pdp-i100047444.html |
+|  | 1 | DHT22 —  **"DHT22 Black"** variant | ₱69 | https://www.lazada.com.ph/products/pdp-i4888079786.html |
+|  | 1 | DS18B20 waterproof probe 3m | ₱105 | https://www.lazada.com.ph/products/pdp-i111662523.html |
+|  | 1 | PTC air heater 12V —  **100W** variant | ₱546.67 | https://www.lazada.com.ph/products/pdp-i2108420762.html |
+|  | 1 | 120mm 12V fan | ₱54 | https://www.lazada.com.ph/products/pdp-i1022138302.html |
+|  | 1 | 5mm LED kit 10pc | ₱29 | https://www.lazada.com.ph/products/pdp-i3105641040.html |
+|  | 1 | Rocker switch 16A 4-pin | ₱72 | https://www.lazada.com.ph/products/pdp-i2272943066.html |
+|  | 3 | 304 SS shaft 8mm × 300mm —  variant | ₱222.40 ea → ₱667.20 | https://www.lazada.com.ph/products/pdp-i4473127402.html |
+|  | 3 | KP08 pillow block 2-pc sets —  **KP08** variant | ₱310/set → ₱930 | https://www.lazada.com.ph/products/pdp-i5039609084.html |
+|  | 2 | Rigid coupling set (use 8×8) | ₱82.84 ea → ₱165.68 | https://www.lazada.com.ph/products/pdp-i2734273953.html |
+|  | 1 | Silicone wire 6–18AWG | ₱218 | https://www.lazada.com.ph/products/pdp-i4880482146.html |
+|  | 1 | Dupont jumper kit 40-pin | ₱45 | https://www.lazada.com.ph/products/pdp-i245055558.html |
+|  | 1 | Terminal block 15A barrier | ₱106 | https://www.lazada.com.ph/products/pdp-i2818578034.html |
+|  | 1 | Heat-shrink kit 3–6mm | ₱111 | https://www.lazada.com.ph/products/pdp-i1085866956.html |
+|  | 1 | Resistor kit 300pc 1/4W 1% | ₱69 | https://www.lazada.com.ph/products/pdp-i4888115298.html |
+|  | 1 | Nylon standoff kit M2–M4 | ₱97 | https://www.lazada.com.ph/products/pdp-i2946710217.html |
+|  | 1 |  **PowMr LiFePO4 12.8V 30Ah w/ BMS — ORDER FIRST (pre-order ~60 days)** | ~₱3,500–4,500 | https://www.lazada.com.ph/products/pdp-i4660631878.html |
+|  | 1 | FOXSUR charger 14.6V/6A **LiFePO4 mode** (never lead-acid 13.8V) | ₱945 | https://www.lazada.com.ph/products/pdp-i2019767534.html |
+|  | 1 | Blade fuse assortment 100pc 2–35A + box | ₱122.53 | https://www.lazada.com.ph/products/pdp-i4214903852.html |
+|  | 1 | Aluminum plate 6061 6mm | ₱760 | https://www.lazada.com.ph/products/pdp-i4449859085.html |
 
 **B2 subtotal ≈ ₱8,904–9,904** · **CART B TOTAL ≈ ₱10,603–11,603**
 
 ### Fuse plan (from the 100pc assortment — pull these before assembly)
-☐ 1× **25A** (main) ☐ 1× **15A** (heater) ☐ 3× **3A** (motor stations) ☐ 1× **3A** (logic)
+ 1× **25A** (main)  1× **15A** (heater)  3× **3A** (motor stations)  1× **3A** (logic)
 
 ---
 
-### 🏪 CART C — Hardware / general store (~₱490–590)
+###  CART C — Hardware / general store (~₱490–590)
 
 *No verified PDPs (generic items); Lazada search tags listed as alternatives.*
 
-| ☐ | Qty | Item | Est. | Where / Lazada alt |
+|  | Qty | Item | Est. | Where / Lazada alt |
 |---|---|---|---|---|
-| ☐ | 1 | Zip ties 4" (~100pcs) | ~₱50 | any hardware · Lazada tag: `cable ties 4x250mm 100pcs` (~₱19–66) |
-| ☐ | 1 | M3/M4 screw assortment | ~₱100 | Lazada tag: `assorted screws nuts M2 M3 M4` (~₱150–500) |
-| ☐ | 1 | Pure silicone sealant 280ml | ~₱150 | hardware/SM · Lazada: Dowsil GP 280ml class (~₱350) |
-| ☐ | 1 | Shallow plastic tray / drip tray ≥500mL | ~₱100 | kitchen section · Lazada: heavy-duty square drip tray ~₱48 |
-| ☐ | 1 | Velcro / double-sided tape | ~₱60 | stationery · Lazada: 3M hook-and-loop ~₱39–65 |
-| ☐ | *(opt)* | Rubber grommet assortment | ~₱80–160 | hardware · Lazada: 215pc 9-size kit ~₱159 |
+|  | 1 | Zip ties 4" (~100pcs) | ~₱50 | any hardware · Lazada tag: `cable ties 4x250mm 100pcs` (~₱19–66) |
+|  | 1 | M3/M4 screw assortment | ~₱100 | Lazada tag: `assorted screws nuts M2 M3 M4` (~₱150–500) |
+|  | 1 | Pure silicone sealant 280ml | ~₱150 | hardware/SM · Lazada: Dowsil GP 280ml class (~₱350) |
+|  | 1 | Shallow plastic tray / drip tray ≥500mL | ~₱100 | kitchen section · Lazada: heavy-duty square drip tray ~₱48 |
+|  | 1 | Velcro / double-sided tape | ~₱60 | stationery · Lazada: 3M hook-and-loop ~₱39–65 |
+|  | *(opt)* | Rubber grommet assortment | ~₱80–160 | hardware · Lazada: 215pc 9-size kit ~₱159 |
 
 ---
 
-### ✅ TOTALS
+###  TOTALS
 
 | Cart | Amount |
 |---|---|
@@ -582,11 +580,11 @@ URL: https://makerlab.ph/products/dc-worm-gear-motor-sgm-a58sw31zys-12v-16rpm-80
 
 *Budget option: 3mm mild-steel chassis plate instead of 6061 aluminum saves ~₱520 (must be rust-proofed near condensate).*
 
-### 📋 Sign-off before checkout
+###  Sign-off before checkout
 
-- ☐ Battery pre-order status confirmed (~60 days) — ordered FIRST
-- ☐ All 3 motors in ONE makerlab.ph order, 16RPM variant
-- ☐ 5 PDP variants picked correctly (DHT22 Black / 100W / KP08 / 8×300mm / Mega cable)
-- ☐ Fuse assortment covers 25A / 15A / 3A sizes
-- ☐ Charger is LiFePO4 14.6V — not lead-acid
-- ☐ Prices re-verified at checkout (Lazada prices move daily)
+-  Battery pre-order status confirmed (~60 days) — ordered FIRST
+-  All 3 motors in ONE makerlab.ph order, 16RPM variant
+-  5 PDP variants picked correctly (DHT22 Black / 100W / KP08 / 8×300mm / Mega cable)
+-  Fuse assortment covers 25A / 15A / 3A sizes
+-  Charger is LiFePO4 14.6V — not lead-acid
+-  Prices re-verified at checkout (Lazada prices move daily)

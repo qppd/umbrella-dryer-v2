@@ -19,7 +19,7 @@ flowchart TB
     subgraph ACT["ACTUATION — relay modules, optocoupler isolated"]
         RH["30A 1-CH relay<br/>heater<br/>input: D4"]
         RM1["2-CH relay #1<br/>ch1: D5 st1<br/>ch2: D6 st2"]
-        RM2["2-CH relay #2<br/>ch1: D7 st3<br/>ch2: D8 fan"]
+        RM2["2-CH relay #2<br/>ch1: D7 st3<br/>ch2: D8 fan (optional purge)"]
     end
 
     subgraph LOADS["LOADS — 12V"]
@@ -46,10 +46,10 @@ flowchart TB
 
     BAT --> SW --> F1
     F1 --> F2 --> RH --> PTC
+    RH --> FAN
     F1 --> FA --> M1
     F1 --> FB --> M2
     F1 --> FC --> M3
-    F1 --> FAN
     F1 --> FL --> BUCK --> MEGA
     RH -- "opto input" --> MEGA
     RM1 -- "opto inputs" --> MEGA
@@ -73,7 +73,8 @@ flowchart TB
 ## Wiring rules
 
 1. **Relay coils** hang off the buck's 5V rail — never from Mega pins. Mega drives only the optocoupler LEDs (~2–5 mA).
-2. **Wire gauge:** 16 AWG main + heater branch · 18 AWG station branches · 22 AWG logic.
+2. **Wire gauge:** 16 AWG main + heater branch (incl. blower fan) · 18 AWG station branches · 22 AWG logic + chamber fan.
 3. **Common ground:** battery −, buck −, all relay boards, sensors, Mega GND tied at the barrier block.
 4. **Contacts are 30VDC-rated** — mains AC is prohibited by design.
 5. **Slow duty cycling only** (2–5 s period) on the heater relay; fast PWM destroys mechanical contacts.
+6. **Blower rides the heater branch:** the PTC's blower and the chamber fan are wired behind the same 15 A fuse as the heater — air always moves whenever heat is on. The D8 fan relay only adds post-cycle purge control (optional).

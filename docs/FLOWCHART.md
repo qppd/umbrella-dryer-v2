@@ -62,10 +62,10 @@ flowchart TD
 
 ## 4. State summary
 
-| State | Heater | Stations | Fan | LED | Buzzer |
+| State | Heater | Stations | Fan / blower | LED | Buzzer |
 |---|---|---|---|---|---|
 | IDLE | OFF | OFF | OFF | Green | — |
-| DRYING | duty-cycled | loaded ON | ON | Yellow | — |
-| HEATER CUTOFF | OFF (latched) | ON | ON | Yellow (blink) | 1 chirp on entry |
-| COMPLETE | OFF | OFF | 2-min purge | Green | 3 beeps |
+| DRYING | duty-cycled | loaded ON | ON (heater branch) | Yellow | — |
+| HEATER CUTOFF | OFF (latched) | ON | ON (purges heat) | Yellow (blink) | 1 chirp on entry |
+| COMPLETE | OFF | OFF | 2-min purge (blower/heater branch) | Green | 3 beeps |
 | FAULT | OFF | OFF | OFF | Red | long beeps until acknowledged |

@@ -12,7 +12,7 @@ How the Mega's sketch is organized, how the energy-efficient duty cycling works,
 | D5 | out | Station 1 relay |
 | D6 | out | Station 2 relay |
 | D7 | out | Station 3 relay |
-| D8 | out | Circulation fan relay |
+| D8 | out | Chamber fan relay — OPTIONAL; the PTC blower is hardwired on the heater branch and runs whenever the heater is energized. D8 adds post-cycle purge control only |
 | D9/D10/D11 | out | Green / Yellow / Red LED (220Ω) |
 | D12 | out | Buzzer |
 | D13 | in | Start button, INPUT_PULLUP |
@@ -57,7 +57,7 @@ void applyHeaterDuty(float duty /*0..100*/) {
 
 1. **Sensor validity:** 3 consecutive failed DHT22/DS18B20 reads → FAULT state (heater OFF, red LED, buzzer).
 2. **Over-temp cutoff:** `T > T_CUT` → heater OFF **latched** until `T < T_RESET` (hysteresis stops chatter around the threshold). Stations + fan keep running to purge heat.
-3. **Relay-vs-state audit:** heater may be ON only if (cycle active) ∧ (humidity demand) ∧ (no over-temp latch) ∧ (sensors valid). Any false → OFF.
+3. **Relay-vs-state audit:** heater may be ON only if (cycle active) ∧ (humidity demand) ∧ (no over-temp latch) ∧ (sensors valid). Any false → OFF. The heater-branch blower is hardwired with the heater (same 15 A fuse) — air always moves when heat is on; the D8 relay is only the optional purge channel.
 
 ## 5. Tunables
 

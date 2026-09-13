@@ -26,18 +26,37 @@ Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air 
 
 > Rev 4 change: the single-motor carousel became **3 independent motorized stations** (one motor per umbrella). Earlier: Rev 3 replaced the SSR + BTS7960 of Rev 2 with optocoupler relay modules (~₱1,900 saved) — the heater and motors only need on/off control. MLX90614 IR sensor removed from the design.
 
+## Where to start (read in this order)
+
+| Order | Doc | Why |
+|---|---|---|
+| 1 | [docs/BOM.md](docs/BOM.md) | What to buy — Appendix A is the printable shopping checklist |
+| 2 | [docs/HARDWARE.md](docs/HARDWARE.md) | What each part is and its ratings |
+| 3 | [model/README.md](model/README.md) | What you are building — 6 dimensioned views |
+| 4 | [docs/BLOCK-DIAGRAM.md](docs/BLOCK-DIAGRAM.md) | How everything wires together |
+| 5 | [docs/SETUP.md](docs/SETUP.md) | Build it — numbered steps, check after each |
+| 6 | [docs/FIRMWARE-GUIDE.md](docs/FIRMWARE-GUIDE.md) | Load and tune the code |
+| 7 | [docs/TESTING.md](docs/TESTING.md) | Prove it works, record results |
+| 8 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | When a check fails |
+
+Reference material (dip in as needed): `docs/SYSTEM-ARCHITECTURE.md`, `docs/FLOWCHART.md`, `docs/STACKS.md`, `docs/PROCUREMENT.md`.
+
 ## Documentation
 
 | Doc | Contents |
 |---|---|
-| [docs/BOM.md](docs/BOM.md) | **Start here** — Rev 4 component analysis & compatibility verification, itemized Lazada BOM, printable shopping checklist (Appendix A) |
+| [docs/BOM.md](docs/BOM.md) | Rev 4 component analysis & compatibility verification, itemized Lazada BOM, printable shopping checklist (Appendix A) |
 | [docs/PROCUREMENT.md](docs/PROCUREMENT.md) | Per-listing annex: seller ratings, backup listings, watch-outs |
+| [docs/HARDWARE.md](docs/HARDWARE.md) | Hardware reference — part ratings, module spec sheets, build standards |
+| [docs/STACKS.md](docs/STACKS.md) | Technology stacks — firmware/libraries, power chain, tooling |
 | [docs/BLOCK-DIAGRAM.md](docs/BLOCK-DIAGRAM.md) | Electrical block diagram — power domain, fuses, actuation, sensing (mermaid) |
 | [docs/SYSTEM-ARCHITECTURE.md](docs/SYSTEM-ARCHITECTURE.md) | Layered architecture, power domains, cycle sequence, design principles |
 | [docs/FLOWCHART.md](docs/FLOWCHART.md) | Control-loop and safety-interlock flowcharts (mermaid) |
 | [docs/SETUP.md](docs/SETUP.md) | Assembly, wiring, first power-on, Arduino IDE setup |
 | [docs/FIRMWARE-GUIDE.md](docs/FIRMWARE-GUIDE.md) | Sketch structure, state machine, duty-cycle control, tunables |
+| [docs/TESTING.md](docs/TESTING.md) | Test plan T0–T4: bench → integration → validation vs study claims |
 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Symptom → cause → fix per subsystem |
+| [model/README.md](model/README.md) | Dimensioned 3D model views (PNG): exploded, front, side, top, front-right, front-left + generator script |
 
 ## Verified performance (Rev 4 analysis)
 
