@@ -14,7 +14,7 @@
 
 ---
 
-## 1. Microcontroller — Arduino Mega 2560 — UNCHANGED
+## 1. Microcontroller — Arduino Mega 2560
 
 | Parameter | Value |
 |---|---|
@@ -91,7 +91,7 @@ Appliances keep their **built-in thermostats + thermal cutoffs** — a fourth pr
 
 ---
 
-## 4. Sensors — DHT22 + DS18B20 — UNCHANGED
+## 4. Sensors — DHT22 + DS18B20
 
 | Sensor | Role | Interface | Status |
 |---|---|---|---|
@@ -102,23 +102,23 @@ I2C carries only the LCD. MLX90614 remains removed.
 
 ---
 
-## 5. Motor & Drive — 3× worm stations — UNCHANGED (channel pins shift)
+## 5. Motor & Drive — 3× worm stations
 
 3× SGM-A58SW31ZY 12V 16RPM (60 kg·cm, 1.2A rated / 3.5A stall, 8mm shaft, self-locking) — one per umbrella, ≥20× torque margin per station, per-station 3A fuse isolation. Driven by **2× 2-CH relay modules** (3 of 4 channels used): coils from the buck 5V rail, Mega drives only the optocoupler LEDs.
 
 Mechanical: 3× 8mm × 300mm 304 SS shafts · 6× KP08 · 3× 8×8 rigid couplings · fabricated holders.
 
-Listings unchanged (makerlab.ph motors ×3 in one order; JGY370 not acceptable).
+Listings: makerlab.ph motors ×3 in one order; JGY370 not acceptable.
 
 ---
 
-## 6. Voltage Regulation — LM2596S — UNCHANGED
+## 6. Voltage Regulation — LM2596S
 
 Logic load: Mega 0.2A + sensors + LCD + LEDs + buzzer + 3 relay coils (0.21A) ≈ **0.7A** — 4.3× margin on 3A.
 
 ---
 
-## 7. Water Management — PASSIVE — UNCHANGED
+## 7. Water Management — PASSIVE
 
 Sloped floor (3–5°) → drain tube → drip tray (100–300mL/cycle; 500mL tray). With fast drying, condensate arrives sooner — check the tray fill after the first cycles and size up if needed.
 
@@ -134,7 +134,7 @@ Sloped floor (3–5°) → drain tube → drip tray (100–300mL/cycle; 500mL tr
 
 ## 9. THREE-UMBRELLA CAPACITY VERIFICATION (Rev 5)
 
-### 9a. Mechanical — per-station torque — PASS (unchanged)
+### 9a. Mechanical — per-station torque — PASS
 ≤3 kg·cm per station vs 60 kg·cm → ≥20× margin; KP08 >90× load margin; 16 RPM gentle; self-locking hold.
 
 ### 9b. Thermal — PASS (see 3c)
