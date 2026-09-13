@@ -1,99 +1,101 @@
-# Wiring Reference — Arduino Mega 2560 (Rev 4)
+# Wiring Reference — Arduino Mega 2560 (Rev 5: mains heat + 12V stations)
 
-Master connection list for every component. Pin map source of truth: `docs/BOM.md` section 15; visual map: `docs/BLOCK-DIAGRAM.md`. Cross-checked against the Rev 4 wiring audit.
+Master connection list for every component. Rev 5 architecture: **heat is 220V AC** (2x 1500W PTC heater-fans via SSR-40DA), **rotation + control stay 12V DC** (battery-backed). The Mega never touches mains — SSRs and DC relays keep the domains separate. Pin map source: `docs/BOM.md` section 15.
+
+## 0. Domains overview
+
+| Domain | Source | Loads | Switched by | Mega sees it? |
+|---|---|---|---|---|
+| 220V AC | Wall outlet | 2x 1500W PTC heater-fans, 12" Omni exhaust fan | 2x Fotek SSR-40DA | NO — SSR input side only |
+| 12V DC | LiFePO4 battery | 3 worm motors | 3x relay channels | NO — optocoupler input only |
+| 5V DC | LM2596S buck | Mega, sensors, LCD, relay coils | — | yes (this is the Mega's home) |
 
 ## 1. Pin map — Mega 2560 side
 
 | Mega pin | Direction | Connects to | Wire / notes |
 |---|---|---|---|
-| 5V | power in | LM2596S buck OUT+ (set 5.00 V) | 22 AWG — NEVER the barrel jack, never 12 V |
-| GND | common | Ground rail at barrier block | 22 AWG — single-point ground |
-| D2 | digital in | DHT22 DATA | 22 AWG |
-| D3 | digital in | DS18B20 yellow DATA | 22 AWG + 4.7 kΩ pull-up from D3 to 5V |
-| D4 | digital out | Heater relay board IN (30 A 1-ch, active-LOW) | 22 AWG + 10 kΩ pull-up to relay VCC |
-| D5 | digital out | 2-CH relay #1, ch1 IN — Station 1 motor | 22 AWG + 10 kΩ pull-up to relay VCC |
-| D6 | digital out | 2-CH relay #1, ch2 IN — Station 2 motor | 22 AWG + 10 kΩ pull-up to relay VCC |
-| D7 | digital out | 2-CH relay #2, ch1 IN — Station 3 motor | 22 AWG + 10 kΩ pull-up to relay VCC |
-| D8 | digital out | 2-CH relay #2, ch2 IN — chamber fan purge (optional) | 22 AWG + 10 kΩ pull-up to relay VCC |
-| D9 | digital out | Green LED anode (through 220 Ω) | LED cathode to GND |
-| D10 | digital out | Yellow LED anode (through 220 Ω) | LED cathode to GND |
-| D11 | digital out | Red LED anode (through 220 Ω) | LED cathode to GND |
-| D12 | digital out | Active buzzer + | Buzzer − to GND |
-| D13 | digital in | Start button (other leg to GND) | INPUT_PULLUP in firmware — no resistor |
-| 20 (SDA) | I2C data | LCD 16×2 I2C SDA | 22 AWG |
-| 21 (SCL) | I2C clock | LCD 16×2 I2C SCL | 22 AWG |
+| 5V | power in | LM2596S buck OUT+ (set 5.00 V) | 22 AWG — never the barrel jack |
+| GND | common | Ground rail (DC side only) | 22 AWG |
+| D2 | in | DHT22 DATA | 22 AWG |
+| D3 | in | DS18B20 yellow DATA | + 4.7 kΩ pull-up D3→5V |
+| D4 | out | SSR-40DA #1 input (3–32VDC) — heater-fan 1 | + 10 kΩ pull-up to SSR input− (off at boot) |
+| D5 | out | SSR-40DA #2 input — heater-fan 2 | + 10 kΩ pull-up |
+| D6 | out | 2-CH relay #1 ch1 — Station 1 motor | + 10 kΩ pull-up to relay VCC |
+| D7 | out | 2-CH relay #1 ch2 — Station 2 motor | + 10 kΩ pull-up |
+| D8 | out | 2-CH relay #2 ch1 — Station 3 motor | + 10 kΩ pull-up |
+| D9 | out | Green LED (220 Ω) | cathode→GND |
+| D10 | out | Yellow LED (220 Ω) | cathode→GND |
+| D11 | out | Red LED (220 Ω) | cathode→GND |
+| D12 | out | Buzzer + | − → GND |
+| D13 | in | Start button (other leg → GND) | INPUT_PULLUP |
+| 20/21 | I2C | LCD SDA / SCL | addr 0x27/0x3F |
 
-Unused but reserved: Serial0 (pins 0/1) stays free for USB debugging.
+Note: the 12" exhaust fan has **no Mega control channel** — it switches with the mains rocker (see section 2). Fan stage control = stage 1 only.
 
-## 2. Power distribution (12 V side — none of this touches the Mega)
+## 2. 220V AC domain (mains — hazardous)
 
 | From | To | Wire | Protection |
 |---|---|---|---|
-| Battery + (12.8 V) | Rocker switch in | 16 AWG | — |
-| Rocker out | 25 A main fuse → barrier MAIN | 16 AWG | 25 A blade |
-| MAIN | Heater branch: 15 A fuse → heater relay COM | 16 AWG | 15 A blade |
-| Heater relay NO | PTC heater + , PTC blower + , chamber fan + (parallel) | 16 AWG | — |
-| Heater − / blower − / fan − | Ground rail | 16 AWG | — |
-| MAIN | Station 1: 3 A fuse → relay #1 ch1 COM | 18 AWG | 3 A blade |
-| MAIN | Station 2: 3 A fuse → relay #1 ch2 COM | 18 AWG | 3 A blade |
-| MAIN | Station 3: 3 A fuse → relay #2 ch1 COM | 18 AWG | 3 A blade |
-| Relay NO (each) | Motor + (that station) | 18 AWG | — |
-| Motor − (each) | Ground rail | 18 AWG | — |
-| MAIN | Logic: 3 A fuse → buck IN+ | 16 AWG | 3 A blade |
-| Buck OUT+ / OUT− | 5 V rail: Mega 5V, relay VCCs, sensors, LCD | 22 AWG | buck set 5.00 V |
-| Battery − | Ground rail (single point) | 16 AWG | — |
+| Wall outlet | **GFCI/RCD outlet** | — | 30 mA life protection — mandatory |
+| RCD outlet | Mains rocker + 10 A** mains fuses (2 lines) | 3-core 2.0 mm² (14 AWG eq.) | Line + neutral fused |
+| Fused line 1 | SSR-40DA #1 OUT → heater-fan 1 plug/socket | 2.0 mm² | 10 A |
+| Fused line 2 | SSR-40DA #2 OUT → heater-fan 2 plug/socket | 2.0 mm² | 10 A |
+| Mains rocker (second gang) | 12" Omni exhaust fan plug | 2.0 mm² | 10 A |
+| SSR input + (per SSR) | Mega D4 / D5 through the 10 kΩ pull-up | 22 AWG | — |
+| SSR input − | SSR common to Mega GND (DC domain) | 22 AWG | — |
 
-## 3. Component-by-component
+**1500 W = 6.8 A at 220V.** SSR-40DA (40 A) per heater = 5.9x margin; the 10 A branch fuses protect wiring. SSRs mount on a **heatsink** (7–10 W each dissipated at 6.8 A) inside the electrical box, away from the chamber heat.
 
-### DHT22 (humidity — core feedback)
-| DHT22 pin | Goes to |
+### Mains safety rules (non-negotiable)
+1. **GFCI/RCD-protected outlet only.**
+2. Every mains terminal inside a **closed grounded metal electrical box**; earth the box, the chamber frame, and both appliance chassis.
+3. SSR fail-short now means an **AC heater stuck ON**: mitigated by RCD + branch fuses + PTC self-regulation + the **mains rocker as the manual kill** (not the battery rocker).
+4. The appliance plugs stay accessible — unplug before any chamber service.
+5. Thermal cutoffs in each heater-fan appliance stay in circuit (they are built in).
+
+## 3. 12V DC domain (battery)
+
+| From | To | Wire | Protection |
+|---|---|---|---|
+| Battery + | DC rocker → 25 A main fuse → barrier MAIN | 16 AWG | 25 A |
+| MAIN | Station branches x3: 3 A fuse → relay COM→NO → motor + | 18 AWG | 3 A each |
+| MAIN | Logic: 3 A fuse → buck IN+ | 16 AWG | 3 A |
+| Motor − / relay GND | Ground rail (DC) | — | single point |
+| Buck OUT+ (5 V) | Mega 5V, relay VCCs, sensors, LCD | 22 AWG | set 5.00 V first |
+
+Load check: 3 motors 3.6 A + logic ~0.8 A ≈ **4.4 A steady** — BMS 30 A now has a huge margin; runtime is battery-limited only (384 Wh ÷ ~14 W ≈ days; realistic limit = mains availability).
+
+## 4. Component terminal tables
+
+### Fotek SSR-40DA (x2) — AC output
+| SSR terminal | Goes to |
 |---|---|
-| VCC (+) | 5 V rail |
-| DATA | Mega D2 |
-| GND (−) | Ground rail |
-Mount mid-chamber, away from air jets. Read interval ≥ 2 s.
+| Input + | Mega D4 (SSR1) / D5 (SSR2) |
+| Input − | Mega GND (DC common) |
+| Output 1 (line) | Fused mains line (10 A) |
+| Output 2 (load) | Heater-fan plug line |
 
-### DS18B20 waterproof (heater-zone temp)
-| DS18B20 wire | Goes to |
-|---|---|
-| Red | 5 V rail |
-| Yellow | Mega D3 + 4.7 kΩ to 5 V |
-| Black | Ground rail |
-Probe in the heater air stream.
+Active-LOW behavior at boot: 10 kΩ pull-ups hold SSR inputs OFF until firmware drives them.
 
-### LCD 16×2 with I2C backpack
-| LCD pin | Goes to |
-|---|---|
-| VCC | 5 V rail |
-| GND | Ground rail |
-| SDA | Mega 20 (SDA) |
-| SCL | Mega 21 (SCL) |
-Address 0x27 or 0x3F (scan if blank).
-
-### Relay boards (all three)
+### 2x 2-CH relay boards (12V motor switching)
 | Board pin | Goes to |
 |---|---|
 | VCC | 5 V rail (NOT a Mega pin) |
-| GND | Ground rail |
-| IN1–IN4 | Mega D4–D8 per table above |
-| COM / NO | 12 V load branch per section 2 |
-Keep the JD-VCC jumper in place (coils fed from the 5 V rail). Active-LOW boards: pin LOW = relay ON.
+| GND | DC ground rail |
+| IN1–IN4 | Mega D6–D8 (3 used) + spare |
+| COM/NO | 12 V station branches |
 
-### Motors ×3 (via relay contacts)
-Motor + → that station's relay NO; motor − → ground rail. One 3 A fuse per station branch. Polarity sets direction — swap if a station spins the wrong way.
+### Appliances
+- **2x 1500W PTC heater-fans (220V):** plug/socket on each SSR output; built-in thermostat + thermal cutoff stay in circuit.
+- **Omni 12" exhaust fan (220V):** its own fused mains gang on the mains rocker, NOT SSR-controlled.
+- **3x worm motors (12V):** relay NO → motor +; motor − → ground rail.
+- **DHT22 / DS18B20 / LCD / LEDs / buzzer / button:** unchanged from Rev 4 — see `docs/FIRMWARE-GUIDE.md` pin table and section 1 above.
 
-### PTC heater 100 W + blower + chamber fan
-All three in parallel on the heater branch behind the 15 A fuse, switched by the 30 A relay. Air always moves when heat is on.
+## 5. Rules that keep this wiring safe
 
-### LEDs / buzzer / button
-Per pin map above. 220 Ω in series with each LED is mandatory.
-
-## 4. Rules that keep this wiring safe
-
-1. Mega never sees 12 V — buck 5 V to the 5V pin only.
-2. Relay coils and board VCC from the buck rail; Mega pins drive only optocoupler LEDs (2–5 mA).
-3. 10 kΩ pull-ups on every relay IN to its board VCC — boards stay OFF while the Mega boots (floating inputs otherwise).
-4. Relay contacts are 30 VDC-rated — mains AC prohibited.
-5. Single-point ground: every − returns to one ground rail; chassis bonds to − at one bolt.
-6. Heater duty cycling is slow (2–5 s period) — fast PWM destroys the contacts.
-7. Every wall pass-through gets a rubber grommet; nothing within 50 mm of the heater body.
+1. **Two separate kill switches:** mains rocker (AC domain) and DC rocker (battery) — label both.
+2. Mega never sees mains or 12V — only buck 5 V and sensor-level signals.
+3. SSR heatsinks sized for 7–10 W each; thermal paste; vertical fins; inside the closed box.
+4. Slow duty cycling on the SSRs too (zero-cross DA type tolerates kHz poorly at load; keep 2–5 s period).
+5. Single-point DC ground; mains earth separate and complete (box, frame, chassis).
+6. Every chamber wall pass-through gets a grommet; keep appliance cords off the hot floor side.

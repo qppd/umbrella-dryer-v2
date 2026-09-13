@@ -1,4 +1,4 @@
-# Flowcharts — Control Loop & Safety Interlocks (Rev 4)
+# Flowcharts — Control Loop & Safety Interlocks (Rev 5)
 
 Firmware behavior reference. Pin assignments per `docs/BOM.md` §15; control constants per `docs/FIRMWARE-GUIDE.md`.
 
@@ -16,9 +16,9 @@ flowchart TD
 
     DRYING --> READ[Read DHT22 humidity H<br/>read DS18B20 temp T]
     READ --> TOVER{T > 65 C?}
-    TOVER -- yes --> CUT[HEATER CUTOFF<br/>heater relay OFF<br/>fan + motors keep running]
+    TOVER -- yes --> CUT[HEATER CUTOFF - latched<br/>both SSRs OFF<br/>motors keep running<br/>exhaust fan on mains rocker]
     CUT -- "T < 50 C" --> DRYING
-    TOVER -- no --> DUTY[Duty cycle heater:<br/>duty = k x H error<br/>2-5 s time-proportional]
+    TOVER -- no --> STAGE[Stage heaters from H error:<br/>stage 1: SSR1 duty = k x error<br/>stage 2 error high: SSR1 ON + SSR2 duty<br/>2-5 s time-proportional]
     DUTY --> HLOW{H below threshold<br/>for 5 min steady?}
     HLOW -- no --> READ
     HLOW -- yes --> DONE[COMPLETE<br/>heater OFF, stations OFF<br/>fan purge 2 min<br/>green LED + beeps]
@@ -34,17 +34,19 @@ flowchart TD
     TICK([Control tick - every 500 ms]) --> T1{DS18B20 read OK?}
     T1 -- "fail x3" --> SERR[Sensor fault -> FAULT]
     T1 -- ok --> T2{T > 65 C?}
-    T2 -- yes --> OFF1[Heater relay OFF<br/>latched until T < 50 C]
+    T2 -- yes --> OFF1[Both SSRs OFF<br/>latched until T < 50 C]
     T2 -- no --> T3{Cycle active?}
-    T3 -- no --> OFF2[Heater OFF]
+    T3 -- no --> OFF2[Both SSRs OFF]
     T3 -- yes --> T4{H above threshold?}
     T4 -- no --> OFF2
-    T4 -- yes --> PWM[Apply time-proportional duty<br/>ON window inside 4 s period]
-    PWM --> RELAY[Write heater relay pin D4]
+    T4 -- yes --> STG[Stage 1: SSR1 duty from H error<br/>Stage 2 error >= E_BOOST: SSR1 ON + SSR2 duty<br/>ON windows inside 4 s period]
+    STG --> RELAY[Write SSR pins D4 / D5]
     OFF1 --> RELAY
     OFF2 --> RELAY
     SERR --> RELAY
 ```
+
+Note: a fail-short SSR means a heater stuck ON — the mains rocker (labeled kill), 10A branch fuse, appliance thermostat, and RCD are the hardware layers behind this software interlock.
 
 ## 3. Per-station fault handling
 
@@ -62,10 +64,10 @@ flowchart TD
 
 ## 4. State summary
 
-| State | Heater | Stations | Fan / blower | LED | Buzzer |
+| State | Heaters (SSR1 / SSR2) | Stations | Exhaust fan | LED | Buzzer |
 |---|---|---|---|---|---|
-| IDLE | OFF | OFF | OFF | Green | — |
-| DRYING | duty-cycled | loaded ON | ON (heater branch) | Yellow | — |
-| HEATER CUTOFF | OFF (latched) | ON | ON (purges heat) | Yellow (blink) | 1 chirp on entry |
-| COMPLETE | OFF | OFF | 2-min purge (blower/heater branch) | Green | 3 beeps |
-| FAULT | OFF | OFF | OFF | Red | long beeps until acknowledged |
+| IDLE | OFF / OFF | OFF | mains rocker (user) | Green | — |
+| DRYING | staged duty | loaded ON | ON (rocker) | Yellow | — |
+| HEATER CUTOFF | OFF / OFF (latched) | ON | ON | Yellow (blink) | 1 chirp on entry |
+| COMPLETE | OFF / OFF | OFF | ON (user purge) | Green | 3 beeps |
+| FAULT | OFF / OFF | OFF | ON | Red | long beeps until acknowledged |

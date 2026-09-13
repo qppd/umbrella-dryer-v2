@@ -1,4 +1,4 @@
-# Hardware Reference (Rev 4)
+# Hardware Reference (Rev 5)
 
 Spec sheets for what was actually bought (sources & prices: `docs/BOM.md` §14). Use this during assembly and testing when you need a part's ratings, dimensions, or limits — not the store listing.
 
@@ -15,26 +15,37 @@ Spec sheets for what was actually bought (sources & prices: `docs/BOM.md` §14).
 | Power input | **5V pin from buck only** | Never 12V on the barrel jack (Makerlab warning) |
 | Serial | USB + Serial0 (pins 0/1), 115200 debug | Keep 0/1 free while debugging |
 
-### Relay modules (optocoupler, low-level trigger)
-
-| Spec | 1-CH 30A board | 2-CH 10A boards |
-|---|---|---|
-| Contact rating | 30A @ 30VDC | 10A @ 30VDC |
-| Duty | Heater (8.3A) | 3 motor stations (3.5A stall) + fan (0.25A) |
-| Coil | 5V, ~70 mA — from buck 5V rail, **not** Mega pins | same |
-| Trigger | Optocoupler LED, 2–5 mA, **active-LOW** | same |
-| Protection | Built-in flyback diode | same |
-| Limits | **DC only — 30VDC max contact voltage. Mains prohibited.** | Mechanical contacts: slow switching only (≥2 s period) |
-
-### Heater — PTC air heater 12V 100W w/ blower
+### Solid-state relays — 2× Fotek SSR-40DA (mains heat switching, Rev 5)
 
 | Spec | Value | Note |
 |---|---|---|
-| Power | 100 W @ 12 V (8.3 A) | Lazada's max 12V variant (no 120W exists) |
-| Self-regulation | Ceramic PTC auto-limits at Curie point | The hardware layer of over-temp defense |
-| Air temp | 40–60 °C effective in chamber | Safe for nylon/polyester canopies |
-| Blower | Integrated — **must run whenever heater is on** | Wired on the heater branch, behind the same 15A fuse |
-| Cold start | Inrush above rated current briefly | 30A relay contact covers it |
+| Output | 24–380VAC, 40A | **DA = AC output — the correct type for the 220V heater-fans.** Never DD on these |
+| Input | 3–32VDC, ~12 mA | direct Mega pin (D4/D5) + 10 kΩ pull-up to hold OFF at boot |
+| Duty | 1× 1500W heater each (6.8A) | 5.9× margin |
+| Dissipation | ≈ 7–10W each | **heatsink mandatory**, thermal paste, inside the grounded metal box |
+| Switching | slow time-proportional 2–5s | zero-cross DA type; no fast PWM |
+| Fail mode | fail-short possible | mitigated: mains rocker kill + 10A fuse + appliance thermostat + DS18B20 cutoff + RCD |
+
+### Relay modules (optocoupler, low-level trigger) — 12V stations
+
+| Spec | 2-CH 10A boards (×2) |
+|---|---|
+| Contact rating | 10A @ 30VDC |
+| Duty | 3 motor stations (3.5A stall) + 1 spare channel |
+| Coil | 5V, ~70 mA — from buck 5V rail, **not** Mega pins |
+| Trigger | Optocoupler LED, 2–5 mA, **active-LOW** + 10 kΩ input pull-ups |
+| Protection | Built-in flyback diode |
+| Limits | DC only, 30VDC max contacts; slow switching only (≥2 s period) |
+
+### Heaters + air exchange (220V mains, Rev 5)
+
+| Spec | 2× 1500W PTC heater-fan | Omni 12" exhaust fan |
+|---|---|---|
+| Power | 1500W each @ 220V (6.8A) | ~1.5–2.5A @ 220V |
+| Switching | SSR-40DA each (staged: base + boost) | mains rocker gang (no SSR) |
+| Built-in protection | thermostat + thermal cutoff | motor thermal fuse |
+| Role | 40–60C chamber heat + forced air | pulls humid air out of the chamber |
+| Mounting | outside the wet zone, plugs accessible | wall/lid opening, ducted out |
 
 ### Motors — 3× SGM-A58SW31ZY worm gear (one per station)
 
@@ -56,13 +67,23 @@ Spec sheets for what was actually bought (sources & prices: `docs/BOM.md` §14).
 | Coupling | 8×8 mm rigid clamp sleeve — grub screws on motor flat + shaft, thread-check after first run |
 | Umbrella holder | Fabricated, one per station; canopy tip clearance ≥ 5 cm between stations and chamber walls |
 
-### Battery system
+### Battery system (control + rotation only since Rev 5)
 
 | Spec | PowMr 12.8V 30Ah | FOXSUR charger |
 |---|---|---|
 | Chemistry | LiFePO4, 384 Wh | LiFePO4 profile, **14.6 V / 6 A** |
-| BMS | 30 A continuous, over-charge/discharge/short/temp | — |
-| Charge rule | Never a 13.8 V lead-acid charger | Order-first item (~60-day lead time) |
+| BMS | 30 A continuous | — |
+| Role | 3 motors + logic ≈ 14 W → ~27 h autonomy | never a 13.8 V lead-acid charger |
+
+### Mains AC domain (Rev 5)
+
+| Element | Spec |
+|---|---|
+| RCD/GFCI | 30 mA class — mandatory on the outlet feeding the system |
+| Branch fuses | 10 A per heater line; fan shares the rocker gang |
+| Enclosure | grounded metal box for SSRs, fuses, terminals; box + chamber frame + appliance chassis all earthed |
+| Wire | 2.0 mm² (14 AWG eq.) 3-core mains branches |
+| Kills | mains rocker (2-gang) + DC rocker — both labeled |
 
 ### Sensing & UI
 
@@ -78,8 +99,9 @@ Spec sheets for what was actually bought (sources & prices: `docs/BOM.md` §14).
 
 | Item | Standard |
 |---|---|
-| Wire gauge | 16 AWG main + heater · 18 AWG station branches + fan · 22 AWG logic |
-| Fuse map | 25 A main · 15 A heater · 3 A ×3 stations · 3 A logic |
+| Wire gauge | 2.0 mm² mains · 16 AWG battery main + logic feed · 18 AWG station branches · 22 AWG logic |
+| Fuse map | AC: 10 A ×2 heater branches (RCD upstream) · DC: 25 A main · 3 A ×3 stations · 3 A logic |
+| Earthing | electrical box, chamber frame, appliance chassis — bonded to earth; RCD is the life-safety layer |
 | Grounding | Single-point: all returns → battery − rail; chassis bonded to − at one bolt |
 | Pass-throughs | Rubber grommets at every chamber wall penetration |
 | Condensate zone | No bare copper below 5 cm above the floor; silicone-sealed seams; drain tube 6–8 mm ID |
@@ -94,7 +116,7 @@ Spec sheets for what was actually bought (sources & prices: `docs/BOM.md` §14).
 | Station layout | Single row of 3 stations on the long axis, pitch **700 mm** |
 | Clearance check | Canopy edge at 700 + 325 = 1025 mm from center vs wall at 1100 mm → 75 mm each side; between adjacent canopies 700 − 650 = 50 mm — both pass the ≥50 mm rule |
 | Hanging length | Umbrella hangs from the holder; heater blows across the canopy underside |
-| Services | Heater 200×100 left wall, low (center 220 mm above floor, bottom 50 clear); 120 mm fan right wall, low (same height); DHT22 mid-chamber; DS18B20 probe in the heater air stream |
+| Services | **2× 1500W heater-fans: freestanding appliances on the chamber floor, designated zone away from the drain/drip path, factory cords out through grommets to plugs outside** · **12" Omni exhaust fan on the rear-wall opening, ducted out** · DHT22 mid-chamber · DS18B20 probe in heater 1's airstream |
 
 > The verification math (`docs/BOM.md` §9) is layout-independent: each motor sees only its own umbrella's ≤3 kg·cm, and airflow crosses all stations regardless of arrangement. If the team later prefers fully-open canopies, re-run the width check in `model/generate_models.py` before committing to a box size.
 
@@ -105,3 +127,4 @@ Spec sheets for what was actually bought (sources & prices: `docs/BOM.md` §14).
 | Rev 2 | SSR-25DD + BTS7960 + single carousel motor + (optional) MLX90614 |
 | Rev 3 | Relays replace SSR + driver; MLX90614 dropped |
 | **Rev 4** | **3 independent stations** (3× motors, shafts, KP08 sets); 25A main fuse; per-station 3A fuses |
+| **Rev 5** | **Mains heat: 2× 1500W PTC heater-fans via 2× SSR-40DA; 12" Omni exhaust fan; battery = motors + control only; RCD + earthing added** |

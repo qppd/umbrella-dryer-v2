@@ -1,4 +1,4 @@
-# Technology Stacks (Rev 4)
+# Technology Stacks (Rev 5)
 
 The full stack from silicon to tooling. Firmware behavior lives in `docs/FIRMWARE-GUIDE.md`; part ratings in `docs/HARDWARE.md`.
 
@@ -18,15 +18,17 @@ The full stack from silicon to tooling. Firmware behavior lives in `docs/FIRMWAR
 
 **Reproducibility (for the capstone defense):** record core + library versions at flash time (`arduino-cli lib list`, IDE 2 shows them in Library Manager) and paste them into the paper's appendix.
 
-## 2. Power stack
+## 2. Power stack (Rev 5)
 
 | Stage | Component | In → Out |
 |---|---|---|
-| Storage | LiFePO4 12.8V 30Ah w/ BMS (30 A) | — → 12.8 V |
-| Main protection | Rocker (control side) + 25 A fuse | 12.8 V → distribution |
-| Actuation rail | Direct 12 V branches (fused 15 A / 3 A ×3) | Heater, motors, fan |
+| AC heat | RCD 30mA → mains rocker → 10A fuses → **2× SSR-40DA** | 220V → 2× 1500W heater-fans |
+| AC exhaust | mains rocker gang | 220V → 12" Omni fan |
+| Storage | LiFePO4 12.8V 30Ah w/ BMS (30 A) | — → 12.8 V (motors + control only) |
+| DC main | DC rocker + 25 A fuse | 12.8 V → station + logic branches |
+| Actuation rail | 3 A ×3 station branches → 2× 2-CH relays | 3 worm motors |
 | Logic rail | LM2596S buck + 3 A fuse | 12.8 V → **5.0 V @ 3 A** → Mega 5V pin + relay coils |
-| Signal domain | Mega pins → optocoupler LEDs (2–5 mA) | Isolated trigger into relay boards |
+| Signal domain | Mega pins → SSR inputs (~12 mA) + optocoupler LEDs (2–5 mA) | Isolated triggers into both power domains |
 
 ## 3. Mechanical stack (per station)
 
@@ -53,5 +55,6 @@ Worm gear motor (60 kg·cm, 16 RPM, 8mm shaft)
 ## 5. Optional / not used
 
 - **PlatformIO (VS Code):** works with the same board core and libraries — optional, not required by the guide.
-- **PWM speed control / BTS7960:** intentionally not in the Rev 4 stack (on/off relays only) — see `docs/SYSTEM-ARCHITECTURE.md` §5.
+- **PWM speed control / BTS7960:** not in the stack (on/off control only) — see `docs/SYSTEM-ARCHITECTURE.md` §5.
+- **SSR control of the exhaust fan:** not implemented — the fan is an appliance on the mains rocker.
 - **RTC / EEPROM cycle logging:** not in scope; EEPROM counters are a possible future add-on for cycle-count analytics.

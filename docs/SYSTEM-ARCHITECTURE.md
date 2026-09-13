@@ -1,4 +1,4 @@
-# System Architecture (Rev 4)
+# System Architecture (Rev 5)
 
 Big-picture view: layers, power domains, timing of one drying cycle, and the principles that shaped the design.
 
@@ -20,18 +20,18 @@ flowchart TD
         DS18b["DS18B20 — heater-zone temp (safety signal)"]
     end
     subgraph L2["LAYER 2 — Actuation (optocoupler isolated)"]
-        RH["30A relay — heater"]
-        RM["2x 2-CH relays — 3 stations + fan"]
+        RH["2x SSR-40DA — mains heaters (D4/D5)"]
+        RM["2x 2-CH relays — 3 stations"]
     end
     subgraph L1["LAYER 1 — Power"]
         BAT["LiFePO4 12.8V 30Ah BMS"]
         BUCK["LM2596S buck -> 5V"]
-        FUSES["25A main / 15A heater / 3A x3 stations / 3A logic"]
+        FUSES["AC: RCD + 10A x2 heater lines | DC: 25A main / 3A x3 stations / 3A logic"]
     end
     subgraph L0["LAYER 0 — Plant (mechanical + thermal)"]
         CH["Drying chamber (sloped floor, drain, drip tray)"]
         ST["3x motor stations: worm motor -> 8x8 coupling -> 8mm shaft -> umbrella holder"]
-        HEAT["PTC 100W heater + 120mm fan -> forced convection 40-60 C"]
+        HEAT["2x 1500W PTC heater-fans + 12in exhaust fan -> forced convection 40-60 C"]
     end
 
     L0 --> L3
@@ -43,15 +43,16 @@ flowchart TD
     L4 <--> L5
 ```
 
-## 2. Power domains
+## 2. Power domains (Rev 5: three domains)
 
 | Domain | Source | Consumers | Protection |
 |---|---|---|---|
-| 12V power | Battery (BMS 30A) | Heater 8.3A · 3 motors 3.6A · fan 0.25A | 25A main + 15A heater + 3A per station |
-| 5V logic | LM2596S from 12V | Mega · sensors · LCD · relay coils (~0.8A) | 3A branch |
-| Signal | Mega pins | Optocoupler LEDs only (2–5 mA each) | Isolation barrier to 12V side |
+| **220V AC heat** | Wall outlet | 2× 1500W heater-fans (6.8A each) + 12" exhaust fan (~2A) | RCD 30mA + 10A branch fuses + grounded box + earthing |
+| 12V DC stations | LiFePO4 battery (BMS 30A) | 3 motors 3.6A rated | 25A main + 3A per station |
+| 5V logic | LM2596S buck | Mega · sensors · LCD · relay coils (~0.7A) | 3A branch |
+| Signal | Mega pins | SSR DC inputs (~12 mA) + optocoupler LEDs (2–5 mA) | Isolation barrier to both power domains |
 
-**Isolation philosophy:** the Mega never touches 12V. Relays' optocouplers + flyback diodes keep inductive/heater transients off the logic rail; the buck keeps the Mega off the battery directly (Makerlab warning: no 12V on the DC jack).
+**Isolation philosophy:** the Mega touches no power domain — it only drives SSR inputs and optocoupler LEDs. Mains lives in a closed earthed box; the battery drives rotation and control only.
 
 ## 3. One cycle — sequence
 
@@ -68,11 +69,11 @@ sequenceDiagram
     loop every 500 ms
         FW->>S: Read humidity H, temp T
         alt T > 65 C
-            FW->>A: Heater OFF (latched until T < 50 C)
+            FW->>A: Both SSRs OFF (latched until T < 50 C)
         else H above threshold
-            FW->>A: Heater duty = k(H - H_target), 4 s period
+            FW->>A: Stage heaters: SSR1 duty, SSR2 boost, 4 s period
         else H below threshold for 5 min
-            FW->>A: All OFF -> fan purge 2 min
+            FW->>A: All OFF (exhaust fan via rocker purges)
         end
     end
     FW-->>U: COMPLETE — buzzer + green LED
@@ -83,15 +84,16 @@ sequenceDiagram
 
 | Principle | Realization |
 |---|---|
-| **Energy efficiency is the thesis** | Heater runs only on humidity demand (≈90–95 Wh/cycle → 3–4 cycles/charge) |
-| **Defense in depth on heat** | PTC self-regulation → DS18B20 software cutoff → 15A fuse → rocker kill |
+| **Energy efficiency is the thesis** | Staged heaters run only on humidity demand and never idle-heating: auto-shutoff + staging (≈0.6–1.0 kWh/cycle, battery carries control for 25+ cycles) |
+| **Defense in depth on heat** | appliance thermostat → DS18B20 software cutoff → PTC self-regulation → 10A branch fuses → mains rocker kill → RCD |
 | **Fault isolation** | Per-station 3A fuses + one motor per umbrella: a jam stops one station, not the machine |
 | **Simplicity over parts** | On/off relays replace SSR + motor driver (no speed control needed at 16 RPM); pump removed for gravity drain |
-| **Extra-low voltage safety** | All-12V; 30VDC-rated contacts; mains prohibited by design |
+| **Domain separation** | No mains inside the chamber; SSRs in a closed earthed RCD-protected box; two labeled kill switches |
 | **Self-locking mechanics** | Worm drives hold position when off; no freewheel, no brake needed |
 
 ## 5. Deliberate non-features
 
 - **No per-station humidity sensor** — chamber air humidity is the shared control variable (per-station sensors would triple sensor cost for marginal gain; unload-dry umbrellas early by observation).
 - **No motor speed control** — 16 RPM fixed is the design speed; PWM would add a driver stage for no drying benefit.
+- **No SSR control of the exhaust fan** — it is an appliance on the mains rocker; staging heaters is what saves energy.
 - **No current sensing** — jam detection is fuse + observation, per `docs/TROUBLESHOOTING.md`.

@@ -5,7 +5,7 @@
 **Project:** Smart Umbrella Dryer (PUP Santa Maria, BS CpE capstone)
 **Sourcing policy:** Makerlab PH first — verified trusted Lazada store (98% seller rating, 845.6K items sold, 10-Year Store, Bulacan). Items Makerlab doesn't carry → trusted third-party sellers with high rating/sold counts only.
 **Prices verified:** 2026-09-12 (Lazada prices move — re-check before ordering)
-**Rev 4 quantities:** 3× worm gear motors (one per umbrella station) · 1× 30A heater relay + 2× 2-CH relay modules (replace Rev 2's SSR + BTS7960) · 3× shafts / bearing sets / couplings · 25A main fuse · MLX90614 removed from the design.
+**Rev 5 quantities:** 3× worm gear motors (one per umbrella station) · **2× Fotek SSR-40DA (AC output — mains heaters)** + 2× 2-CH relay modules · **2× 1500W 220V PTC heater-fans + 12" Omni exhaust fan** · mains kit (RCD, grounded box, 10A fuses, 2.0mm² wire) · 3× shafts / bearing sets / couplings · 25A DC main fuse · MLX90614 removed.
 
 ##  All components sourced
 
@@ -23,26 +23,15 @@
 
 ### Heater & power path
 
-**1-Channel 30A Relay Module w/ optocoupler — ₱113 (heater switching)**
-- Listing: 1-Channel 30A Relay Module Optocoupler Isolation 5V | (14) | 99 sold
-- URL: https://www.lazada.com.ph/products/pdp-i5037406294.html
-- 3.6× margin vs the 8.3A heater.  Contacts are 30VDC-rated — never use on mains AC. Slow duty cycling only (2–5s period); no fast PWM.
-
-**2-Channel Relay Module 5V w/ optocoupler, low-level trigger — ₱89 ea ×2 (3 motors + fan)**
+**2-Channel Relay Module 5V w/ optocoupler, low-level trigger — ₱89 ea ×2 (3 motor stations)**
 - Listing: 2 Channel Relay Module 5V Optocoupler Low Level Trigger | (330) | 2.5K sold | Bulacan
 - URL: https://www.lazada.com.ph/products/pdp-i100047444.html
-- Qty 2 → 4 channels: 3 worm-motor stations (1 ch each) + 1 circulation fan. Coils fed from the LM2596S 5V rail; Mega drives only the optocoupler LEDs.
-- Replaces Rev 2's SSR-25DD + BTS7960 (~₱1,850 saved) — all loads are on/off only.
+- Qty 2 → 4 channels: 3 worm-motor stations (1 ch each) + 1 spare. Coils fed from the LM2596S 5V rail; Mega drives only the optocoupler LEDs.
+- Rev 5 note: the 1-CH 30A relay and the 12V PTC heater that used to sit here are **removed** — heaters moved to mains AC via 2× SSR-40DA (see the Mains AC kit section above).
 
-**PTC Air Heater 12V w/ fan — ₱546.67 (PTCYIDU, 99%)**  wattage flag
-- Listing: PTCYIDU PTC Fan Heater Thermostatic | 4.9 (39) | 2.6K sold | QC
-- URL: https://www.lazada.com.ph/products/pdp-i2108420762.html
--  **12V variants are 70W / 100W — no 120W variant.** Take the 100W (cycle runs ~20% longer; re-run thermal numbers, or run two 70W in parallel).
-- Backup (50W 12V ₱271.23): https://www.lazada.com.ph/products/pdp-i3070436162.html
+### Heaters & airflow (Rev 5)
 
-**120mm 12V Cooling Fan — ₱54 (Allan Head, 97%)**
-- Listing: Allan 12V Fan 120mm Case Cooling Fan | 4.7 (760) | 627.5K store sold
-- URL: https://www.lazada.com.ph/products/pdp-i1022138302.html
+**(moved to the Mains AC kit section above — the 120mm 12V fan is no longer used; replaced by the Omni 12-inch exhaust fan)**
 
 **LiFePO4 Battery 12.8V 30Ah w/ BMS (PowMr)**  pre-order flag
 - Listing: PowMr 12.8V 30AH LiFePO4 Battery Built-in BMS | 152.9K store sold
@@ -51,13 +40,31 @@
 -  Price varies by promo — check PDP. Scout noted a **pre-order / ship-in-60-days flag** — confirm stock before committing, or order early.
 
 **Blade fuses + holder — ₱122.53 + ₱25**
-- Fuses: 100pcs Car Blade Fuse Assortment 2-35A w/ box | 4.9 (5022) | 14.3K sold — needs **25A main, 15A heater, 3A ×3 motor stations, 3A logic** — https://www.lazada.com.ph/products/pdp-i4214903852.html
-- Holders: 2× 15A Panel-Mount Fuse Holder | ₱25 ea · 131 sold · (13) · Bulacan (Makerlab listing) — https://www.lazada.com.ph/products/pdp-i2502994973.html — heater branch + main; motor-branch 3A fuses use inline holders from the assortment.
+- Fuses: 100pcs Car Blade Fuse Assortment 2-35A w/ box | 4.9 (5022) | 14.3K sold — needs **25A DC main, 3A ×3 motor stations, 3A logic** (mains 10A fuses come from the AC box kit) — https://www.lazada.com.ph/products/pdp-i4214903852.html
+- Holder: 1× Panel-Mount Fuse Holder | ₱25 · 131 sold · (13) · Bulacan (Makerlab listing) — https://www.lazada.com.ph/products/pdp-i2502994973.html — for the 25A DC main; motor-branch 3A fuses use inline holders from the assortment.
 
 **Rocker Switch 16A — ₱72 (Unnicoco, 97%)**  DC derating
 - Listing: Unnicoco 16A 250VAC / 20A 125VAC Rocker Switch 4 Pins | 111.4K store sold
 - URL: https://www.lazada.com.ph/products/pdp-i2272943066.html
--  Rating is AC. At 12V DC, arcing is worse — derate ~50%. **Recommended wiring: rocker switches the control side (SSR input + driver enable), NOT the full 15A load.** If you must switch full load, size up or use the SSR as the power switch.
+-  Rating is AC. At 12V DC, arcing is worse — derate ~50%. **Recommended wiring: rocker switches the control side (buck input + relay coils), NOT the full battery load.** The AC mains rocker is a separate 2-gang part from the hardware kit.
+
+### Mains AC kit (Rev 5)
+
+**2× 1500W PTC industrial heater-fan, 220V — ₱1,395.35 ea**
+- Listing: Portable Industrial Electric Heater Fan Commercial Thermostat Air Warm Heater Blower
+- URL: https://www.lazada.com.ph/products/portable-industrial-electric-heater-fan-commercial-thermostat-air-warm-heater-blower-radiator-office-garage-air-fan-i4902069326-s28572024789.html
+- Switched by SSR-40DA each; keep built-in thermostat + thermal cutoff in circuit; plug accessible.
+
+**Omni industrial exhaust fan w/ grill, wall-mount — ~₱1,000–1,500 (verify variant)**
+- Listing: Omni Industrial Exhaust Fan W/ Grill Wall Mounted | spans 12/14/16-inch
+- URL: https://www.lazada.com.ph/products/omni-industrial-exhaust-fan-w-grill-wall-mounted-12-inch-14-inch-16-inch-i4020672066-s21738898500.html
+- ⚠️ **Select the 12-inch variant.** Runs on its own mains rocker gang — no SSR.
+
+**Fotek SSR-40DA ×2 — ₱850 ea (makerlab.ph)**
+- 3–32VDC input, 24–380VAC output, 40A. ⚠️ MUST be **DA** (AC output) for these 220V heaters — the DD type cannot switch AC loads. Heatsink mandatory (7–10W each).
+- URL: https://makerlab.ph/products/original-solid-state-relay-ssr-40da-ssr-75da-ssr-25dd-4-32v-dc-input
+
+**Hardware-store additions (EST, add at checkout):** RCD/GFCI 30mA outlet or breaker · grounded metal electrical box · 2-gang mains rocker + plate · 2.0mm² 3-core wire + plug/socket set · 2× SSR heatsink profiles.
 
 ### Sensors
 

@@ -1,4 +1,4 @@
-# 3D Model Views (Rev 4)
+# 3D Model Views (Rev 5)
 
 Engineering-style views of the drying chamber and its three motor stations, with measurements in millimeters.
 
@@ -21,8 +21,8 @@ Engineering-style views of the drying chamber and its three motor stations, with
 | Floor slope | 3-5 degrees (4 deg = 28 mm drop) | To drain corner (+X, +Y) |
 | Drain tube | 8 dia | Silicone, exits back wall to drip tray |
 | Drip tray | 500 x 400 x 60 | 500 mL+ capacity |
-| Heater (PTC 100 W) | 200 x 100 x 100 | Left wall, center z = 220 (bottom 50 clear of floor) |
-| Circulation fan | 120 dia | Right wall, center z = 220 |
+| Heater-fans (2x 1500W PTC, 220V) | freestanding appliances | Chamber floor, designated zone away from the drain/drip path; factory cords out through grommets to plugs outside |
+| Exhaust fan (12in Omni, 220V) | 12-in blade in rear-wall opening | Rear wall, ducted out; runs on the mains rocker (no Mega channel) |
 | Door | 1600 x 1000 | Front wall, bottom 150 above inner floor, rotary latch |
 
 ## Required views (still to be drawn properly)

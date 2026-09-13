@@ -1,4 +1,4 @@
-# Troubleshooting (Rev 4)
+# Troubleshooting (Rev 5)
 
 Symptom → cause → fix, per subsystem. Wiring map: `docs/BLOCK-DIAGRAM.md`. Control behavior: `docs/FLOWCHART.md`.
 
@@ -7,21 +7,23 @@ Symptom → cause → fix, per subsystem. Wiring map: `docs/BLOCK-DIAGRAM.md`. C
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | No LED anywhere, LCD blank | Battery low / rocker on control side not closed / 3A logic fuse open | Check battery ≥ 12.0V; rocker; fuse; then buck input voltage |
-| Mega resets when heater relay clicks | Buck output set too low or coil share overloads it | Re-verify buck at 5.0V under load; relay coils must draw from the 5V rail, not the Mega |
+| Mega resets when a relay clicks | Buck output set too low or coil share overloads it | Re-verify buck at 5.0V under load; relay coils must draw from the 5V rail, not the Mega |
 | Buck output ~1.2V or erratic | Trimmer never set / bad connection | Set buck to 5.0V with a meter BEFORE the Mega is connected |
 | Mega brownout on start | 12V into the barrel jack | Mega is fed from buck 5V → 5V pin only (Makerlab warning) |
 | Battery BMS won't deliver | BMS tripped (short/over-discharge) → remove load, charge with LiFePO4 charger | Charger must be the 14.6V LiFePO4 model — a 13.8V lead-acid charger undercharges |
 
-## 2. Heater
+## 2. Heaters (220V mains via SSR-40DA)
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Heater never on, relay never clicks | Input polarity to optocoupler / wiring to wrong pin / cycle not started | Check D4 mapping per module (LOW-level trigger); confirm state on Serial |
-| Relay clicks, no heat | 15A fuse open / loose COM-NO / heater lead off | Fuse, then meter across heater terminals (12V?), then heater itself |
-| Heater runs but cycle crawls | 70W variant was shipped instead of 100W / chamber leaks | Verify wattage marking; seal chamber seams (silicone) |
-| Over-temp FAULT frequently | `T_CUT` too close to normal / probe touching heater body / poor airflow | `T_CUT` 65 °C default; reposition probe; fan must cross all stations |
-| Heater latches ON regardless of code | Relay welded (duty period too short historically) | Replace relay board; keep PERIOD_MS ≥ 2 s; rocker is the kill switch |
-| PTC hot spot / smell | PTC running past spec | Power off; PTC self-regulates only within rated airflow — check the blower runs with it |
+| Heater never runs, no output on SSR | Input polarity / wrong pin (D4 or D5) / cycle not started / 10k pull-up missing | Confirm state on Serial; check D4/D5 wiring and pull-ups |
+| SSR input driven, no heat | 10A branch fuse open / loose SSR output terminal / appliance tripped | Fuse, meter SSR terminals under load, check the appliance's own thermostat/reset |
+| Only one heater works | Staging logic holding stage 1 (normal on light loads) or SSR2/appliance fault | Raise humidity load (wetter load); swap SSR1/SSR2 outputs to isolate SSR vs appliance |
+| SSR overheating / thermal cycling | Heatsink too small or no thermal paste | 7–10W each — verify heatsink mounting inside the box; re-paste |
+| Heater latches ON regardless of code | SSR fail-short | Kill at the MAINS rocker; replace the SSR; keep PERIOD_MS ≥ 2 s |
+| RCD trips when heaters start | Earth fault or damp appliance | Unplug appliances one at a time; dry/inspect; do not bypass the RCD |
+| Appliance shuts off mid-cycle | Built-in thermostat cycling / tipped-over switch | That is the appliance's own protection — verify airflow around it, level base |
+| Over-temp FAULT frequently | `T_CUT` too close to normal / probe in direct jet | `T_CUT` 65 °C default; reposition DS18B20 probe in the airstream, not on the element |
 
 ## 3. Motors / stations
 

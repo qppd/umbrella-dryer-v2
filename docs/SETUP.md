@@ -1,4 +1,4 @@
-# Setup and Build Guide (Rev 4)
+# Setup and Build Guide (Rev 5)
 
 A complete, in-order build of the Smart Umbrella Dryer. Every step says what to do, what you need, and how to know it worked. If a check fails, stop and fix it before moving on — the next step assumes the last one passed.
 
@@ -11,7 +11,7 @@ A complete, in-order build of the Smart Umbrella Dryer. Every step says what to 
 1. Work with the battery DISCONNECTED unless a step says otherwise.
 2. The Mega gets 5 V from the buck converter ONLY — never 12 V on its barrel jack.
 3. Relay coils get power from the buck's 5 V rail, never from Mega pins.
-4. Relay contacts are DC-only (30 VDC max). Never wire mains AC.
+4. Relay contacts are DC-only (30 VDC max). The 220V mains side (SSRs, heaters, exhaust fan) is wired ONLY inside the grounded metal box per `wiring/README.md` — have a licensed electrician if unsure.
 5. Set the buck to 5.0 V with a multimeter BEFORE connecting anything to its output.
 
 ---
@@ -138,21 +138,21 @@ The store pages sell look-alike versions. Verify each:
 | Station 1 IN | D5 |
 | Station 2 IN | D6 |
 | Station 3 IN | D7 |
-| Chamber fan IN (optional purge) | D8 |
+| (spare channel) | D8 reserved |
 
 1. Dupont jumper from each Mega pin to that relay board's IN pin.
 2. Fit 10k pull-up resistors from each IN pin to the relay board's VCC (this is the low-trigger module's OFF level) so boards stay OFF while the Mega boots.
 
-**Check:** all 5 wires follow the table; pull-ups fitted.
+**Check:** all 5 wires follow the table (D4–D8); pull-ups fitted.
 
-### Step 3.6 — Wire the heater branch
-1. MAIN block to 15 A fuse input.
-2. Fuse output to relay HEATER "COM".
-3. Relay "NO" to heater + wire (16 AWG).
-4. Heater minus wire back to GND block.
-5. The PTC blower and the 120 mm chamber fan connect to the SAME heater branch (after the relay, in parallel with the heater) — air must always move when the heater runs.
+### Step 3.6 — Wire the mains AC box (adult supervision / electrician recommended)
+1. RCD/GFCI outlet feeding a 2-gang mains rocker.
+2. Each heater line: rocker gang → 10 A fuse → SSR-40DA output terminals → plug/socket for that heater-fan.
+3. Third gang or direct rocker line → 12" Omni exhaust fan plug.
+4. SSR input terminals to the Mega side: input + from D4/D5 (with 10 kΩ pull-ups), input − to Mega GND.
+5. SSRs on heatsinks with thermal paste, inside the grounded metal box. Earth the box, the chamber frame, and both appliance chassis.
 
-**Check:** trace with a finger: battery > rocker > 25 A > barrier > 15 A > relay COM > NO > heater + blower + fan > back to GND. Heater never gets power except through the relay.
+**Check:** continuity earth→box, earth→frame, earth→chassis each < 1 Ω; RCD test button trips; with the mains rocker OFF, no voltage at any SSR output.
 
 ### Step 3.7 — Wire the 3 station branches
 Per station (1, 2, 3), repeat:
@@ -202,10 +202,10 @@ Per station (1, 2, 3), repeat:
 **Check:** self-test prints both sensors valid; no relay clicks during boot.
 
 ### Step 4.3 — Heater branch test
-1. Insert the 15 A fuse. Battery OFF first, then ON.
-2. From the serial console or start button, command the heater for about 30 seconds.
+1. Mains rocker OFF; plug both heater-fans into their SSR-fed sockets; RCD already verified.
+2. Mains rocker ON; from the serial console command SSR1 ON for about 30 seconds.
 
-**Check:** relay clicks; meter across heater shows about 12 V; warm air within half a minute; blower and chamber fan run with it. OFF stops everything.
+**Check:** warm air within half a minute; branch current ≈ 6.8 A on the clamp meter; exhaust fan (rocker) pulls air through the chamber. SSR1 OFF stops it; verify no SSR heating beyond warm on the heatsink.
 
 ### Step 4.4 — Station tests
 Insert one station's 3 A fuse at a time; command that station only.
@@ -215,13 +215,13 @@ Insert one station's 3 A fuse at a time; command that station only.
 ### Step 4.5 — Full dry cycle (no umbrellas)
 Press start.
 
-**Check:** stations and heater duty run; duty percentage changes on the LCD/serial as the chamber warms; cycle completes by itself; buzzer + green LED; fan purge runs then stops.
+**Check:** stations and staged heater duty run; duty percentage changes on the LCD/serial as the chamber warms; stage 2 engages when the humidity error is large; cycle completes by itself; buzzer + green LED.
 
 ### Step 4.6 — Over-temp drill (safety check)
 1. Temporarily set the firmware cutoff T_CUT to 45 C.
 2. Run the heater until cutoff triggers.
 
-**Check:** heater relay drops, yellow LED blinks, stations and fan keep running; heater stays OFF until temperature falls, then the cycle may resume. Set T_CUT back to 65 C after.
+**Check:** both SSRs drop, yellow LED blinks, stations keep running; heaters stay OFF until temperature falls, then the cycle may resume. Set T_CUT back to 65 C after.
 
 ### Step 4.7 — Wet test, then acceptance
 1. One damp umbrella: full cycle. Record time and energy per `TESTING.md` T3.
