@@ -2,6 +2,13 @@
 
 Engineering-style views of the drying chamber and its three motor stations, with measurements in millimeters. These match the decided Rev 4 chamber (see `HARDWARE.md` section 3): umbrellas dry **half-open** (projected diameter 650 mm), three stations in a row inside a 2200 x 800 x 1300 mm internal chamber — the smallest realistic box that keeps the 50 mm canopy clearance rule.
 
+## Accuracy guarantees (v2 generator)
+
+- **Front / side / top are true-scale 2D orthographic drawings** plotted in exact millimeter coordinates — distances on the drawing are proportional to real distances (equal-aspect axes, red dimension lines with arrows and ticks).
+- **Layout assertions run before every render**: wall clearance ≥ 50 mm, canopy-to-canopy ≥ 50 mm, canopy rim height, heater/fan wall fit, coupling bore match (8=8), door vs opening, tray footprint. The script refuses to output images if any check fails — the drawing cannot silently lie.
+- **Correct part geometry**: cylindrical shafts/couplings (not boxes), 8-rib canopy section, heater with outlet grille, fan with blades and ring, drain grommet + tube exiting the back wall to the tray, floor slope wedge (4 degrees = 28 mm drop), door with rotary latch, leveling legs.
+- The exploded view lifts each assembly group along Z by fixed offsets and labels every part with its real spec.
+
 ## Files
 
 | File | View |
@@ -32,7 +39,7 @@ Engineering-style views of the drying chamber and its three motor stations, with
 | Drip tray | 500 x 400 x 60 | 500 mL+ capacity |
 | Heater (PTC 100 W) | 200 x 100 x 100 | Left wall, low |
 | Circulation fan | 120 dia | Right wall, low |
-| Heater center height | 150 | Above floor |
+| Heater center height | 220 | Bottom edge 50 clear of the floor (legs 100 + floor panel 20 raise the inner floor to z=120) |
 
 ## Regenerating
 

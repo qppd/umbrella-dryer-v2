@@ -94,7 +94,7 @@ Spec sheets for what was actually bought (sources & prices: `docs/BOM.md` §14).
 | Station layout | Single row of 3 stations on the long axis, pitch **700 mm** |
 | Clearance check | Canopy edge at 700 + 325 = 1025 mm from center vs wall at 1100 mm → 75 mm each side; between adjacent canopies 700 − 650 = 50 mm — both pass the ≥50 mm rule |
 | Hanging length | Umbrella hangs from the holder; heater blows across the canopy underside |
-| Services | Heater 200×100 left wall, low (center 150 mm above floor); 120 mm fan right wall, low; DHT22 mid-chamber; DS18B20 probe in the heater air stream |
+| Services | Heater 200×100 left wall, low (center 220 mm above floor, bottom 50 clear); 120 mm fan right wall, low (same height); DHT22 mid-chamber; DS18B20 probe in the heater air stream |
 
 > The verification math (`docs/BOM.md` §9) is layout-independent: each motor sees only its own umbrella's ≤3 kg·cm, and airflow crosses all stations regardless of arrangement. If the team later prefers fully-open canopies, re-run the width check in `model/generate_models.py` before committing to a box size.
 
