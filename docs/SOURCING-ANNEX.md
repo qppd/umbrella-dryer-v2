@@ -1,13 +1,13 @@
-# PROCUREMENT — Verified Component Sourcing (Lazada PH)
+# SOURCING-ANNEX — Verified Component Sourcing (Lazada PH)
 
-> **Annex to [`docs/BOM.md`](BOM.md) §14** — this file carries the per-listing detail: backup listings, seller ratings and reasoning, and watch-outs. The consolidated order cart lives in BOM.md Appendix A.
+> **Per-listing annex to [`docs/BOM.md`](BOM.md) §14** — backup listings, seller ratings and reasoning, and watch-outs. The consolidated order cart lives in BOM.md Appendix A.
 
 **Project:** Smart Umbrella Dryer (PUP Santa Maria, BS CpE capstone)
 **Sourcing policy:** Makerlab PH first — verified trusted Lazada store (98% seller rating, 845.6K items sold, 10-Year Store, Bulacan). Items Makerlab doesn't carry → trusted third-party sellers with high rating/sold counts only.
 **Prices verified:** 2026-09-12 (Lazada prices move — re-check before ordering)
 **Rev 5 quantities:** 3× worm gear motors (one per umbrella station) · **2× Fotek SSR-40DA (AC output — mains heaters)** + 2× 2-CH relay modules · **2× 1500W 220V PTC heater-fans + 12" Omni exhaust fan** · mains kit (RCD, grounded box, 10A fuses, 2.0mm² wire) · 3× shafts / bearing sets / couplings · 25A DC main fuse · MLX90614 removed.
 
-##  All components sourced
+## All components sourced
 
 ### Controller & drivers
 
@@ -21,23 +21,18 @@
 - URL: https://www.lazada.com.ph/products/pdp-i127879071.html
 - Backup (plain, ₱49, 4.8 (494), 4.5K sold): https://www.lazada.com.ph/products/pdp-i6005010.html
 
-### Heater & power path
+### Power path (12V DC)
 
 **2-Channel Relay Module 5V w/ optocoupler, low-level trigger — ₱89 ea ×2 (3 motor stations)**
 - Listing: 2 Channel Relay Module 5V Optocoupler Low Level Trigger | (330) | 2.5K sold | Bulacan
 - URL: https://www.lazada.com.ph/products/pdp-i100047444.html
 - Qty 2 → 4 channels: 3 worm-motor stations (1 ch each) + 1 spare. Coils fed from the LM2596S 5V rail; Mega drives only the optocoupler LEDs.
-- Rev 5 note: the 1-CH 30A relay and the 12V PTC heater that used to sit here are **removed** — heaters moved to mains AC via 2× SSR-40DA (see the Mains AC kit section above).
-
-### Heaters & airflow (Rev 5)
-
-**(moved to the Mains AC kit section above — the 120mm 12V fan is no longer used; replaced by the Omni 12-inch exhaust fan)**
 
 **LiFePO4 Battery 12.8V 30Ah w/ BMS (PowMr)**  pre-order flag
 - Listing: PowMr 12.8V 30AH LiFePO4 Battery Built-in BMS | 152.9K store sold
 - URL: https://www.lazada.com.ph/products/pdp-i4660631878.html
-- PDP-verified: **LiFePO4 chemistry, 12.8V, 30Ah, BMS** . ExpertPower 35Ah (paper's choice) is NOT on Lazada PH — this PowMr 30Ah is the best local equivalent (spec re-check: 30Ah = ~4 cycles/charge instead of 5).
--  Price varies by promo — check PDP. Scout noted a **pre-order / ship-in-60-days flag** — confirm stock before committing, or order early.
+- PDP-verified: **LiFePO4 chemistry, 12.8V, 30Ah, BMS**. ExpertPower 35Ah (paper's choice) is NOT on Lazada PH — this PowMr 30Ah is the best local equivalent (spec re-check: 30Ah = ~4 cycles/charge instead of 5).
+- Price varies by promo — check PDP. Scout noted a **pre-order / ship-in-60-days flag** — confirm stock before committing, or order early.
 
 **Blade fuses + holder — ₱122.53 + ₱25**
 - Fuses: 100pcs Car Blade Fuse Assortment 2-35A w/ box | 4.9 (5022) | 14.3K sold — needs **25A DC main, 3A ×3 motor stations, 3A logic** (mains 10A fuses come from the AC box kit) — https://www.lazada.com.ph/products/pdp-i4214903852.html
@@ -46,7 +41,7 @@
 **Rocker Switch 16A — ₱72 (Unnicoco, 97%)**  DC derating
 - Listing: Unnicoco 16A 250VAC / 20A 125VAC Rocker Switch 4 Pins | 111.4K store sold
 - URL: https://www.lazada.com.ph/products/pdp-i2272943066.html
--  Rating is AC. At 12V DC, arcing is worse — derate ~50%. **Recommended wiring: rocker switches the control side (buck input + relay coils), NOT the full battery load.** The AC mains rocker is a separate 2-gang part from the hardware kit.
+- Rating is AC. At 12V DC, arcing is worse — derate ~50%. **Recommended wiring: rocker switches the control side (buck input + relay coils), NOT the full battery load.** The AC mains rocker is a separate 2-gang part from the hardware kit.
 
 ### Mains AC kit (Rev 5)
 
@@ -120,13 +115,12 @@
 - URL: https://www.lazada.com.ph/products/pdp-i2734273953.html
 - Set includes 8mm — clamp-style rigid sleeve. Use the 8×8 config for motor-to-shaft. **Qty 2 sets** (3× 8×8 configs needed + spare).
 
-##  Watch-outs (read before ordering)
+## Watch-outs (read before ordering)
 
 1. **Relay contacts are 30VDC-rated** — never on mains AC; heater uses slow duty cycling only (2–5s period).
-2. **Heater wattage:** only 70W/100W 12V PTC variants exist on Lazada — no 120W. Plan around 100W (cycle ~20% longer than the 120W math).
-3. **Battery lead time:** PowMr 30Ah flagged pre-order (~60 days). Order FIRST or find local stock. 30Ah ≈ 3–4 cycles/charge with 3 motor stations.
-4. **Rocker DC derating:** don't push a 16A AC-rated switch on the battery load — switch the control side instead.
-5. **Motor torque:** the JGY370 Lazada listing is ~25 kg·cm — under the 60 kg·cm spec. Makerlab's SGM-A58SW31ZYS (site-only, qty 3) is the spec-correct choice.
+2. **Battery lead time:** PowMr 30Ah flagged pre-order (~60 days). Order FIRST or find local stock. 30Ah ≈ 3–4 cycles/charge with 3 motor stations.
+3. **Rocker DC derating:** don't push a 16A AC-rated switch on the battery load — switch the control side instead.
+4. **Motor torque:** the JGY370 Lazada listing is ~25 kg·cm — under the 60 kg·cm spec. Makerlab's SGM-A58SW31ZYS (site-only, qty 3) is the spec-correct choice.
 
 ## One-stop alternatives
 

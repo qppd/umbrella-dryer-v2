@@ -40,14 +40,14 @@ Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air 
 | 7 | [docs/TESTING.md](docs/TESTING.md) | Prove it works, record results |
 | 8 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | When a check fails |
 
-Reference material (dip in as needed): `docs/SYSTEM-ARCHITECTURE.md`, `docs/FLOWCHART.md`, `docs/STACKS.md`, `docs/PROCUREMENT.md`.
+Reference material (dip in as needed): `docs/SYSTEM-ARCHITECTURE.md`, `docs/FLOWCHART.md`, `docs/STACKS.md`, `docs/SOURCING-ANNEX.md`.
 
 ## Documentation
 
 | Doc | Contents |
 |---|---|
-| [docs/BOM.md](docs/BOM.md) | Rev 4 component analysis & compatibility verification, itemized Lazada BOM, printable shopping checklist (Appendix A) |
-| [docs/PROCUREMENT.md](docs/PROCUREMENT.md) | Per-listing annex: seller ratings, backup listings, watch-outs |
+| [docs/BOM.md](docs/BOM.md) | Rev 5 component analysis & compatibility verification, itemized Lazada BOM, printable shopping checklist (Appendix A) |
+| [docs/SOURCING-ANNEX.md](docs/SOURCING-ANNEX.md) | Sourcing annex: seller ratings, backup listings, watch-outs |
 | [docs/HARDWARE.md](docs/HARDWARE.md) | Hardware reference — part ratings, module spec sheets, build standards |
 | [docs/STACKS.md](docs/STACKS.md) | Technology stacks — firmware/libraries, power chain, tooling |
 | [docs/BLOCK-DIAGRAM.md](docs/BLOCK-DIAGRAM.md) | Electrical block diagram — power domain, fuses, actuation, sensing (mermaid) |

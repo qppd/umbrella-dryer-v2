@@ -24,7 +24,7 @@
 | Battery role | All loads (heater + motors) | **Motors + control only (~14W)** | BMS margin becomes huge; runtime limited by mains availability, not battery |
 | Kill switches | 1 (DC rocker) | **2 (mains rocker + DC rocker), labeled** | Separate domains need separate kills |
 | New safety layer | extra-low voltage only | **RCD/GFCI outlet, 10A branch fuses, grounded metal box, earthed frame + chassis** | Mains voltage now present — life-safety first |
-| Unchanged | 3× worm stations, DHT22 + DS18B20, LCD/LEDs/buzzer/button, buck, gravity drain, 25A/3A fusing | | |
+| Unchanged | 3× worm stations, DHT22 + DS18B20, LCD/LEDs/buzzer/button, buck, gravity drain, 25A/3A fusing | — | — |
 
 ---
 
@@ -273,7 +273,7 @@ flowchart TB
 
 ## 14. Bill of Materials — Itemized (Rev 5)
 
-> **Sourcing policy:** Makerlab PH first → trusted Lazada sellers. Motors + Fotek SSRs from makerlab.ph website; appliances and mains kit from Lazada/hardware. Prices verified 2026-09-12 unless marked EST (re-check at checkout). Per-listing detail: `PROCUREMENT.md`.
+> **Sourcing policy:** Makerlab PH first → trusted Lazada sellers. Motors + Fotek SSRs from makerlab.ph website; appliances and mains kit from Lazada/hardware. Prices verified 2026-09-12 unless marked EST (re-check at checkout). Backup listings and seller reasoning: `SOURCING-ANNEX.md`.
 
 | Qty | Item | Spec | Price | Seller / Trust | URL |
 |---|---|---|---|---|---|
