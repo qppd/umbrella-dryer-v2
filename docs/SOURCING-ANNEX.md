@@ -64,12 +64,12 @@
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
-| 1 | Arduino Mega 2560 clone (CH340G) | ₱430 | Lazada | https://www.lazada.com.ph/products/pdp-i273424406.html |
-| 1 | DHT22 Black module (humidity) | ₱69 | Lazada | https://www.lazada.com.ph/products/pdp-i3863275069.html |
+- [ ] Arduino Mega 2560 + USB cable (₱1,165) — https://www.lazada.com.ph/products/pdp-i5989151-s15092061710.html
+| 1 | DHT22 sensor module | ₱210 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i132179919-s144637867.html |
 | 1 | DS18B20 waterproof probe (temp) | ₱105 | Lazada | https://www.lazada.com.ph/products/pdp-i3864018549.html |
 | 1 | LCD 16×2 I2C (black on white) | ₱165 | Lazada | https://www.lazada.com.ph/products/pdp-i3934869498.html |
-| 3 | 2-CH relay module 10A optocoupler | ₱103 ea = ₱309 | Lazada | https://www.lazada.com.ph/products/pdp-i4435872855.html |
-| 1 | LM2596S buck module 12V→5V | ₱155 | Lazada | https://www.lazada.com.ph/products/pdp-i2489483405.html |
+| 6 | Single-channel relay 5V/12V 10A optocoupler | ₱49 ea = ₱294 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i100047427-s100061336.html |
+| 1 | LM2596S DC-DC buck converter 12V→5V | ₱49 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i6005010-s7605914.html |
 
 ### 2g. Automotive relay + fuses (Lazada)
 
@@ -135,7 +135,7 @@
 | Wiring + consumables (Lazada) | ≈ ₱1,346 |
 | Battery bank (2× 200Ah) + charger | ≈ ₱19,800–20,500 |
 | Hardware store consumables | ≈ ₱490 |
-| **GRAND TOTAL** | **≈ ₱34,600–35,300** |
+| **GRAND TOTAL** | **≈ ₱34,900–35,600** |
 
 ---
 
@@ -171,5 +171,5 @@
 
 ## Rev history
 
-- **Current:** Pure 12V DC. No mains, no inverter, no RCD. 9× PTC heaters, 9× BLDC fans with ESC, relay-switched. Total ~₱34,600–35,300.
+- **Current:** Pure 12V DC. No mains, no inverter, no RCD. 9× PTC heaters, 9× BLDC fans with ESC, relay-switched. Total ~₱34,900–35,600.
 - **Previous:** Mains heat + inverter. Total ~₱40,800–45,200.

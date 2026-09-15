@@ -8,8 +8,8 @@
 
 | Qty | Part | Notes | Price | Source |
 |---|---|---|---|---|
-| 1 | Arduino Mega 2560 clone | CH340G — clone fine | ₱430 | (277), 6.7K sold |
-| 1 | DHT22 Black (module, not bare probe) | one in the chamber air-path | ₱69 | (262), 2K sold |
+| 1 | Arduino Mega 2560 + USB cable | CH340G — Makerlab PH | ₱1,165 | Lazada — Makerlab PH |
+| 1 | DHT22 temperature + humidity sensor module | one per umbrella station | ₱210 | Lazada — Makerlab PH |
 | 1 | DS18B20 waterproof (probe + long lead) | attached near heaters | ₱105 | (258), 6K sold |
 | 1 | 16×2 LCD I2C (black on white OK) | addresses 0x27/0x3F; I2C only | ₱165 | (241), 2K sold |
 
@@ -17,7 +17,7 @@
 
 | Qty | Part | Notes | Price |
 |---|---|---|---|
-| 1 | LM2596S adjustable buck module | 12V→5V for Mega + sensors; set to 5.0V before connecting logic | ₱155 |
+| 1 | LM2596S DC-DC buck converter | 12V→5V for Mega + sensors; set to 5.0V before connecting | ₱49 | Lazada — Makerlab PH |
 
 ## 3. Power supply — 12V DC
 
@@ -113,7 +113,7 @@ Listings: makerlab.ph motors ×3 in one order.
 
 | Qty | Part | Notes | Price |
 |---|---|---|---|
-| 1 | DHT22 (Black, module) | Chamber humidity — one sensor, shared across all 3 stations | ₱69 |
+| 1 | DHT22 sensor module | Chamber humidity — one sensor, shared across all 3 stations | ₱210 |
 | 1 | DS18B20 waterproof | Chamber temperature probe — mounted near PTC heaters | ₱105 |
 
 ---
@@ -247,13 +247,13 @@ Listings: makerlab.ph motors ×3 in one order.
 | 3 | 304 SS shaft 6mm × 300mm | ground finish | ~₱180 ea = ~₱540 | Lazada — search "304 stainless steel rod 6mm 300mm" | https://www.lazada.com.ph/catalog/?q=304+stainless+steel+rod+6mm+300mm |
 | 6 | KP08 pillow block bearing | 6mm bore insert — select KP08 + 6mm | ₱87 ea = ₱522 | Lazada | https://www.lazada.com.ph/catalog/?q=kp08+pillow+block+bearing+6mm |
 | 2 | Rigid coupling set (use 6×8) | 3 needed + spare | ₱82.84 ea = ₱165.68 | (185), 408 sold | https://www.lazada.com.ph/products/pdp-i2734273953.html |
-| 1 | Arduino Mega 2560 clone | CH340G | ₱430 | (277), 6.7K sold | https://www.lazada.com.ph/products/pdp-i273424406.html |
-| 1 | DHT22 Black module | humidity | ₱69 | (262), 2K sold | https://www.lazada.com.ph/products/pdp-i3863275069.html |
+| 1 | Arduino Mega 2560 + USB cable | CH340G | ₱1,165 | Makerlab PH (98%) | https://www.lazada.com.ph/products/pdp-i5989151-s15092061710.html |
+| 1 | DHT22 sensor module | humidity | ₱210 | Makerlab PH | https://www.lazada.com.ph/products/pdp-i132179919-s144637867.html |
 | 1 | DS18B20 waterproof | temp probe | ₱105 | (258), 6K sold | https://www.lazada.com.ph/products/pdp-i3864018549.html |
 | 1 | LCD 16×2 I2C | black on white | ₱165 | (241), 2K sold | https://www.lazada.com.ph/products/pdp-i3934869498.html |
-| 3 | 2-CH relay module (10A, optocoupler) | PTC + motor per station | ₱103 ea = ₱309 | (160), 10K sold | https://www.lazada.com.ph/products/pdp-i4435872855.html |
+| 6 | Single-channel relay (5V/12V, 10A, optocoupler) | PTC heater switching | ₱49 ea = ₱294 | Makerlab PH (14.6K sold) | https://www.lazada.com.ph/products/pdp-i100047427-s100061336.html |
 | 1 | 12V 40A automotive relay | BLDC fan power bus, 5-pin SPDT | ~₱80 | Lazada | https://www.lazada.com.ph/catalog/?q=12v+40a+automotive+relay |
-| 1 | LM2596S buck module | 12V→5V | ₱155 | (225) | https://www.lazada.com.ph/products/pdp-i2489483405.html |
+| 1 | LM2596S buck converter | 12V→5V | ₱49 | Makerlab PH (4.5K sold) | https://www.lazada.com.ph/products/pdp-i6005010-s7605914.html |
 | 1 | LED 5mm red | station indicator | ₱29 | (325), 3.4K sold | https://www.lazada.com.ph/products/pdp-i2573601435.html |
 | 1 | Active buzzer 5V | alarm | ₱35 | (163) | https://www.lazada.com.ph/products/pdp-i4472196293.html |
 | 1 | Arcade LED push button 5V | start (Circuitrocks) | ₱45 | Circuitrocks | https://www.lazada.com.ph/products/i343850766.html |
@@ -283,7 +283,7 @@ Listings: makerlab.ph motors ×3 in one order.
 | Battery bank (2× 200Ah) + 20A charger | ≈ ₱19,800–20,500 |
 | UI (LEDs, buzzer, button, rockers) | ≈ ₱356 |
 | Wiring, fuses, chassis, consumables | ≈ ₱1,800–2,200 |
-| **TOTAL** | **≈ ₱34,600–35,300** |
+| **TOTAL** | **≈ ₱34,900–35,600** |
 
 | **Savings vs previous mains-based design:** ≈₱4,800–9,200 — eliminated inverter (₱5,500–8,500), mains wiring, RCD, changeover switch, ANL kit. PTC heater assemblies cost more than bare elements but include fan+housing.
 
@@ -300,9 +300,9 @@ Listings: makerlab.ph motors ×3 in one order.
 - [ ] 9× PTC heater CHLOCH BAG 12V 100W — ₱4,995 — https://www.lazada.com.ph/products/i2649138541.html (select 12V 100W variant!)
 - [ ] 9× BLDC fan 50mm 12V w/ ESC — ₱4,221 — https://www.lazada.com.ph/catalog/?q=50mm+BLDC+ducted+fan+12V+ESC (select 50mm variant)
 - [ ] Aluminum plate 6mm — ₱760 — https://www.lazada.com.ph/products/pdp-i4449859085.html
-- [ ] 3× 2-CH relay module — ₱309 — https://www.lazada.com.ph/products/pdp-i4435872855.html
+- [ ] 6× single-channel relay — ₱294 — https://www.lazada.com.ph/products/pdp-i100047427-s100061336.html
 - [ ] 1× automotive relay 40A — ~₱80 — https://www.lazada.com.ph/catalog/?q=12v+40a+automotive+relay
-- [ ] DHT22 — ₱69 · DS18B20 — ₱105 · LCD I2C — ₱165 · buck — ₱155 — links in §2f
+- [ ] DHT22 — ₱210 · DS18B20 — ₱105 · LCD I2C — ₱165 · buck — ₱49 — links in §13
 - [ ] LEDs — ₱29 · buzzer — ₱35 · arcade button — ₱45 · DC rocker — ₱72 — links in §2h
 - [ ] 3× shaft 6×300 SS — ~₱540 — https://www.lazada.com.ph/catalog/?q=304+stainless+steel+rod+6mm+300mm
 - [ ] 6× KP08 pillow block 6mm bore — ₱522 — https://www.lazada.com.ph/catalog/?q=kp08+pillow+block+bearing+6mm
@@ -315,7 +315,7 @@ Listings: makerlab.ph motors ×3 in one order.
 ### Variant picking (at checkout — exact SKUs matter)
 | Item | Pick this |
 |---|---|
-| DHT22 | "DHT22 Black" (₱69) |
+| DHT22 | Makerlab PH module (₱210) |
 | Pillow blocks | KP08 with 6mm bore insert |
 | Steel shaft | 6mm × 300mm |
 | PTC heater | 12V 100W MXKJING T30 (verify 12V variant, NOT 220V) |
