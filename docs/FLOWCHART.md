@@ -1,55 +1,67 @@
-# Flowcharts — Control Loop & Safety Interlocks (Rev 6)
+# Flowcharts — Control Loop & Safety Interlocks (Rev 7 — 12V DC)
 
-Firmware behavior reference. Pin assignments per `docs/BOM.md` §15; control constants per `docs/FIRMWARE-GUIDE.md`.
+> Firmware behavior reference. Pin assignments per `docs/BOM.md` §11; control constants per `docs/FIRMWARE-GUIDE.md`.
+
+---
 
 ## 1. Main control loop
 
 ```mermaid
 flowchart TD
-    PWR([Power on]) --> INIT[Init: safe relay states OFF<br/>LCD hello, sensor probe]
+    PWR([Power on]) --> ARM[Arm ESCs<br/>write 0 for 2s]
+    ARM --> INIT[Init: relay OFF<br/>LCD hello, sensor probe]
     INIT --> SELF{Self-test pass?<br/>DHT22 + DS18B20 valid}
     SELF -- no --> FAULT[FAULT state<br/>red LED + long beeps]
-    SELF -- yes --> IDLE[IDLE<br/>green LED, heater OFF<br/>motors OFF, fan OFF]
+    SELF -- yes --> IDLE[IDLE<br/>green LED<br/>PTC relays OFF<br/>motor relays OFF<br/>fans OFF<br/>LCD: READY]
 
-    IDLE -- "start button (D13)" --> LOAD[Load umbrellas<br/>mark loaded stations 1-3]
-    LOAD --> DRYING[DRYING<br/>yellow LED<br/>loaded station relays ON<br/>fan ON]
+    IDLE -- "button (D13)" --> PREHEAT[PREHEAT<br/>yellow LED<br/>fan bus ON (D9)<br/>ESC throttle FULL (D10-D12)<br/>PTC relays ON (D4/D5)<br/>motor relays OFF]
 
-    DRYING --> READ[Read DHT22 humidity H<br/>read DS18B20 temp T]
-    READ --> TOVER{T > 65 C?}
-    TOVER -- yes --> CUT[HEATER CUTOFF - latched<br/>both SSRs OFF<br/>motors keep running<br/>exhaust fan on mains rocker]
-    CUT -- "T < 50 C" --> DRYING
-    TOVER -- no --> STAGE[Stage heaters from H error:<br/>stage 1: SSR1 duty = k x error<br/>stage 2 error high: SSR1 ON + SSR2 duty<br/>2-5 s time-proportional]
-    DUTY --> HLOW{H below threshold<br/>for 5 min steady?}
-    HLOW -- no --> READ
-    HLOW -- yes --> DONE[COMPLETE<br/>heater OFF, stations OFF<br/>fan purge 2 min<br/>green LED + beeps]
+    PREHEAT --> READ[Read DHT22 humidity<br/>read DS18B20 temp]
+    READ --> TOVER{T > 65°C?}
+    TOVER -- yes --> CUTOFF[THERMAL CUTOFF<br/>ALL OFF (relays + ESCs)<br/>red LED + error on LCD]
+    TOVER -- no --> TEMP_OK{T ≥ 45°C?}
+    TEMP_OK -- no --> PREHEAT
+    TEMP_OK -- yes --> DRY[DRY<br/>yellow LED<br/>PTC ON, fans ON<br/>motor relays ON (D6/D8)<br/>15 min timer]
+
+    DRY --> READ2[Read sensors]
+    READ2 --> TOVER2{T > 65°C?}
+    TOVER2 -- yes --> CUTOFF
+    TOVER2 -- no --> TIMER{15 min done?}
+    TIMER -- no --> DRY
+    TIMER -- yes --> COOL[COOL<br/>PTC relays OFF<br/>motor relays OFF<br/>fans stay ON<br/>2 min timer]
+
+    COOL --> COOL_TIMER{2 min done?}
+    COOL_TIMER -- no --> COOL
+    COOL_TIMER -- yes --> DONE[COMPLETE<br/>ALL OFF<br/>fans OFF (ESC write 0 + relay OFF)<br/>green LED + 3 beeps]
     DONE --> IDLE
 
     FAULT --> IDLE
+    CUTOFF --> IDLE
 ```
 
-## 2. Heater safety interlock (inner loop, runs every cycle)
+---
+
+## 2. Safety interlock (inner loop, runs every 500ms)
 
 ```mermaid
 flowchart TD
-    TICK([Control tick - every 500 ms]) --> T1{DS18B20 read OK?}
-    T1 -- "fail x3" --> SERR[Sensor fault -> FAULT]
-    T1 -- ok --> T2{T > 65 C?}
-    T2 -- yes --> OFF1[Both SSRs OFF<br/>latched until T < 50 C]
+    TICK([Control tick]) --> T1{DS18B20 read OK?}
+    T1 -- "fail x3" --> SERR[Sensor fault → FAULT]
+    T1 -- ok --> T2{T > 65°C?}
+    T2 -- yes --> OFF1[ALL OFF<br/>PTC relays HIGH (OFF)<br/>motor relays HIGH (OFF)<br/>ESC write 0<br/>fan relay HIGH (OFF)]
     T2 -- no --> T3{Cycle active?}
-    T3 -- no --> OFF2[Both SSRs OFF]
-    T3 -- yes --> T4{H above threshold?}
-    T4 -- no --> OFF2
-    T4 -- yes --> T5{Source mode?<br/>D14}
-    T5 -- "battery mode" --> STG1[Stage 1 only: SSR1 duty from H error<br/>SSR2 forced OFF<br/>ON windows inside 4 s period]
-    T5 -- "wall mode" --> STG[Stage 1: SSR1 duty from H error<br/>Stage 2 error >= E_BOOST: SSR1 ON + SSR2 duty<br/>ON windows inside 4 s period]
-    STG --> RELAY[Write SSR pins D4 / D5]
-    STG1 --> RELAY
-    OFF1 --> RELAY
+    T3 -- no --> OFF2[All actuators OFF]
+    T3 -- yes --> OK[System OK — continue phase]
+
+    OFF1 --> RELAY[Write pins D4-D12]
     OFF2 --> RELAY
+    OK --> RELAY
     SERR --> RELAY
 ```
 
-Note: a fail-short SSR means a heater stuck ON — the mains rocker (labeled kill), 10A branch fuse, appliance thermostat, and RCD are the hardware layers behind this software interlock. In battery mode (D14 HIGH) stage 2 is software-disabled so the 3000W inverter only ever carries stage 1 (heater 1 + fan ≈ 2.05kW).
+> **Defense in depth:** DS18B20 firmware cutoff (65°C) → PTC self-regulation → thermal fuse (80°C) → per-station fuses. Four independent layers.
+
+---
 
 ## 3. Per-station fault handling
 
@@ -57,20 +69,37 @@ Note: a fail-short SSR means a heater stuck ON — the mains rocker (labeled kil
 flowchart TD
     RUN([Station n running]) --> JAM{Umbrella jammed?<br/>stall noise / stall current}
     JAM -- yes --> FUSE[Station 3A fuse opens<br/>that motor stops]
-    FUSE --> ISO[Other stations unaffected<br/>heater cycle continues]
+    FUSE --> ISO[Other stations unaffected<br/>heater + fan cycle continues]
     ISO --> USER[User removes jam<br/>replaces fuse<br/>restarts cycle]
     USER --> RUN
     JAM -- no --> RUN
 ```
 
-> **Design note:** stations are fuse-isolated, not sensor-monitored (no current-sense path in this design). A blown 3A fuse is detected at the UI as "station commanded ON but motion absent" — see `docs/TROUBLESHOOTING.md` §Motors.
+> **Design note:** stations are fuse-isolated, not sensor-monitored (no current-sense path). A blown 3A fuse is detected at UI as "station commanded ON but motion absent" — see `docs/TROUBLESHOOTING.md` §6.
 
-## 4. State summary
+---
 
-| State | Heaters (SSR1 / SSR2) | Stations | Exhaust fan | LED | Buzzer |
+## 4. ESC arming sequence
+
+```mermaid
+flowchart LR
+    BOOT([Boot]) --> ATTACH["esc.attach(pin)<br/>D10, D11, D12"]
+    ATTACH --> ZERO["esc.write(0)<br/>min throttle"]
+    ZERO --> WAIT["delay 2000ms<br/>(ESC detects min)"]
+    WAIT --> READY["ESCs armed<br/>ready for throttle commands"]
+    READY --> IDLE["Enter IDLE state"]
+```
+
+---
+
+## 5. State summary
+
+| State | PTC Relays | Motor Relays | Fan Bus + ESCs | LED | Buzzer |
 |---|---|---|---|---|---|
-| IDLE | OFF / OFF | OFF | mains rocker (user) | Green | — |
-| DRYING | staged duty | loaded ON | ON (rocker) | Yellow | — |
-| HEATER CUTOFF | OFF / OFF (latched) | ON | ON | Yellow (blink) | 1 chirp on entry |
-| COMPLETE | OFF / OFF | OFF | ON (user purge) | Green | 3 beeps |
-| FAULT | OFF / OFF | OFF | ON | Red | long beeps until acknowledged |
+| IDLE | OFF | OFF | OFF | Green | — |
+| PREHEAT | ON | OFF | ON (full speed) | Yellow | — |
+| DRY | ON | ON | ON (full speed) | Yellow | — |
+| COOL | OFF | OFF | ON (full speed) | Yellow | — |
+| COMPLETE | OFF | OFF | OFF | Green | 3 beeps |
+| THERMAL CUTOFF | OFF | OFF | OFF | Red (blink) | 1 chirp |
+| FAULT | OFF | OFF | OFF | Red | long beeps |

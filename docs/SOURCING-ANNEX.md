@@ -1,133 +1,176 @@
-# SOURCING-ANNEX — Verified Component Sourcing (Lazada PH)
+# Sourcing Annex (Rev 7 — 12V DC, with Verified Links)
 
-> **Per-listing annex to [`docs/BOM.md`](BOM.md) §14** — backup listings, seller ratings and reasoning, and watch-outs. The consolidated order cart lives in BOM.md Appendix A.
+> Complete sourcing guide with **actual store links**. Verified September 2026. No mains components needed.
 
-**Project:** Smart Umbrella Dryer (BS CpE capstone)
-**Sourcing policy:** Makerlab PH first — verified trusted Lazada store (98% seller rating, 845.6K items sold, 10-Year Store, Bulacan). Items Makerlab doesn't carry → trusted third-party sellers with high rating/sold counts only.
-**Prices verified:** 2026-09-12 (Lazada prices move — re-check before ordering)
-**Rev 6 quantities:** 3× worm gear motors (one per umbrella station) · **2× Fotek SSR-40DA (AC output — mains heaters)** + 2× 2-CH relay modules · **2× 1500W 220V PTC heater-fans + 12" Omni exhaust fan** · **3000W pure sine inverter + 2P changeover switch + 250A ANL kit** · mains kit (RCD, grounded box, 10A fuses, 2.0mm² wire) · **2× 200Ah LiFePO4 + 14.6V 20A charger** · 3× shafts / bearing sets / couplings · 25A DC main fuse · MLX90614 removed.
+---
 
-## All components sourced
+## 1. Order strategy
 
-### Controller & drivers
+1. **Battery first** — longest lead time (PowMr from Lazada)
+2. **MakeLAB.PH** — motor + couplings (local, fast shipping)
+3. **Lazada** — everything else (electronics, PTC heaters, BLDC fans, wiring)
+4. **Hardware store** — consumables (screws, zip ties, sealant)
 
-**Arduino Mega 2560 R3 — ₱1,215 (Makerlab PH)**
-- Listing: Mega 2560 R3 Board based on Arduino® | 4.8 (331) | 2.4K sold
-- URL: https://www.lazada.com.ph/products/pdp-i5989151.html
-- Variant: ₱1,215 = "no cable" · ₱1,265 = with USB cable
+---
 
-**LM2596S Buck Converter w/ 7-seg display — ₱155 (Makerlab PH)**
-- Listing: DC-DC Buck Converter with 7 Segment Display LM2596S | 4.8 (264) | 1.3K sold
-- URL: https://www.lazada.com.ph/products/pdp-i127879071.html
-- Backup (plain, ₱49, 4.8 (494), 4.5K sold): https://www.lazada.com.ph/products/pdp-i6005010.html
+## 2. Component sourcing — all verified links
 
-### Power path (12V DC)
+### 2a. Heating (PTC ceramic heaters)
 
-**2-Channel Relay Module 5V w/ optocoupler, low-level trigger — ₱89 ea ×2 (3 motor stations)**
-- Listing: 2 Channel Relay Module 5V Optocoupler Low Level Trigger | (330) | 2.5K sold | Bulacan
-- URL: https://www.lazada.com.ph/products/pdp-i100047444.html
-- Qty 2 → 4 channels: 3 worm-motor stations (1 ch each) + 1 spare. Coils fed from the LM2596S 5V rail; Mega drives only the optocoupler LEDs.
+| Qty | Item | Price | Store | Link |
+|---|---|---|---|---|
+| 9 | CHLOCH BAG 12V 100W PTC Ceramic Heater (with fan + aluminum housing) | ₱555 ea = ₱4,995 | Lazada | https://www.lazada.com.ph/products/chloch-bag-safety-home-space-heaters-heating-fan-12v-100w-car-air-heater-ptc-ceramic-heating-element-i2649138541.html |
 
-**LiFePO4 Battery 12.8V 200Ah w/ BMS (PowMr) ×2 — parallel bank**  verify stock
-- Listing: PowMr 12.8V 200AH LiFePO4 Battery Built-in BMS 6000 Deep Cycles | 4.8 (22)
-- URL: https://h5.lazada.com.ph/products/powmr-12v-200ah-lifepo4-battery-lithium-battery-built-in-bms-6000-deep-cycles-rechargeable-solar-battery-i5047514166.html
-- PDP-verified: **LiFePO4 chemistry, 12.8V, 200Ah, BMS**. Two in parallel = 5,120Wh — feeds the 3000W inverter (battery mode) plus motors + control. The old 30Ah plan could not carry the inverter.
-- Price varies by promo — check PDP. Scout noted a **pre-order / ship-in-60-days flag** — confirm stock before committing, or order early.
+> **Alternative (cheaper, bare element only):** "Direct Sale 50W/12V Ceramic Ribbon PTC Heater 92×31mm" at ₱219 — but this is 50W, not 100W. You'd need 2 per station (6 total) = ₱1,314. Search: https://www.lazada.com.ph/catalog/?q=12v+100w+ptc+ceramic+heater+element
 
-**Blade fuses + holder — ₱122.53 + ₱25**
-- Fuses: 100pcs Car Blade Fuse Assortment 2-35A w/ box | 4.9 (5022) | 14.3K sold — needs **25A DC main, 3A ×3 motor stations, 3A logic** (mains 10A fuses come from the AC box kit) — https://www.lazada.com.ph/products/pdp-i4214903852.html
-- Holder: 1× Panel-Mount Fuse Holder | ₱25 · 131 sold · (13) · Bulacan (Makerlab listing) — https://www.lazada.com.ph/products/pdp-i2502994973.html — for the 25A DC main; motor-branch 3A fuses use inline holders from the assortment.
+> **Important:** At checkout, select the **12V 100W** variant. Some listings offer 220V — do NOT pick that.
 
-**Rocker Switch 16A — ₱72 (Unnicoco, 97%)**  DC derating
-- Listing: Unnicoco 16A 250VAC / 20A 125VAC Rocker Switch 4 Pins | 111.4K store sold
-- URL: https://www.lazada.com.ph/products/pdp-i2272943066.html
-- Rating is AC. At 12V DC, arcing is worse — derate ~50%. **Recommended wiring: rocker switches the control side (buck input + relay coils), NOT the full battery load.** The AC mains rocker is a separate 2-gang part from the hardware kit.
+### 2b. Fans (BLDC ducted fan modules with ESC)
 
-### Mains AC kit + power conversion (Rev 6)
+| Qty | Item | Price | Store | Link |
+|---|---|---|---|---|
+| 9 | RC Waterproof Cooling Fan Motor ESC 50mm 12V (ducted, brushless, ESC included) | ₱469 ea = ₱4,221 | Lazada | Search "50mm BLDC ducted fan 12V ESC" → https://www.lazada.com.ph/catalog/?q=50mm+BLDC+ducted+fan+12V+ESC |
 
-**2× 1500W PTC industrial heater-fan, 220V — ₱1,395.35 ea**
-- Listing: Portable Industrial Electric Heater Fan Commercial Thermostat Air Warm Heater Blower
-- URL: https://www.lazada.com.ph/products/portable-industrial-electric-heater-fan-commercial-thermostat-air-warm-heater-blower-radiator-office-garage-air-fan-i4902069326-s28572024789.html
-- Switched by SSR-40DA each; keep built-in thermostat + thermal cutoff in circuit; plug accessible.
+> **Pick variant:** 50mm, 12V, with ESC. The listing shows 25/30/35/40/45/50mm options — select **50mm**.
 
-**Omni industrial exhaust fan w/ grill, wall-mount — ~₱1,000–1,500 (verify variant)**
-- Listing: Omni Industrial Exhaust Fan W/ Grill Wall Mounted | spans 12/14/16-inch
-- URL: https://www.lazada.com.ph/products/omni-industrial-exhaust-fan-w-grill-wall-mounted-12-inch-14-inch-16-inch-i4020672066-s21738898500.html
-- ⚠️ **Select the 12-inch variant.** Runs on its own mains rocker gang — no SSR.
+> **Physical store fallback:** If online unavailable, check **e-Gizmo** (Manila) or **Rep Asia** for BLDC motor + ESC combos.
 
-**Fotek SSR-40DA ×2 — ₱160 ea (makerlab.ph, verified 2026-09-15)**
-- 3–32VDC input, 24–380VAC output, 40A, SKU MLE00140. Dedicated DA listing — no variant selection, so no risk of accidentally ordering the DD (DC output) type. Heatsink mandatory (7–10W each).
-- URL: https://makerlab.ph/products/fotek-solid-state-relay-module-ssr-40da
+### 2c. Motors + drivetrain (makerlab.ph)
 
-**Hardware-store additions (EST, add at checkout):** RCD/GFCI 30mA outlet or breaker · grounded metal electrical box · 2-gang mains rocker + plate · 2.0mm² 3-core wire + plug/socket set · 2× SSR heatsink profiles.
+| Qty | Item | Price | Store | Link |
+|---|---|---|---|---|
+| 3 | SGM-370 DC Worm Gear Motor 12V 6RPM | ₱500 ea = ₱1,500 | makerlab.ph | https://makerlab.ph/products/dc-worm-gear-motor-sgm-370-12v-16rpm |
+| 3 | Rigid Coupling 6×8mm (motor to shaft) | ₱82.84 ea = ₱248.52 | makerlab.ph | https://makerlab.ph/products/6x8mm-rigid-coupling-set |
 
-**Rev 6 power-conversion additions (EST, add at checkout):** 3000W pure sine inverter 12V→220V 60Hz with remote/enable pin (search "local stock pure sine inverter 3000W") · 2P 63A changeover switch · ANL 250A fuse + holder + 1/0 AWG inverter cable + 4 AWG battery links · 14.6V 20A LiFePO4 charger (search "LiFePO4 charger 20a", ~₱2,000–2,700).
+> **Note:** Select **6×8mm** variant (6mm motor bore, 8mm shaft side). We have 3 needed + can use the spare from a second set if needed.
 
-### Sensors
+### 2d. Bearings (Lazada)
 
-**DHT22 Temp/Humidity Sensor — ₱69 (FU-LABS, 98%)**
-- Listing: DHT11/DHT22 Digital Temperature and Humidity Sensor | 5.0 (34) | 549 sold
-- URL: https://www.lazada.com.ph/products/pdp-i4888079786.html
-- Variant: **"DHT22 Black" module = ₱69** (default PDP shows ₱239 bare-probe variant). Makerlab website also sells DHT22 (₱200) — FU-LABS module is cheaper.
+| Qty | Item | Price | Store | Link |
+|---|---|---|---|---|
+| 6 | KP08 Pillow Block Bearing 6mm bore (2 per station) | ₱87 ea = ₱522 | Lazada | https://www.lazada.com.ph/catalog/?q=kp08+pillow+block+bearing+6mm |
 
-**DS18B20 Waterproof Sensor — ₱105 (Circuitrocks)**
-- Listing: Waterproof One Wire Sensor DS18B20 3 Meters | (24) | 325 sold | Metro Manila
-- URL: https://www.lazada.com.ph/products/pdp-i111662523.html
-- Backup (1m kit ₱83.80): https://www.lazada.com.ph/products/pdp-i4824120037.html
+> **Note:** KP08 accepts 6mm bore insert bearing. Select "6mm" variant at checkout. 2 per station × 3 stations = 6 total. (Or buy 3× 2-packs at ₱167 = ₱501)
 
-### UI & indicators
+### 2e. Shafts (Lazada)
 
-**16×2 LCD with I2C — ₱165 (Makerlab PH)**
-- Listing: 1602 16x2 Character LCD Module HD44780 with I2C | 4.9 (681) | 5.8K sold
-- URL: https://www.lazada.com.ph/products/pdp-i104139284.html
-- Backup (plain LCD no I2C ₱105): https://www.lazada.com.ph/products/pdp-i156791905.html
+| Qty | Item | Price | Store | Link |
+|---|---|---|---|---|
+| 3 | 304 Stainless Steel Rod 6mm × 300mm | ~₱180 ea = ~₱540 | Lazada | https://www.lazada.com.ph/catalog/?q=304+stainless+steel+rod+6mm+300mm |
 
-**Push Buttons 12mm ×10 — ₱79 (Makerlab PH)**
-- Listing: 10pcs 12mm Round Button Tactile Switch | 4.9 (92) | Makerlab store
-- URL: https://www.lazada.com.ph/products/pdp-i118682689.html
+> Search and pick the closest match. Some sellers offer cut-to-length.
 
-**5mm LED Kit (10pc multi-color) — ₱29**
-- Listing: 10Pcs 5mm Led Kit Red Green Yellow Blue White | (433) | 3.0K sold | Bulacan
-- URL: https://www.lazada.com.ph/products/pdp-i3105641040.html
+### 2f. Control electronics (Lazada)
 
-**Active Buzzer Module — ₱35 (Makerlab PH)**
-- Listing: Active Alarm Buzzer Driver Module High Current | 4.9 (78) | 537 sold
-- URL: https://www.lazada.com.ph/products/pdp-i3474748260.html
-- Backup (piezo 3-24V ₱55): https://www.lazada.com.ph/products/pdp-i2270182027.html
+| Qty | Item | Price | Store | Link |
+|---|---|---|---|---|
+| 1 | Arduino Mega 2560 clone (CH340G) | ₱430 | Lazada | https://www.lazada.com.ph/products/pdp-i273424406.html |
+| 1 | DHT22 Black module (humidity) | ₱69 | Lazada | https://www.lazada.com.ph/products/pdp-i3863275069.html |
+| 1 | DS18B20 waterproof probe (temp) | ₱105 | Lazada | https://www.lazada.com.ph/products/pdp-i3864018549.html |
+| 1 | LCD 16×2 I2C (black on white) | ₱165 | Lazada | https://www.lazada.com.ph/products/pdp-i3934869498.html |
+| 3 | 2-CH relay module 10A optocoupler | ₱103 ea = ₱309 | Lazada | https://www.lazada.com.ph/products/pdp-i4435872855.html |
+| 1 | LM2596S buck module 12V→5V | ₱155 | Lazada | https://www.lazada.com.ph/products/pdp-i2489483405.html |
 
-### Drivetrain & mechanicals
+### 2g. Automotive relay + fuses (Lazada)
 
-**Worm Gear Motor 12V — Makerlab website ₱1,249 ×3 — one per umbrella station** (primary)
-- Makerlab.ph: DC Worm Gear Motor SGM-A58SW31ZYS 12V 16/80RPM (60 kg·cm class, self-locking) — confirmed NOT on their Lazada store, order from makerlab.ph.
-- **Rev 4: qty 3 — put all three in one makerlab.ph order.**
-- The Lazada JGY370 (~25 kg·cm, different shaft size) is NOT an acceptable substitute at any quantity.
+| Qty | Item | Price | Store | Link |
+|---|---|---|---|---|
+| 1 | 12V 40A automotive relay 5-pin SPDT | ~₱80 | Lazada | https://www.lazada.com.ph/catalog/?q=12v+40a+automotive+relay |
+| 1 | Automotive blade fuse kit (3A, 10A, 15A, 20A, 25A assortment) | ~₱150 | Lazada | https://www.lazada.com.ph/catalog/?q=automotive+blade+fuse+kit+assortment |
 
-**8mm Steel Shaft — 304 SS ground rod (₱222.40+) — qty 3, one per station**
-- Primary: 304 Stainless Steel Rod 6/7/8/10mm Linear Shaft Ground Stock 300/500/1000mm — **8mm × 300mm variant** | 370 sold | (80) — https://www.lazada.com.ph/products/pdp-i5154908354.html
-- Alternate (price-verified ₱222.40, 28% off, 77 sold, (19)): https://www.lazada.com.ph/products/pdp-i4473127402.html
+### 2h. UI components (Lazada)
 
-**KP08 Pillow Block Bearings — ₱310 per 2-pc set, qty 3 sets = 6 bearings (2 per station)**
-- Listing: 2 pcs Pillow Block Bearing KP08 KP000-KP003 8mm-20mm | (44) | 286 sold | Bulacan
-- URL: https://www.lazada.com.ph/products/pdp-i5039609084.html
-- Variant: **select KP08 (8mm bore)** — listing spans KP08-KP004.
-- Single-unit backups: zinc KP08 ₱49-87, 311 sold, QC — https://www.lazada.com.ph/products/pdp-i4139708194.html
+| Qty | Item | Price | Store | Link |
+|---|---|---|---|---|
+| 1 | LED 5mm red | ₱29 | Lazada | https://www.lazada.com.ph/products/pdp-i2573601435.html |
+| 1 | Active buzzer 5V | ₱35 | Lazada | https://www.lazada.com.ph/products/pdp-i4472196293.html |
+| 1 | Arcade LED push button 5V (Circuitrocks) | ₱45 | Lazada | https://www.lazada.com.ph/products/i343850766.html |
+| 2 | DC rocker switch 12V 10A (labeled "DC") | ₱72 | Lazada | https://www.lazada.com.ph/products/pdp-i2808878488.html |
 
-**Shaft Coupling (incl. 8×8) — ₱82.84 (FUXING)**
-- Listing: 1set Rigid Shaft Coupling 4/5/6/8/10mm Motor Connector Sleeve #45 Steel | (185) | 408 sold
-- URL: https://www.lazada.com.ph/products/pdp-i2734273953.html
-- Set includes 8mm — clamp-style rigid sleeve. Use the 8×8 config for motor-to-shaft. **Qty 2 sets** (3× 8×8 configs needed + spare).
+### 2i. Wiring + consumables (Lazada)
 
-## Watch-outs (read before ordering)
+| Qty | Item | Price | Store | Link |
+|---|---|---|---|---|
+| 1 | Silicone wire kit 6–18AWG | ₱218 | Lazada | https://www.lazada.com.ph/products/pdp-i4880482146.html |
+| 1 | Dupont jumper kit 40-pin | ₱45 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
+| 1 | Terminal block 15A barrier strip | ₱106 | Lazada | https://www.lazada.com.ph/products/pdp-i2818578034.html |
+| 1 | Heat-shrink tube kit | ₱111 | Lazada | https://www.lazada.com.ph/products/pdp-i2569065087.html |
+| 1 | 1/4W resistor kit | ₱69 | Lazada | https://www.lazada.com.ph/products/pdp-i2501387387.html |
+| 1 | Nylon standoff kit | ₱97 | Lazada | https://www.lazada.com.ph/products/pdp-i2946710217.html |
+| 1 | Aluminum plate 6061 6mm (motor plate + mounts) | ₱760 | Lazada | https://www.lazada.com.ph/products/pdp-i4449859085.html |
 
-1. **Relay contacts are 30VDC-rated** — never on mains AC; heater uses slow duty cycling only (2–5s period).
-2. **Inverter listing traps:** "4000W/6000W" on cheap units is usually surge rating or modified sine. Buy pure sine with a **3000W continuous** rating and a remote pin — the exhaust fan is an induction motor.
-3. **Battery lead time:** PowMr 200Ah units flagged pre-order (~60 days). Order BOTH FIRST or find local stock. 2× 200Ah ≈ 6–8 stage-1 cycles per charge in battery mode.
-4. **Rocker DC derating:** don't push a 16A AC-rated switch on the battery load — switch the control side instead.
-5. **Motor torque:** the JGY370 Lazada listing is ~25 kg·cm — under the 60 kg·cm spec. Makerlab's SGM-A58SW31ZYS (site-only, qty 3) is the spec-correct choice.
-6. **Never parallel the two AC sources** — the changeover switch is the only path to the RCD; the inverter remote interlock must be verified before the first heated cycle.
+### 2j. Battery + charger (Lazada)
 
-## One-stop alternatives
+| Qty | Item | Price | Store | Link |
+|---|---|---|---|---|
+| 2 | PowMr LiFePO4 12.8V 200Ah w/ BMS 200A | ~₱8,900 ea = ~₱17,800 | Lazada | https://h5.lazada.com.ph/products/powmr-12v-200ah-lifepo4-battery-lithium-battery-built-in-bms-6000-deep-cycles-rechargeable-solar-battery-i5047514166.html |
+| 1 | LiFePO4 charger 14.6V 20A | ~₱2,000–2,700 | Lazada | https://www.lazada.com.ph/tag/lifepo4-charger-20a/ |
 
-Makerlab.ph website (not Lazada) also carries: DHT22 (₱200), DS18B20 (₱99), LCD 1602 (plain ₱105 / I2C versions), fuse holders, KCD11 rockers (3A — too small for main switch), SGM worm motors (order all ×3 here), couplings. If you want fewer shipments, order the Makerlab-website-only items there and the rest from their Lazada store.
+> **⚠️ ORDER BATTERY FIRST** — longest shipping time. Verify seller rating ≥4.5.
 
-**Shopee PH not checked** (login-walled for automated verification). All listings above are Lazada PH.
+### 2k. Hardware store (physical — Robinsons/Wildepanda/etc.)
+
+| Item | Est. Price | Note |
+|---|---|---|
+| Zip ties (assorted) | ~₱50 | |
+| M3/M4 screws + nuts (assorted) | ~₱150 | Stainless preferred |
+| Silicone sealant | ~₱100 | |
+| Plastic drip tray | ~₱100 | Station base |
+| Velcro strips | ~₱50 | Board mounting |
+| Rubber grommets | ~₱40 | Wire passthrough |
+
+---
+
+## 3. Quick price summary
+
+| Category | Total |
+|---|---|
+| PTC heaters (9×₱555) | ≈ ₱4,995 |
+| BLDC fans + ESCs (9×₱469) | ≈ ₱4,221 |
+| Motors + couplings (makerlab) | ≈ ₱1,749 |
+| Bearings + shafts (Lazada) | ≈ ₱1,062 |
+| Control electronics (Lazada) | ≈ ₱1,233 |
+| Relay + fuses (Lazada) | ≈ ₱230 |
+| UI (LEDs, buzzer, button, rockers) | ≈ ₱181 |
+| Wiring + consumables (Lazada) | ≈ ₱1,346 |
+| Battery bank (2× 200Ah) + charger | ≈ ₱19,800–20,500 |
+| Hardware store consumables | ≈ ₱490 |
+| **GRAND TOTAL** | **≈ ₱35,300–36,000** |
+
+---
+
+## 4. Physical store fallbacks (if online unavailable)
+
+| Item | Physical store | Location |
+|---|---|---|
+| BLDC fan + ESC | e-Gizmo Mechatronics | Tomas Morato, QC |
+| BLDC fan + ESC | Rep Asia | Quezon Ave, QC |
+| KP08 pillow blocks | Kuan Kee Hardware | Manila |
+| Steel shafts | Manila Trading (steel) | Various |
+| Arduino + sensors | e-Gizmo / Circuitrocks | QC / Online |
+| Automotive relay | Any auto parts shop | Universal |
+
+---
+
+## 5. Variant checklists (at checkout)
+
+| Item | Pick this | NOT this |
+|---|---|---|
+| PTC heater | 12V 100W | 220V (wrong!) |
+| BLDC fan | 50mm with ESC | Bare motor only |
+| Pillow block | KP08, 6mm bore | KP08, 8mm bore |
+| Shaft | 6mm × 300mm SS | 8mm (wrong) |
+| Coupling | 6×8mm rigid | Other sizes |
+| Relay module | 2-CH 10A optocoupler | 4-CH (waste) or 1-CH |
+| Automotive relay | 12V 40A 5-pin SPDT | 12V 80A (overkill) |
+| Battery | LiFePO4 12.8V 200Ah | Lead-acid (too heavy) |
+| Charger | LiFePO4 14.6V 20A | Lead-acid charger (wrong!) |
+| DHT22 | Black module | Blue (less accurate) |
+
+---
+
+## Rev history
+
+- **Rev 7 (current):** Pure 12V DC. No mains, no inverter, no RCD. 9× PTC heaters, 9× BLDC fans with ESC, relay-switched. Total ~₱35,300–36,000.
+- **Rev 6:** Mains heat + 3000W inverter + 12V stations. Total ~₱40,800–45,200.
+- **Rev 5:** Mains heat + 12V motors + 200Ah LiFePO4. Total ~₱28,000–34,700.

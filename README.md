@@ -7,7 +7,7 @@ Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air 
 
 ## How it works
 
-1. Each umbrella mounts on its **own motorized station** — a worm gear motor (60 kg·cm) direct-driving an 8mm shaft — inside the drying chamber. Stations run independently: dry 1, 2, or 3 umbrellas per cycle.
+1. Each umbrella mounts on its **own motorized station** — a worm gear motor (14 kg·cm) direct-driving a 6mm shaft — inside the drying chamber. Stations run independently: dry 1, 2, or 3 umbrellas per cycle.
 2. **Two 1500W PTC heater-fans (220V mains)** and a **12-inch industrial exhaust fan** heat and refresh the chamber (40–60°C — safe for nylon/polyester), switched by **Fotek SSR-40DAs** and staged by the controller.
 3. **DHT22** (humidity) + **DS18B20** (heater-zone temp) drive the duty-cycling controller on the **Arduino Mega 2560** — heaters run only while chamber humidity is above threshold (the "energy efficient control" of the study).
 4. When chamber humidity drops below threshold → auto-shutoff + buzzer + green LED. Condensate drains passively (sloped floor → drain tube → drip tray).
@@ -17,13 +17,13 @@ Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air 
 | Subsystem | Component |
 |---|---|
 | Controller | Arduino Mega 2560 |
-| Heat | **2× 1500W PTC heater-fans (220V mains)** switched by **2× Fotek SSR-40DA** (heatsinked, staged on/off) |
+| Heat | **2× 1500W PTC heater-fans (220V mains)** switched by **2× Fotek SSR-40DA** (staged on/off) |
 | Air exchange | **Omni 12-inch industrial exhaust fan (220V)** on the mains rocker |
-| Rotation | **3× SGM-A58SW31ZY worm gear motors** 12V (60 kg·cm each, one per umbrella) via **2-CH relay modules w/ optocoupler** (fixed 16 RPM) |
+| Rotation | **3× SGM-370 worm gear motors** 12V (14 kg·cm each, one per umbrella) via **2-CH relay modules w/ optocoupler** (fixed 6 RPM) |
 | Power | **220V from wall outlet OR 3000W pure sine inverter** via changeover (RCD-protected) · **2× LiFePO4 12.8V 200Ah** for motors, control, and battery-mode heat → LM2596S buck → 5V logic |
 | Sensors | DHT22 · DS18B20 waterproof |
-| UI | 16×2 LCD (I2C), 3 status LEDs, buzzer, start button, 2 labeled rockers (MAINS / DC) |
-| Mechanical | 3× 8mm steel shafts, 6× KP08 pillow blocks, 3× 8×8 couplings, aluminum chassis |
+| UI | 16×2 LCD (I2C), 3 status LEDs, buzzer, illuminated arcade start button, 2 labeled rockers (MAINS / DC) |
+| Mechanical | 3× 6mm steel shafts, 6× KP06 pillow blocks, 3× 6×8 couplings, aluminum chassis |
 
 > Rev 6 change: dual-source power — wall outlet or 3000W pure sine inverter (2× 200Ah LiFePO4 bank) via a changeover switch; firmware caps battery mode at stage 1. Rev 5: heating moved to mains (2× 1500W PTC heater-fans via SSR-40DAs, 12" exhaust fan). Rev 4: 3 independent stations replaced the single-motor carousel; relays replaced the SSR + BTS7960 (12V era). MLX90614 removed.
 

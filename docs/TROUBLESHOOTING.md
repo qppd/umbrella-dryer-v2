@@ -1,75 +1,120 @@
-# Troubleshooting (Rev 6)
+# Troubleshooting (Rev 7 — 12V DC)
 
-Symptom → cause → fix, per subsystem. Wiring map: `docs/BLOCK-DIAGRAM.md`. Control behavior: `docs/FLOWCHART.md`.
+> All voltages are 12V DC or 5V logic. No mains voltage in this system.
 
-## 1. Power & logic
+---
 
-| Symptom | Likely cause | Fix |
-|---|---|---|
-| No LED anywhere, LCD blank | Battery low / rocker on control side not closed / 3A logic fuse open | Check battery ≥ 12.0V; rocker; fuse; then buck input voltage |
-| Mega resets when a relay clicks | Buck output set too low or coil share overloads it | Re-verify buck at 5.0V under load; relay coils must draw from the 5V rail, not the Mega |
-| Buck output ~1.2V or erratic | Trimmer never set / bad connection | Set buck to 5.0V with a meter BEFORE the Mega is connected |
-| Mega brownout on start | 12V into the barrel jack | Mega is fed from buck 5V → 5V pin only (Makerlab warning) |
-| Battery BMS won't deliver | BMS tripped (short/over-discharge) → remove load, charge with LiFePO4 charger | Charger must be the 14.6V LiFePO4 model — a 13.8V lead-acid charger undercharges |
-| Inverter shuts down mid-cycle | Overload (stage 2 requested in battery mode) / low-battery cutoff / overheating | Check D14 mode + stage-1 cap on Serial; recharge the bank; clear the inverter vents |
-| No output at RCD from either source | Changeover mid-position / RCD tripped | Snap the changeover fully to A or B; reset the RCD then re-test |
-| Inverter dead in battery mode | Remote pin still grounded (changeover not fully at B) / 250A ANL fuse open / bank below cutoff | Verify changeover position + D14; meter the ANL fuse; recharge |
-
-## 2. Heaters (220V mains via SSR-40DA)
+## 1. Power issues
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Heater never runs, no output on SSR | Input polarity / wrong pin (D4 or D5) / cycle not started / 10k pull-down missing or shorting the input | Confirm state on Serial; check D4/D5 wiring and the bias resistor |
-| SSR input driven, no heat | 10A branch fuse open / loose SSR output terminal / appliance tripped | Fuse, meter SSR terminals under load, check the appliance's own thermostat/reset |
-| Heater 2 never runs in battery mode | Stage-2 cap active (D14 = battery mode) — by design | Firmware forces SSR2 OFF on battery power; verify D14 reads HIGH; use wall mode for stage 2 |
-| Only one heater works | Staging logic holding stage 1 (normal on light loads) or SSR2/appliance fault | Raise humidity load (wetter load); swap SSR1/SSR2 outputs to isolate SSR vs appliance |
-| SSR overheating / thermal cycling | Heatsink too small or no thermal paste | 7–10W each — verify heatsink mounting inside the box; re-paste |
-| Heater latches ON regardless of code | SSR fail-short | Kill at the MAINS rocker; replace the SSR; keep PERIOD_MS ≥ 2 s |
-| RCD trips when heaters start | Earth fault or damp appliance | Unplug appliances one at a time; dry/inspect; do not bypass the RCD |
-| Appliance shuts off mid-cycle | Built-in thermostat cycling / tipped-over switch | That is the appliance's own protection — verify airflow around it, level base |
-| Over-temp FAULT frequently | `T_CUT` too close to normal / probe in direct jet | `T_CUT` 65 °C default; reposition DS18B20 probe in the airstream, not on the element |
+| Nothing turns on | DC rocker off / battery disconnected | Flip DC rocker; check battery terminals; verify 25A main fuse |
+| Buck LED off | Fuse blown / battery dead | Check 3A logic fuse; measure battery voltage (should be >12.0V) |
+| Buck output ≠ 5V | Potentiometer misadjusted | Re-calibrate buck with multimeter BEFORE connecting to Mega |
+| Mega won't boot | Buck not providing 5V / wrong Vin | Verify 5V at Mega Vin pin; check GND continuity |
+| Battery dies fast | Too many stations running simultaneously | Run one station at a time (staged operation); check for shorts |
 
-## 3. Motors / stations
+---
+
+## 2. Sensor issues
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| One station dead, others fine | That station's 3A fuse (jam blow) or relay ch wiring | Check fuse; motor terminals; swap relay channels to isolate |
-| Station hums/clicks but no rotation | Jam / coupling set screw loose | Clear jam (worm is stall-tolerant but the fuse may already be open); tighten 8×8 coupling screws |
-| Motor reversed | Leads swapped | Swap motor+ / motor− at that branch |
-| Runs hot, slow | Undervoltage (branch drop) or binding shaft | Meter at motor under load ≥ 11V; re-check pillow-block alignment |
-| Station stops mid-cycle | Thermal? Fuse half-seated | Meter continuity on the 3A fuse; seat fully |
-| Umbrella wobbles violently | Holder off-axis / bent shaft | Re-seat holder; shaft is ground 304 SS — replace if bent |
+| DHT22 reads NaN | Wiring / library issue | Check VCC→5V, GND→GND, DATA→D2 with 10kΩ pull-up; try `DHT22 Black` module |
+| DHT22 reads 0% or 100% | Damaged sensor or wiring fault | Replace DHT22; verify no solder bridges |
+| DS18B20 reads −127°C | Bad connection / missing pull-up | Check white wire→D3 with 4.7kΩ pull-up; run OneWire scanner |
+| DS18B20 reads 85°C only | Power issue (parasitic mode) | Connect VCC (red wire) to 5V; don't rely on parasitic power |
+| Temperature too high / low | Probe placement | Mount DS18B20 near PTC heaters in airflow path, not on metal surface |
 
-## 4. Sensors
+---
 
-| Symptom | Likely cause | Fix |
-|---|---|---|
-| DHT22 reads NaN / 99.9 | Bad pull / too-fast polling (needs ≥2 s interval) / wrong variant | Verify it's the module variant; 2 s+ between reads; check D2 wiring |
-| DS18B20 reads −127 | No 4.7kΩ pull-up / probe damaged | Add pull-up data→5V; try the backup probe point |
-| Humidity stuck high | DHT22 saturated after a wet 3-up cycle | Let it air-dry; silica gel pack in the chamber helps between cycles |
-| Humidity disagrees with feel | Sensor near drain/fan stream | Mount DHT22 mid-chamber, away from direct air jets |
-| LCD blank / blocks | Wrong I2C address / contrast | Scan for 0x27 vs 0x3F; adjust pot on backpack |
-
-## 5. Control behavior
+## 3. LCD issues
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Relay chatter (fast ticking) | Duty period too short or KP too high | PERIOD_MS ≥ 2 s; lower KP_DUTY |
-| Cycle never completes | `H_TARGET` too low for the day's ambient / DHT drift | Raise H_TARGET a few %; verify with a second hygrometer |
-| Completes too early (damp umbrellas) | Threshold hit by brief humidity dip | H_STEADY_MS enforces 5 min — verify it's implemented; lower H_TARGET |
-| Battery gives fewer cycles than spec'd | Heater duty stuck high (leaky chamber) / battery degraded | Log duty; check door seal; charge to full with LiFePO4 charger |
+| LCD blank | Wrong I2C address | Try 0x3F instead of 0x27; use I2C scanner sketch |
+| LCD shows squares | Contrast / I2C not initialized | Call `lcd.init()` not `lcd.begin()`; check SDA→A4, SCL→A5 |
+| LCD flickers | Loose connection | Check all 4 wires (VCC, GND, SDA, SCL); reseat dupont connectors |
 
-## 6. Mechanical / water
+---
+
+## 4. Relay issues
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Water pooling, not draining | Slope < 3° or drain blocked | Re-shim floor; clear tube; mesh liner funnel check |
-| Drip tray overflows mid-cycle | Tray too small / 3 golf umbrellas soaked | 500 mL tray spec; empty between cycles |
-| Rust spots on chassis | Mild-steel budget plate used | Rust-proof; prefer the 6061 aluminum plate near condensate |
+| Relay doesn't click | No signal / no power | Check D4–D9 wiring; verify relay VCC→5V, GND→GND |
+| Relay clicks but load off | Wrong terminals | Check COM and NO wiring; 12V bus → COM, load → NO |
+| Relay stays ON at boot | Pin not defaulting HIGH | Verify `digitalWrite(pin, HIGH)` in setup; add 10kΩ pull-up to 5V |
+| Load turns on/off by itself | Floating pin | Enable `pinMode(OUTPUT)` + default HIGH in `setup()` |
 
-## 7. Escalation
+---
 
-1. Isolate: single-branch test (one fuse in, others out).
-2. Meter before multimeter-guessing: voltage at battery → main fuse → branch fuse → load terminal.
-3. Swap test: relay boards and channels are identical — swap to see if the fault follows the part.
-4. Serial prints at every state transition show exactly which interlock blocked the heater.
+## 5. ESC / BLDC fan issues
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Fan doesn't spin | ESC not armed | Verify `esc.attach(pin)` + `esc.write(0)` for 2s on boot |
+| Fan spins then stops | ESC lost signal | Ensure `esc.write()` called continuously; check D10/D11/D12 wiring |
+| Fan vibrates excessively | Bent propeller / unbalanced | Check propeller; replace if damaged; ensure duct clears spinning blades |
+| Fan runs at wrong speed | PWM range mismatch | Calibrate ESC (see FIRMWARE-GUIDE.md §9); try write range 0–180 |
+| ESC gets hot | Drawing too much current | Verify fan current < 3.2A each; check 15A fan bus fuse not overloaded |
+| All 9 fans don't start | Fan bus relay not ON | Check D9 → automotive relay coil; measure 12V at ESC VCC after relay ON |
+
+---
+
+## 6. Motor issues
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Motor doesn't spin | Relay not switching / fuse blown | Check D6–D8 wiring; verify 3A motor fuse; check COM/NO on relay |
+| Motor spins wrong direction | Polarity reversed | Swap any two motor leads (DC motor direction = polarity) |
+| Motor hums but doesn't spin | Coupling misaligned / shaft binding | Loosen coupling; realign motor and shaft; check KP08 pillow blocks |
+| Motor stalls under load | Insufficient torque | Verify umbrella not too heavy (>3 kg·cm load); check 12V supply voltage |
+
+---
+
+## 7. Thermal issues
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Thermal cutoff triggers immediately | DS18B20 reads >65°C at boot | Move probe away from heat source; check probe is in airflow, not on heater |
+| PTC heaters don't get hot | Relay not switching / wrong voltage | Verify 12V at PTC terminals; check relay wiring; confirm 12V heaters (not 220V) |
+| Chamber too hot (>60°C) | Too many PTC groups on simultaneously | Run staged operation; reduce PTC groups active at once |
+| Burning smell | Wiring too thin / loose connection | Check wire gauges (14 AWG main, 16 AWG station); tighten all terminals |
+
+---
+
+## 8. Battery issues
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Battery voltage drops fast | High current draw / old battery | Run one station at a time; check for shorts; verify BMS is functioning |
+| Battery won't charge | Wrong charger | Use 14.6V LiFePO4 charger ONLY; never use lead-acid charger |
+| BMS disconnects | Over-discharge / over-current | Recharge battery; check total current draw stays within BMS limits |
+
+---
+
+## 9. Fuse issues
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Main fuse blows | Total current > 25A | Run fewer stations simultaneously; check for short circuits |
+| Station fuse blows | Single station overcurrent | Check PTC heater count per group (max 3); verify wire gauges |
+| Fuse blows immediately | Dead short | Trace wiring with multimeter (continuity mode); check for bare wire touching chassis |
+
+---
+
+## 10. Debug mode
+
+Add to sketch for verbose Serial output:
+
+```cpp
+// Add in loop():
+Serial.print("Phase: "); Serial.print(currentPhase);
+Serial.print(" | H: "); Serial.print(humidity);
+Serial.print(" | T: "); Serial.print(temperature);
+Serial.print(" | PTC_A: "); Serial digitalRead(PIN_RELAY_PTC_A);
+Serial.print(" | PTC_B: "); Serial digitalRead(PIN_RELAY_PTC_B);
+Serial.print(" | MOTOR: "); Serial.print(digitalRead(PIN_RELAY_MOTOR_1));
+Serial.print(" | FAN: "); Serial.println(digitalRead(PIN_RELAY_FAN_BUS));
+```

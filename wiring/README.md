@@ -27,7 +27,7 @@ Master connection list for every component. Rev 6 architecture: **heat is 220V A
 | D10 | out | Yellow LED (220 Ω) | cathode→GND |
 | D11 | out | Red LED (220 Ω) | cathode→GND |
 | D12 | out | Buzzer + | − → GND |
-| D13 | in | Start button (other leg → GND) | INPUT_PULLUP |
+| D13 | in | Start button — arcade switch side (other side → GND) | INPUT_PULLUP; arcade LED ring: + → 5V, − → GND (always lit) |
 | D14 | in | Changeover aux contact (other side → GND) | INPUT_PULLUP — LOW = wall-outlet mode |
 | 20/21 | I2C | LCD SDA / SCL | addr 0x27/0x3F |
 
@@ -48,7 +48,7 @@ Note: the 12" exhaust fan has **no Mega control channel** — it switches with t
 | SSR input + (per SSR) | Mega D4 / D5, each with a 10 kΩ pull-down to that SSR's input− | 22 AWG | — |
 | SSR input − | SSR common to Mega GND (DC domain) | 22 AWG | — |
 
-**1500 W = 6.8 A at 220V.** SSR-40DA (40 A) per heater = 5.9x margin; the 10 A branch fuses protect wiring. SSRs mount on a **heatsink** (7–10 W each dissipated at 6.8 A) inside the electrical box, away from the chamber heat.
+**1500 W = 6.8 A at 220V.** SSR-40DA (40 A) per heater = 5.9x margin; the 10 A branch fuses protect wiring. SSRs mount inside the electrical box, away from the chamber heat.
 
 ### Mains safety rules (non-negotiable)
 1. **The changeover switch is the only point where the two sources meet — and they never meet electrically.** Break-before-make only; never wire the wall outlet and inverter output to the same node directly.
@@ -121,8 +121,7 @@ Boot-safe inputs: the 2-CH relay boards are active-LOW (LOW pin = relay ON) so t
 1. **Two separate kill switches:** mains rocker (AC domain) and DC rocker (battery) — label both.
 2. **Never parallel the two AC sources** — the changeover is the only path to the RCD; the inverter remote interlock must be verified before the first heated cycle.
 3. Mega never sees mains or 12V — only buck 5 V and sensor-level signals.
-4. SSR heatsinks sized for 7–10 W each; thermal paste; vertical fins; inside the closed box.
-5. Slow duty cycling on the SSRs too (zero-cross DA type tolerates kHz poorly at load; keep 2–5 s period).
-6. Single-point DC ground; mains earth separate and complete (box, frame, chassis, inverter chassis).
-7. Every chamber wall pass-through gets a grommet; keep appliance cords off the hot floor side.
-8. Inverter DC feed: 1/0 AWG, ≤ 1 m, 250 A ANL at the battery end — voltage drop and heat live in long thin cables.
+4. Slow duty cycling on the SSRs too (zero-cross DA type tolerates kHz poorly at load; keep 2–5 s period).
+5. Single-point DC ground; mains earth separate and complete (box, frame, chassis, inverter chassis).
+6. Every chamber wall pass-through gets a grommet; keep appliance cords off the hot floor side.
+7. Inverter DC feed: 1/0 AWG, ≤ 1 m, 250 A ANL at the battery end — voltage drop and heat live in long thin cables.

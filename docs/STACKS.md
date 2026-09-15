@@ -1,62 +1,91 @@
-# Technology Stacks (Rev 6)
+# Stack (Rev 7 — 12V DC)
 
-The full stack from silicon to tooling. Firmware behavior lives in `docs/FIRMWARE-GUIDE.md`; part ratings in `docs/HARDWARE.md`.
+> 12V DC-only umbrella dryer — no mains, no inverter, no RCD. Self-contained battery-powered system.
 
-## 1. Firmware stack (bottom-up)
+---
 
-| Layer | Component | Version guidance | Role |
+## 1. What this stack is
+
+- An Arduino-controlled umbrella dryer with 3 stations.
+- Each station has 3× PTC ceramic heaters (12V 100W) and 3× BLDC fans (50mm ducted, ESC-controlled).
+- Each station has 1× SGM-370 worm gear motor for umbrella rotation.
+- Everything runs on 12V DC from a 2× 200Ah LiFePO4 battery bank.
+- Relays switch PTC heaters and motors. ESCs control BLDC fans via PWM.
+- Self-regulating PTC heaters + DS18B20 thermal fuse + thermal fuse = triple safety.
+
+---
+
+## 2. Hardware layers (bottom-up)
+
+| Layer | Components |
+|---|---|
+| Power | 2× LiFePO4 200Ah → 25A main fuse → DC distribution → per-station fuses |
+| Conversion | LM2596S buck: 12V → 5V for logic |
+| Actuation | 3× PTC heater groups (relay-switched 12V), 3× BLDC fan groups (ESC PWM + relay bus), 3× worm motors (relay-switched 12V) |
+| Sensing | DHT22 (humidity), DS18B20 (temperature) |
+| Control | Arduino Mega 2560 |
+| UI | 16×2 LCD I2C, 3× LEDs, 1× buzzer, 1× arcade button |
+
+---
+
+## 3. Power tree
+
+```
+Battery (12.8V 200Ah × 2 parallel)
+  └─ 25A main fuse
+      ├─ 10A fuse → PTC Station 1 (3× 100W, 25A total)
+      ├─ 10A fuse → PTC Station 2 (3× 100W)
+      ├─ 10A fuse → PTC Station 3 (3× 100W)
+      ├─ 3A fuse  → Motor Station 1 (SGM-370)
+      ├─ 3A fuse  → Motor Station 2 (SGM-370)
+      ├─ 3A fuse  → Motor Station 3 (SGM-370)
+      ├─ 15A fuse → Fan bus (9× BLDC fans)
+      ├─ 3A fuse  → Logic (buck → Mega + sensors)
+      └─ DC rocker (kill switch)
+```
+
+---
+
+## 4. Software layers
+
+| Layer | Role |
+|---|---|
+| DHT library | Reads humidity from DHT22 |
+| OneWire + DallasTemperature | Reads temperature from DS18B20 |
+| Servo library | Generates 50Hz PWM for ESC signals (D10/D11/D12) |
+| LiquidCrystal_I2C | Drives 16×2 LCD display |
+| Main sketch | State machine (IDLE → PREHEAT → DRY → COOL → DONE), relay control, ESC throttle, safety cutoff |
+
+---
+
+## 5. Full-stack wiring (12V DC — no mains)
+
+| Cable | From | To | AWG |
 |---|---|---|---|
-| Silicon | ATmega2560 (AVR 8-bit, 16 MHz, 256 KB flash / 8 KB SRAM / 4 KB EEPROM) | — | Bare-metal execution, no OS |
-| Board package | **Arduino AVR Boards** core (Mega 2560 profile) | Latest stable | `digitalWrite`, `millis()`, Serial, I2C (Wire) |
-| Library | `DHT sensor library` (Adafruit) **+** `Adafruit Unified Sensor` | Latest stable | DHT22 reads (≥2 s interval) |
-| Library | `OneWire` (Paul Stoffregen) | Latest stable | DS18B20 bus |
-| Library | `DallasTemperature` (Miles Burton) | Latest stable | DS18B20 high-level reads |
-| Library | `LiquidCrystal I2C` (Frank de Brabander / marcoschwartz) | Latest stable | LCD @ 0x27/0x3F |
-| Application | `umbrella-dryer.ino` (this repo) | Rev 6 | State machine + duty-cycle control |
+| Battery positive | Battery + | 25A main fuse | 14 |
+| Battery negative | Battery − | Common GND bus | 14 |
+| PTC heater power | Relay COM/NO → fuse → heater | 12V bus | 16 |
+| Motor power | Relay COM/NO → fuse → motor | 12V bus | 18 |
+| Fan power | Auto relay → 15A fuse → ESC VCC | 12V bus | 16 |
+| Fan signal | Mega D10/D11/D12 → ESC signal wire | — | 20 |
+| Logic power | 12V → buck → 5V → Mega Vin | — | 20 |
+| Sensor data | DHT22→D2, DS18B20→D3, LCD→A4/A5 | — | jumper |
+| Control signals | Mega D4–D9 → relay inputs | — | jumper |
+| Button | D13 → button → GND | — | jumper |
+| LED/buzzer | D14–D17 → components → GND | — | 22 |
 
-**Toolchain:** Arduino IDE 2.x (Boards Manager → *Arduino Mega or Mega 2560*, Processor → *ATmega2560*) or `arduino-cli` for scripted builds. SRAM discipline: wrap LCD/Serial string literals in `F()` — 8 KB SRAM fills fast with menus.
+> No mains wiring, no N/E/Ground, no RCD, no changeover switch.
 
-**Reproducibility (for the capstone defense):** record core + library versions at flash time (`arduino-cli lib list`, IDE 2 shows them in Library Manager) and paste them into the paper's appendix.
+---
 
-## 2. Power stack (Rev 6)
+## 6. BOM per layer
 
-| Stage | Component | In → Out |
-|---|---|---|
-| Source selection | **2P changeover switch** — wall outlet A / inverter B; 2nd pole grounds the inverter remote in wall mode | one source → RCD, never both |
-| AC generation (battery mode) | **3000W pure sine inverter**, remote pin | 12.8 V → 220 V 60 Hz (stage-1 capped) |
-| AC heat | RCD 30mA → mains rocker → 10A fuses → **2× SSR-40DA** | 220V → 2× 1500W heater-fans |
-| AC exhaust | mains rocker gang | 220V → 12" Omni fan |
-| Storage | 2× LiFePO4 12.8V 200Ah parallel w/ BMS 200 A each | — → 12.8 V bus (motors, control, inverter feed) |
-| DC main | DC rocker + 25 A fuse | 12.8 V → station + logic branches |
-| Actuation rail | 3 A ×3 station branches → 2× 2-CH relays | 3 worm motors |
-| Logic rail | LM2596S buck + 3 A fuse | 12.8 V → **5.0 V @ 3 A** → Mega 5V pin + relay coils |
-| Signal domain | Mega pins → SSR inputs (~12 mA) + optocoupler LEDs (2–5 mA) | Isolated triggers into both power domains |
-
-## 3. Mechanical stack (per station)
-
-```
-Worm gear motor (60 kg·cm, 16 RPM, 8mm shaft)
-   └─ 8×8 mm rigid coupling
-        └─ 8mm × 300mm 304 SS shaft
-             ├─ KP08 pillow block ×2 (supports)
-             └─ umbrella holder (fabricated)
-                  └─ umbrella (≤3 kg·cm load, ≥20× torque margin)
-```
-
-## 4. Development & docs tooling
-
-| Purpose | Tool | Note |
-|---|---|---|
-| Firmware | Arduino IDE 2.x / `arduino-cli` | 115200 serial debug |
-| Debugging | Serial Monitor prints @ state transitions | Per `docs/FIRMWARE-GUIDE.md` §8 |
-| Version control | Git + GitHub (`qppd/umbrella-dryer-v2`) | `references/` is local-only |
-| Diagrams | Mermaid (renders on GitHub) | FLOWCHART / BLOCK-DIAGRAM / SYSTEM-ARCHITECTURE |
-| Procurement | Lazada PH + makerlab.ph | Cart: `docs/BOM.md` Appendix A |
-| Electrical test | Multimeter (continuity/V/A) | Mandatory before first power-on (`docs/SETUP.md`) |
-
-## 5. Optional / not used
-
-- **PlatformIO (VS Code):** works with the same board core and libraries — optional, not required by the guide.
-- **PWM speed control / BTS7960:** not in the stack (on/off control only) — see `docs/SYSTEM-ARCHITECTURE.md` §5.
-- **SSR control of the exhaust fan:** not implemented — the fan is an appliance on the mains rocker.
-- **RTC / EEPROM cycle logging:** not in scope; EEPROM counters are a possible future add-on for cycle-count analytics.
+| Layer | Price (est.) |
+|---|---|
+| Battery (2× 200Ah) + charger | ≈ ₱19,800 |
+| PTC heaters (9×₱280) | ≈ ₱2,520 |
+| BLDC fans + ESCs (9×₱470) | ≈ ₱4,230 |
+| Motors + mechanical | ≈ ₱2,956 |
+| Control electronics | ≈ ₱1,653 |
+| UI + wiring + fuses + consumables | ≈ ₱2,500 |
+| **Total** | **≈ ₱33,660** |
