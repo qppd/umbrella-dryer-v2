@@ -1,4 +1,4 @@
-# Setup Guide (Rev 7 — 12V DC)
+# Setup Guide — 12V DC
 
 > Complete setup instructions for the 12V DC umbrella dryer. No mains wiring required.
 
@@ -30,7 +30,7 @@
 2. Install libraries: DHT sensor library, OneWire, DallasTemperature, LiquidCrystal_I2C (Adafruit Unified Sensor is a dependency).
 3. Open the sketch from `FIRMWARE-GUIDE.md` (copy the complete sketch into a new `.ino` file).
 4. Select board: **Arduino Mega 2560**. Select correct COM port.
-5. Upload. Open Serial Monitor at 115200 baud — should print "Umbrella Dryer V2 — Rev 7 (12V DC + BLDC)".
+5. Upload. Open Serial Monitor at 115200 baud — should print "Umbrella Dryer V2 — 12V DC + BLDC".
 
 ---
 
@@ -98,7 +98,7 @@
 1. **Disconnect all relay outputs** (no PTC heaters, no motors, no fans yet).
 2. Connect battery. Flip DC rocker.
 3. Buck LED should light. Measure 5V at Mega Vin.
-4. Mega should boot. LCD shows "Umbrella Dryer / Rev 7 - 12V DC".
+4. Mega should boot. LCD shows "Umbrella Dryer V2".
 5. ESCs should arm (brief beep or twitch from fans).
 6. After 2s, LCD shows "READY / Press to start".
 7. Press button → should enter PREHEAT phase on LCD.

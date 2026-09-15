@@ -1,4 +1,4 @@
-# Troubleshooting (Rev 7 — 12V DC)
+# Troubleshooting — 12V DC
 
 > All voltages are 12V DC or 5V logic. No mains voltage in this system.
 

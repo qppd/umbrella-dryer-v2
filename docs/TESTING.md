@@ -1,4 +1,4 @@
-# Testing Guide (Rev 7 — 12V DC)
+# Testing Guide — 12V DC
 
 > Test plan for the 12V DC umbrella dryer. No mains voltage — all tests on 12V DC battery power.
 
@@ -21,8 +21,8 @@
 2. Connect battery, flip DC rocker.
 3. **Check:**
    - [ ] Buck LED lights, output = 5.0V
-   - [ ] Mega boots, Serial Monitor prints "Rev 7"
-   - [ ] LCD shows "Umbrella Dryer / Rev 7 - 12V DC"
+   - [ ] Mega boots, Serial Monitor prints "Umbrella Dryer V2"
+   - [ ] LCD shows "Umbrella Dryer V2"
    - [ ] ESCs arm (fan twitch or beep)
    - [ ] LCD settles on "READY / Press to start"
 4. If anything fails → check wiring, buck voltage, I2C address.

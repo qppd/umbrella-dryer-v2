@@ -1,4 +1,4 @@
-# Firmware Guide (Rev 7 — 12V DC + BLDC Fans)
+# Firmware Guide — 12V DC + BLDC Fans
 
 > This is the Arduino sketch reference for the Umbrella Dryer V2 running on a **12V DC-only** system. BLDC fans are controlled via ESC PWM signals. PTC heaters and worm motors are relay-switched.
 
@@ -18,15 +18,15 @@
 4. **Safety at any point**: DS18B20 > 65°C → everything OFF (PTC relays + motor relays + ESCs).
 5. **Button repress** at any point → emergency stop, back to idle.
 
-### 1b. Key differences from Rev 6
+### 1b. Feature overview
 
-| Feature | Rev 6 (old) | Rev 7 (new) |
+| Feature | Specification |
 |---|---|---|
-| Heating | SSR-40DA switching 220V PTC | Relay switching 12V PTC (direct DC) |
+| Heating | Relay switching 12V PTC (direct DC) |
 | Fan control | None (passive convection) | 3× BLDC fans via ESC PWM (Servo library) |
-| Power | 220V mains + inverter | Pure 12V DC battery |
+| Power | Pure 12V DC battery |
 | Motor control | Relay (same) | Relay (same) |
-| Safety | RCD + thermal fuse | Thermal fuse + PTC self-regulation (no mains = no RCD needed) |
+| Safety | Thermal fuse + PTC self-regulation |
 
 ---
 
@@ -73,7 +73,7 @@
 
 ```cpp
 // ============================================================
-// Umbrella Dryer V2 — Rev 7 (12V DC + BLDC Fans via ESC)
+// Umbrella Dryer V2 — 12V DC + BLDC Fans via ESC
 // Board: Arduino Mega 2560
 // Dependencies: DHT, OneWire, DallasTemperature, Servo, LiquidCrystal_I2C
 // ============================================================
@@ -212,7 +212,7 @@ void lcdUpdate(const char* phase, int timerMin, int timerSec) {
 void setup() {
   // Serial for debug
   Serial.begin(115200);
-  Serial.println("Umbrella Dryer V2 — Rev 7 (12V DC + BLDC)");
+  Serial.println("Umbrella Dryer V2 — 12V DC + BLDC");
 
   // Relay pins — default HIGH (OFF)
   pinMode(PIN_RELAY_PTC_A, OUTPUT);
@@ -238,7 +238,7 @@ void setup() {
   lcd.setCursor(0, 0);
   lcd.print("Umbrella Dryer");
   lcd.setCursor(0, 1);
-  lcd.print("Rev 7 - 12V DC");
+  lcd.print("Umbrella Dryer V2");
   delay(2000);
 
   // Arm ESCs

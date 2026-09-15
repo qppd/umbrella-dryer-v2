@@ -1,4 +1,4 @@
-# Umbrella Dryer V2 — Bill of Materials (Rev 7 — 12V DC System)
+# Umbrella Dryer V2 — Bill of Materials — 12V DC System
 
 > **Design:** 12V DC-only system — no mains, no inverter, no RCD. Each umbrella station has 3× PTC heaters (100W each), 3× BLDC fans, and 1× worm gear motor. Battery-powered with 2× 200Ah LiFePO4 in parallel. Relays control PTC heaters and motors; ESCs control BLDC fans via PWM.
 
@@ -13,13 +13,13 @@
 | 1 | DS18B20 waterproof (probe + long lead) | attached near heaters | ₱105 | (258), 6K sold |
 | 1 | 16×2 LCD I2C (black on white OK) | addresses 0x27/0x3F; I2C only | ₱165 | (241), 2K sold |
 
-## 2. Power conversion — 12V DC (Rev 7)
+## 2. Power conversion — 12V DC
 
 | Qty | Part | Notes | Price |
 |---|---|---|---|
 | 1 | LM2596S adjustable buck module | 12V→5V for Mega + sensors; set to 5.0V before connecting logic | ₱155 |
 
-## 3. Power supply — 12V DC (Rev 7)
+## 3. Power supply — 12V DC
 
 ### 3a. Battery bank + charging
 
@@ -57,7 +57,7 @@ Relays switch 12V DC loads directly. No SSR needed — DC switching is straightf
 
 > **Relay modules:** Use 2× 2-CH relay modules (for PTC heaters and worm motors) + 1× 12V 40A automotive relay (for BLDC fan power bus). The automotive relay handles the higher fan bus current.
 
-### 3d. BLDC fan control — ESCs (Rev 7)
+### 3d. BLDC fan control — ESCs
 
 Each BLDC fan is controlled by an ESC (Electronic Speed Controller). ESCs receive PWM signals from the Mega and switch 12V DC power to the brushless motors.
 
@@ -144,7 +144,7 @@ Listings: makerlab.ph motors ×3 in one order.
 
 ---
 
-## 9. Capacity verification (Rev 7)
+## 9. Capacity verification
 
 ### 9a. Mechanical — per-station torque — PASS
 
@@ -177,7 +177,7 @@ Listings: makerlab.ph motors ×3 in one order.
 
 ---
 
-## 10. Fuse plan (12V DC — Rev 7)
+## 10. Fuse plan (12V DC)
 
 | Fuse | Rating | Location | Protects |
 |---|---|---|---|
@@ -195,7 +195,7 @@ Listings: makerlab.ph motors ×3 in one order.
 
 ---
 
-## 11. Pin assignment (Mega 2560 — Rev 7)
+## 11. Pin assignment (Mega 2560)
 
 | Pin | Net | Direction | Function |
 |---|---|---|---|
@@ -272,7 +272,7 @@ Listings: makerlab.ph motors ×3 in one order.
 
 ---
 
-## 14. Cost summary (Rev 7 — 12V DC)
+## 14. Cost summary (12V DC)
 
 | Category | Estimate |
 |---|---|
@@ -285,7 +285,7 @@ Listings: makerlab.ph motors ×3 in one order.
 | Wiring, fuses, chassis, consumables | ≈ ₱1,800–2,200 |
 | **TOTAL** | **≈ ₱35,300–36,000** |
 
-| **Savings vs Rev 6 (₱40,800–45,200):** ≈₱4,800–9,200 — eliminated inverter (₱5,500–8,500), mains wiring, RCD, changeover switch, ANL kit. PTC heater assemblies cost more than bare elements but include fan+housing.
+| **Savings vs previous mains-based design:** ≈₱4,800–9,200 — eliminated inverter (₱5,500–8,500), mains wiring, RCD, changeover switch, ANL kit. PTC heater assemblies cost more than bare elements but include fan+housing.
 
 ---
 

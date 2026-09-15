@@ -1,4 +1,4 @@
-# Hardware Reference (Rev 7 — 12V DC System)
+# Hardware Reference — 12V DC System
 
 > **Major revision:** This version replaces the 220V mains + inverter architecture with an
 > all-12V DC system. No mains voltage, no inverter, no RCD, no changeover switch, no SSR-40DA.
@@ -256,7 +256,7 @@ graph TB
 | Three stations (boost) | ~75A (reduced duty) | ~5.3 hours |
 | Standby (sensors + idle) | ~0.5A | ~800 hours |
 
-## 5. Station layout — decided (Rev 5, retained)
+## 5. Station layout
 
 | Parameter | Decision |
 |---|---|
@@ -297,7 +297,7 @@ graph TB
 | **Water ingress** | All sensors waterproof-rated; grommets on wall pass-throughs; silicone-sealed seams; no bare connections below 5 cm from floor |
 | **RCD / GFCI** | **Not required** — system is SELV (≤ 50V DC), no mains connection. The 12V DC source cannot deliver a lethal shock under normal conditions |
 
-### What was removed from Rev 6 and why
+### What was removed from previous revisions
 
 | Removed component | Reason |
 |---|---|

@@ -1,4 +1,4 @@
-# Sourcing Annex (Rev 7 — 12V DC, with Verified Links)
+# Sourcing Annex — 12V DC, with Verified Links
 
 > Complete sourcing guide with **actual store links**. Verified September 2026. No mains components needed.
 
@@ -171,6 +171,5 @@
 
 ## Rev history
 
-- **Rev 7 (current):** Pure 12V DC. No mains, no inverter, no RCD. 9× PTC heaters, 9× BLDC fans with ESC, relay-switched. Total ~₱35,300–36,000.
-- **Rev 6:** Mains heat + 3000W inverter + 12V stations. Total ~₱40,800–45,200.
-- **Rev 5:** Mains heat + 12V motors + 200Ah LiFePO4. Total ~₱28,000–34,700.
+- **Current:** Pure 12V DC. No mains, no inverter, no RCD. 9× PTC heaters, 9× BLDC fans with ESC, relay-switched. Total ~₱35,300–36,000.
+- **Previous:** Mains heat + inverter. Total ~₱40,800–45,200.

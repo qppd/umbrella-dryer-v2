@@ -1,127 +1,93 @@
-# Wiring Reference — Arduino Mega 2560 (Rev 6: dual source + mains heat + 12V stations)
+# Wiring Reference — Arduino Mega 2560
 
-Master connection list for every component. Rev 6 architecture: **heat is 220V AC** (2x 1500W PTC heater-fans via SSR-40DA), **rotation + control stay 12V DC** (battery-backed), and the 220V loads run from **either the wall outlet or a 3000W pure sine inverter** selected by a **changeover switch** — never both. The Mega never touches mains — SSRs and DC relays keep the domains separate. Pin map source: `docs/BOM.md` section 15.
+Master connection list for every component. Pure 12V DC architecture: **all loads run from the battery bank** — no mains voltage, no inverter, no changeover switch. Pin map source: `docs/BOM.md` section 14.
 
 ## 0. Domains overview
 
-| Domain | Source | Loads | Switched by | Mega sees it? |
-|---|---|---|---|---|
-| 220V AC | Wall outlet OR 3000W inverter via changeover | 2x 1500W PTC heater-fans, 12" Omni exhaust fan | 2x Fotek SSR-40DA | NO — SSR input side only |
-| 12V DC | 2x LiFePO4 200Ah (parallel) | 3 worm motors + inverter DC feed | 3x relay channels + changeover | NO — optocoupler input only; inverter takes its own heavy feed |
-| 5V DC | LM2596S buck | Mega, sensors, LCD, relay coils | — | yes (this is the Mega's home) |
+| Domain | Source | Loads | Switched by |
+|---|---|---|---|
+| 12V DC | 2× LiFePO4 200Ah (parallel) → 25A main fuse | PTC heaters, BLDC fans, worm motors | Relay modules (PTC + motors), automotive relay (fan bus), ESC PWM (fans) |
+| 5V DC | LM2596S buck (12V→5V) | Mega, sensors, LCD, relay coils, ESC logic | — |
 
 ## 1. Pin map — Mega 2560 side
 
 | Mega pin | Direction | Connects to | Wire / notes |
 |---|---|---|---|
 | 5V | power in | LM2596S buck OUT+ (set 5.00 V) | 22 AWG — never the barrel jack |
-| GND | common | Ground rail (DC side only) | 22 AWG |
+| GND | common | Ground rail (DC side) | 22 AWG |
 | D2 | in | DHT22 DATA | 22 AWG |
 | D3 | in | DS18B20 yellow DATA | + 4.7 kΩ pull-up D3→5V |
-| D4 | out | SSR-40DA #1 input (3–32VDC) — heater-fan 1 | + 10 kΩ pull-down, input+ to input− (holds OFF at boot) |
-| D5 | out | SSR-40DA #2 input — heater-fan 2 | + 10 kΩ pull-down (off at boot) |
-| D6 | out | 2-CH relay #1 ch1 — Station 1 motor | + 10 kΩ pull-up to relay VCC |
-| D7 | out | 2-CH relay #1 ch2 — Station 2 motor | + 10 kΩ pull-up |
-| D8 | out | 2-CH relay #2 ch1 — Station 3 motor | + 10 kΩ pull-up |
-| D9 | out | Green LED (220 Ω) | cathode→GND |
-| D10 | out | Yellow LED (220 Ω) | cathode→GND |
-| D11 | out | Red LED (220 Ω) | cathode→GND |
-| D12 | out | Buzzer + | − → GND |
-| D13 | in | Start button — arcade switch side (other side → GND) | INPUT_PULLUP; arcade LED ring: + → 5V, − → GND (always lit) |
-| D14 | in | Changeover aux contact (other side → GND) | INPUT_PULLUP — LOW = wall-outlet mode |
+| D4 | out | 2-CH relay #1 ch1 — Station 1 PTC heaters (3× 100W) | + 10 kΩ pull-up to VCC (active-LOW) |
+| D5 | out | 2-CH relay #1 ch2 — Station 2 PTC heaters (3× 100W) | + 10 kΩ pull-up |
+| D6 | out | 2-CH relay #2 ch1 — Station 1 motor (SGM-370) | + 10 kΩ pull-up |
+| D7 | out | 2-CH relay #2 ch2 — Station 2 motor (SGM-370) | + 10 kΩ pull-up |
+| D8 | out | 2-CH relay #3 ch1 — Station 3 motor (SGM-370) | + 10 kΩ pull-up |
+| D9 | out | 40A automotive relay (fan power bus) — via 2N2222 NPN + 1 kΩ base resistor | Relay coil + → D9, relay coil − → GND |
+| D10 | out | ESC #1 PWM signal — Station 1 BLDC fans (3× parallel) | Servo library, 50 Hz |
+| D11 | out | ESC #2 PWM signal — Station 2 BLDC fans (3× parallel) | Servo library, 50 Hz |
+| D12 | out | ESC #3 PWM signal — Station 3 BLDC fans (3× parallel) | Servo library, 50 Hz |
+| D13 | in | Start button — arcade switch side (other side → GND) | INPUT_PULLUP; arcade LED ring: + → 5V, − → GND |
 | 20/21 | I2C | LCD SDA / SCL | addr 0x27/0x3F |
 
-Note: the 12" exhaust fan has **no Mega control channel** — it switches with the mains rocker (see section 2). Fan stage control = stage 1 only.
-
-## 2. 220V AC domain (dual source — hazardous)
+## 2. 12V DC power distribution
 
 | From | To | Wire | Protection |
 |---|---|---|---|
-| Wall outlet (grid mode) | **Changeover switch, position A** | 2.0 mm² 3-core | upstream breaker |
-| Inverter AC output (battery mode) | **Changeover switch, position B** | 2.0 mm² 3-core | inverter overload protection |
-| Changeover common out | **RCD/GFCI** | 2.0 mm² | 30 mA life protection — mandatory |
-| Changeover 2nd pole | Inverter remote pin → GND when in position A (wall) | 22 AWG | grounds the remote in wall mode = inverter OFF |
-| RCD outlet | Mains rocker + 10 A mains fuses (2 lines) | 3-core 2.0 mm² (14 AWG eq.) | Line + neutral fused |
-| Fused line 1 | SSR-40DA #1 OUT → heater-fan 1 plug/socket | 2.0 mm² | 10 A |
-| Fused line 2 | SSR-40DA #2 OUT → heater-fan 2 plug/socket | 2.0 mm² | 10 A |
-| Mains rocker (second gang) | 12" Omni exhaust fan plug | 2.0 mm² | 10 A |
-| SSR input + (per SSR) | Mega D4 / D5, each with a 10 kΩ pull-down to that SSR's input− | 22 AWG | — |
-| SSR input − | SSR common to Mega GND (DC domain) | 22 AWG | — |
-
-**1500 W = 6.8 A at 220V.** SSR-40DA (40 A) per heater = 5.9x margin; the 10 A branch fuses protect wiring. SSRs mount inside the electrical box, away from the chamber heat.
-
-### Mains safety rules (non-negotiable)
-1. **The changeover switch is the only point where the two sources meet — and they never meet electrically.** Break-before-make only; never wire the wall outlet and inverter output to the same node directly.
-2. **In wall mode the inverter must be OFF** — verified by its remote pin being grounded through the changeover's second pole. Confirm before the first heat: interlock drill in `docs/SETUP.md`.
-3. **GFCI/RCD downstream of the changeover** — it protects the loads on either source.
-4. Every mains terminal inside a **closed grounded metal electrical box**; earth the box, the chamber frame, both appliance chassis, **and the inverter chassis**.
-5. SSR fail-short now means an **AC heater stuck ON**: mitigated by RCD + branch fuses + PTC self-regulation + the **mains rocker as the manual kill** (not the battery rocker).
-6. The appliance plugs stay accessible — unplug before any chamber service.
-7. Thermal cutoffs in each heater-fan appliance stay in circuit (they are built in).
-
-## 3. 12V DC domain (battery bank)
-
-| From | To | Wire | Protection |
-|---|---|---|---|
-| Battery + (parallel bank) | DC rocker → 25 A main fuse → barrier MAIN | 16 AWG | 25 A — motors + logic only |
-| Battery + | **250 A ANL fuse → inverter DC+** | **1/0 AWG, ≤ 1 m** | 250 A |
+| Battery + (parallel bank) | DC rocker switch | 12 AWG | — |
+| DC rocker | **25A main fuse** → barrier block MAIN | 12 AWG | 25 A blade fuse |
 | Unit A ↔ Unit B parallel links | battery-to-battery bus | 4 AWG | — |
-| Inverter DC− | single-point DC ground | 1/0 AWG | — |
-| MAIN | Station branches x3: 3 A fuse → relay COM→NO → motor + | 18 AWG | 3 A each |
-| MAIN | Logic: 3 A fuse → buck IN+ | 16 AWG | 3 A |
+| MAIN | Station 1 branch: **20A fuse** → relay COM→NO → PTC heaters 3×100W + motor | 14 AWG | 20 A |
+| MAIN | Station 2 branch: **20A fuse** → relay COM→NO → PTC heaters 3×100W + motor | 14 AWG | 20 A |
+| MAIN | Station 3 branch: **20A fuse** → relay COM→NO → PTC heaters 3×100W + motor | 14 AWG | 20 A |
+| MAIN | Fan bus: **15A fuse** → automotive relay COM→NO → ESCs (9 fans) | 14 AWG | 15 A |
+| MAIN | Logic: **3A fuse** → buck IN+ | 16 AWG | 3 A |
 | Motor − / relay GND | Ground rail (DC) | — | single point |
-| Buck OUT+ (5 V) | Mega 5V, relay VCCs, sensors, LCD | 22 AWG | set 5.00 V first |
+| Buck OUT+ (5V) | Mega 5V, relay VCCs, sensors, LCD, ESC logic VCC | 22 AWG | set 5.00 V first |
 
-Load check: wall mode = 3 motors 3.6 A + logic ~0.8 A ≈ **4.4 A steady**. Battery mode adds the inverter feed: 188 A steady / ~210 A surge at the stage-1 cap (heater 1 + fan), so ≈ **221 A peak vs 400 A BMS aggregate (1.8×)** — and the 3 motor stalls do not coincide with full heater duty in practice. Keep the inverter feed cables short, thick, and fused at the battery end.
+## 3. Relay module wiring
 
-## 4. Component terminal tables
+### 3-CH relay module (D4–D8) — PTC heaters + motors
 
-### Fotek SSR-40DA (x2) — AC output
-| SSR terminal | Goes to |
-|---|---|
-| Input + | Mega D4 (SSR1) / D5 (SSR2) |
-| Input − | Mega GND (DC common) |
-| Output 1 (line) | Fused mains line (10 A) |
-| Output 2 (load) | Heater-fan plug line |
-
-Boot-safe inputs: the 2-CH relay boards are active-LOW (LOW pin = relay ON) so their inputs get 10 kΩ pull-ups to board VCC; the SSRs are active-HIGH (HIGH input = heater ON) so their input+ gets a 10 kΩ pull-down to input−. Both heater channels and all relay channels are therefore guaranteed OFF at power-on until firmware drives them.
-
-### 2x 2-CH relay boards (12V motor switching)
 | Board pin | Goes to |
 |---|---|
-| VCC | 5 V rail (NOT a Mega pin) |
+| VCC | 5V rail (NOT a Mega pin) |
 | GND | DC ground rail |
-| IN1–IN4 | Mega D6–D8 (3 used) + spare |
-| COM/NO | 12 V station branches |
+| IN1 | Mega D4 (Station 1 PTC) |
+| IN2 | Mega D5 (Station 2 PTC) |
+| IN3 | Mega D6 (Station 1 motor) |
+| IN4 | Mega D7 (Station 2 motor) |
+| IN5 | Mega D8 (Station 3 motor) |
+| COM/NO | 12V station branches |
 
-### 3000W pure sine inverter (battery mode source)
-| Inverter terminal | Goes to |
+### 40A automotive relay (D9) — BLDC fan power bus
+
+| Terminal | Goes to |
 |---|---|
-| DC+ | 250 A ANL fuse → battery+ bus (1/0 AWG, ≤ 1 m) |
-| DC− | single-point DC ground |
-| AC output | Changeover switch, position B |
-| Remote pin | Changeover 2nd pole (grounded in wall mode) |
-| Chassis | earth |
+| 30 (COM) | 12V main bus (after 15A fuse) |
+| 87 (NO) | ESC VIN pins (9 fans in parallel) |
+| 85 (coil +) | Mega D9 via 2N2222 NPN collector |
+| 86 (coil −) | GND |
+| 87a (NC) | unused |
 
-### Changeover switch 2P 63A (the source interlock)
-| Pole | Position A (wall) | Position B (battery) |
-|---|---|---|
-| Pole 1 — line + neutral | wall outlet | inverter AC output |
-| Pole 2 | inverter remote pin → GND (inverter OFF) | remote released (inverter runs) |
-| Aux contact | Mega D14 → GND (LOW = wall mode) | open (D14 HIGH = battery mode) |
+The 2N2222 NPN transistor switches the relay coil: D9 HIGH → base current through 1 kΩ → collector pulls 86 LOW → relay energizes → fan bus powered. A flyback diode (1N4007) across the relay coil protects the transistor.
 
-### Appliances
-- **2x 1500W PTC heater-fans (220V):** plug/socket on each SSR output; built-in thermostat + thermal cutoff stay in circuit.
-- **Omni 12" exhaust fan (220V):** its own fused mains gang on the mains rocker, NOT SSR-controlled.
-- **3x worm motors (12V):** relay NO → motor +; motor − → ground rail.
-- **DHT22 / DS18B20 / LCD / LEDs / buzzer / button:** see `docs/FIRMWARE-GUIDE.md` pin table and section 1 above.
+### ESC wiring (D10–D12) — BLDC fan control
 
-## 5. Rules that keep this wiring safe
+| ESC wire | Goes to |
+|---|---|
+| Red (VIN) | Fan bus 12V (from automotive relay NO) |
+| Black (GND) | Common ground |
+| White/Orange (Signal) | Mega D10 (Station 1) / D11 (Station 2) / D12 (Station 3) |
 
-1. **Two separate kill switches:** mains rocker (AC domain) and DC rocker (battery) — label both.
-2. **Never parallel the two AC sources** — the changeover is the only path to the RCD; the inverter remote interlock must be verified before the first heated cycle.
-3. Mega never sees mains or 12V — only buck 5 V and sensor-level signals.
-4. Slow duty cycling on the SSRs too (zero-cross DA type tolerates kHz poorly at load; keep 2–5 s period).
-5. Single-point DC ground; mains earth separate and complete (box, frame, chassis, inverter chassis).
-6. Every chamber wall pass-through gets a grommet; keep appliance cords off the hot floor side.
-7. Inverter DC feed: 1/0 AWG, ≤ 1 m, 250 A ANL at the battery end — voltage drop and heat live in long thin cables.
+3 BLDC fans per station are wired in parallel to their station's ESC. ESC arming sequence: write `SERVO_MIN` at boot, delay 2s, then write `FAN_OFF`.
+
+## 4. Safety features
+
+1. **25A main fuse** — protects the entire DC bus
+2. **20A per-station fuses** — isolate heater + motor faults
+3. **15A fan bus fuse** — protects BLDC fan branch
+4. **PTC self-regulation** — heaters reduce current as temperature rises
+5. **Thermal fuse (130°C)** on each heater cluster — permanent cutoff
+6. **DS18B20 firmware cutoff** — software temperature limit
+7. **No mains voltage** — entire system is SELV (Safety Extra Low Voltage)
+8. **Single-point DC ground** — all returns meet at one bus bar

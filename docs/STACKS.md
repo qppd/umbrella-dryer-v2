@@ -1,4 +1,4 @@
-# Stack (Rev 7 — 12V DC)
+# Stack — 12V DC
 
 > 12V DC-only umbrella dryer — no mains, no inverter, no RCD. Self-contained battery-powered system.
 

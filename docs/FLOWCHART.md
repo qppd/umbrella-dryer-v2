@@ -1,4 +1,4 @@
-# Flowcharts — Control Loop & Safety Interlocks (Rev 7 — 12V DC)
+# Flowcharts — Control Loop & Safety Interlocks — 12V DC
 
 > Firmware behavior reference. Pin assignments per `docs/BOM.md` §11; control constants per `docs/FIRMWARE-GUIDE.md`.
 
