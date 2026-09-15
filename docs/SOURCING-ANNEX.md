@@ -19,11 +19,11 @@
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
-| 9 | CHLOCH BAG 12V 100W PTC Ceramic Heater (with fan + aluminum housing) | ₱555 ea = ₱4,995 | Lazada | https://www.lazada.com.ph/products/chloch-bag-safety-home-space-heaters-heating-fan-12v-100w-car-air-heater-ptc-ceramic-heating-element-i2649138541.html |
+| 9 | MXKJING T30 12V 100W PTC Ceramic Heater (with fan + housing) | ₱484 ea = ₱4,356 | Lazada (LazMall, 95% rating) | https://www.lazada.com.ph/products/pdp-i15593670246.html |
 
 > **Alternative (cheaper, bare element only):** "Direct Sale 50W/12V Ceramic Ribbon PTC Heater 92×31mm" at ₱219 — but this is 50W, not 100W. You'd need 2 per station (6 total) = ₱1,314. Search: https://www.lazada.com.ph/catalog/?q=12v+100w+ptc+ceramic+heater+element
 
-> **Important:** At checkout, select the **12V 100W** variant. Some listings offer 220V — do NOT pick that.
+> **Important:** At checkout, select the **12V 100W** variant. Some listings offer 220V — do NOT pick that. LazMall seller with 95% rating.
 
 ### 2b. Fans (BLDC ducted fan modules with ESC)
 
@@ -135,7 +135,7 @@
 | Wiring + consumables (Lazada) | ≈ ₱1,346 |
 | Battery bank (2× 200Ah) + charger | ≈ ₱19,800–20,500 |
 | Hardware store consumables | ≈ ₱490 |
-| **GRAND TOTAL** | **≈ ₱35,300–36,000** |
+| **GRAND TOTAL** | **≈ ₱34,600–35,300** |
 
 ---
 
@@ -156,7 +156,7 @@
 
 | Item | Pick this | NOT this |
 |---|---|---|
-| PTC heater | 12V 100W | 220V (wrong!) |
+| PTC heater | 12V 100W MXKJING T30 | 220V (wrong!) |
 | BLDC fan | 50mm with ESC | Bare motor only |
 | Pillow block | KP08, 6mm bore | KP08, 8mm bore |
 | Shaft | 6mm × 300mm SS | 8mm (wrong) |
@@ -171,5 +171,5 @@
 
 ## Rev history
 
-- **Current:** Pure 12V DC. No mains, no inverter, no RCD. 9× PTC heaters, 9× BLDC fans with ESC, relay-switched. Total ~₱35,300–36,000.
+- **Current:** Pure 12V DC. No mains, no inverter, no RCD. 9× PTC heaters, 9× BLDC fans with ESC, relay-switched. Total ~₱34,600–35,300.
 - **Previous:** Mains heat + inverter. Total ~₱40,800–45,200.

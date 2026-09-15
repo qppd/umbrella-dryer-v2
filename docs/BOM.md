@@ -241,7 +241,7 @@ Listings: makerlab.ph motors ×3 in one order.
 
 | Qty | Part | Spec | Price | Seller (rating) | URL / note |
 |---|---|---|---|---|---|
-| 9 | **PTC ceramic heater 12V 100W** (CHLOCH BAG assembly w/ fan + housing) | self-regulating, 12V DC | ₱555 ea = ₱4,995 | Lazada — CHLOCH BAG | https://www.lazada.com.ph/products/i2649138541.html |
+| 9 | **PTC ceramic heater 12V 100W** (MXKJING T30 — PTC + fan + housing) | self-regulating, 12V DC, constant temp | ₱484 ea = ₱4,356 | Lazada — MXKJING T30 (LazMall) | https://www.lazada.com.ph/products/pdp-i15593670246.html |
 | 9 | **BLDC fan module 12V w/ ESC** (50mm ducted, waterproof) | 50mm, ~3.2A, ESC included | ₱469 ea = ₱4,221 | Lazada — RC Waterproof Cooling Fan | https://www.lazada.com.ph/catalog/?q=50mm+BLDC+ducted+fan+12V+ESC |
 | 3 | Worm gear motor SGM-370 12V 6RPM | 14 kg·cm, self-locking — one per station | ₱500 ea = ₱1,500 | makerlab.ph (site) | https://makerlab.ph/products/dc-worm-gear-motor-sgm-370-12v-16rpm |
 | 3 | 304 SS shaft 6mm × 300mm | ground finish | ~₱180 ea = ~₱540 | Lazada — search "304 stainless steel rod 6mm 300mm" | https://www.lazada.com.ph/catalog/?q=304+stainless+steel+rod+6mm+300mm |
@@ -276,14 +276,14 @@ Listings: makerlab.ph motors ×3 in one order.
 
 | Category | Estimate |
 |---|---|
-| PTC heaters (9×₱555, CHLOCH BAG assemblies) | ≈ ₱4,995 |
+| PTC heaters (9×₱484, MXKJING T30) | ≈ ₱4,356 |
 | BLDC fans + ESCs (9×₱469) | ≈ ₱4,221 |
 | Motors + shafts + bearings + couplings | ≈ ₱3,032 |
 | Control electronics (Mega, sensors, LCD, relays, ESC, buck) | ≈ ₱1,653 |
 | Battery bank (2× 200Ah) + 20A charger | ≈ ₱19,800–20,500 |
 | UI (LEDs, buzzer, button, rockers) | ≈ ₱356 |
 | Wiring, fuses, chassis, consumables | ≈ ₱1,800–2,200 |
-| **TOTAL** | **≈ ₱35,300–36,000** |
+| **TOTAL** | **≈ ₱34,600–35,300** |
 
 | **Savings vs previous mains-based design:** ≈₱4,800–9,200 — eliminated inverter (₱5,500–8,500), mains wiring, RCD, changeover switch, ANL kit. PTC heater assemblies cost more than bare elements but include fan+housing.
 
@@ -318,14 +318,14 @@ Listings: makerlab.ph motors ×3 in one order.
 | DHT22 | "DHT22 Black" (₱69) |
 | Pillow blocks | KP08 with 6mm bore insert |
 | Steel shaft | 6mm × 300mm |
-| PTC heater | 12V 100W CHLOCH BAG (verify 12V variant, NOT 220V) |
+| PTC heater | 12V 100W MXKJING T30 (verify 12V variant, NOT 220V) |
 | BLDC fan | 50mm ducted fan with ESC, 12V (verify ESC included) |
 | Automotive relay | 12V 40A, 5-pin SPDT |
 | Relay modules | 2-CH 10A optocoupler (active-LOW) |
 
 ### Sign-off checklist (before ordering)
 - [ ] DHT22 Black / KP08 6mm bore / 6×300 SS variants picked
-- [ ] PTC heaters verified as 12V (not 220V)
+- [ ] PTC heaters verified as 12V MXKJING T30 (not 220V)
 - [ ] BLDC fans include ESC (not bare motor only)
 - [ ] Battery pre-order confirmed, ordered first
 - [ ] Prices re-verified at checkout
