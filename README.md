@@ -1,7 +1,7 @@
 # Smart Umbrella Dryer
 
 **Design and Development of a Multi-Umbrella Drying System with Energy Efficient Control**
-Capstone project — Polytechnic University of the Philippines, Santa Maria, Bulacan Campus (BS Computer Engineering).
+Capstone project (BS Computer Engineering).
 
 Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air and sensor-based (humidity + temperature) feedback control — powered by a 12V LiFePO4 battery backup with energy-efficient duty cycling.
 
@@ -64,7 +64,3 @@ Reference material (dip in as needed): `docs/SYSTEM-ARCHITECTURE.md`, `docs/FLOW
 - **Cycle:** ≈ 15–25 min (light rain) – ~45 min (fully soaked), humidity auto-stop
 - **Energy:** wall mode ≈ 0.6–1.0 kWh per 3-umbrella cycle; battery mode ≈ 0.4–0.6 kWh stage-1-only → ~6–8 cycles per charge (staged control, no dry heating)
 - **Margins:** SSR-40DA 5.9× per heater (40A vs 6.8A) · motor torque ≥20× per station · BMS 5.7× vs worst-case DC draw · RCD 30mA life protection on the mains domain
-
-## Team
-
-Aliyah Beatriz DR. Buenviaje · Arianne Rose A. Lapig · Roxanne R. Reyes · Hannah Althea G. Tuazon

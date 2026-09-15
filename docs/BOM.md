@@ -310,7 +310,7 @@ flowchart TB
 | Qty | Item | Spec | Price | Seller / Trust | URL |
 |---|---|---|---|---|---|
 | 1 | Arduino Mega 2560 R3 | ATmega2560 | ₱1,215 / ₱1,265 w/ USB | Makerlab PH, 4.8 (331), 2.4K sold | https://www.lazada.com.ph/products/pdp-i5989151.html |
-| 2 | **Fotek SSR-40DA (AC output)** | 40A, 3–32VDC in, 24–380VAC out — NOT DD | ₱850 ea = ₱1,700 | Makerlab | https://makerlab.ph/products/original-solid-state-relay-ssr-40da-ssr-75da-ssr-25dd-4-32v-dc-input |
+| 2 | **Fotek SSR-40DA (AC output)** | 40A, 3–32VDC in, 24–380VAC out — NOT DD | ₱160 ea = ₱320 | Makerlab PH (site) | https://makerlab.ph/products/fotek-solid-state-relay-module-ssr-40da |
 | 2 | **1500W PTC industrial heater-fan, 220V** | portable heater-fan w/ thermostat + thermal cutoff | ₱1,395.35 ea = ₱2,790.70 | Lazada listing | https://www.lazada.com.ph/products/portable-industrial-electric-heater-fan-commercial-thermostat-air-warm-heater-blower-radiator-office-garage-air-fan-i4902069326-s28572024789.html |
 | 1 | **Omni industrial exhaust fan w/ grill, wall-mount** | **select 12-inch variant** (listing spans 12/14/16) | ~₱1,000–1,500 EST | Omni official Lazada | https://www.lazada.com.ph/products/omni-industrial-exhaust-fan-w-grill-wall-mounted-12-inch-14-inch-16-inch-i4020672066-s21738898500.html |
 | 2 | 2-CH relay module 5V, optocoupler, low-level trigger | 10A@30VDC — 3 motor channels + spare | ₱89 ea = ₱178 | Bulacan, (330), 2.5K sold | https://www.lazada.com.ph/products/pdp-i100047444.html |
@@ -350,14 +350,14 @@ flowchart TB
 
 | Group | Subtotal |
 |---|---|
-| Electronics (Mega, SSR ×2, relays, sensors, UI, buck) | ≈ ₱3,952 |
+| Electronics (Mega, SSR ×2, relays, sensors, UI, buck) | ≈ ₱2,572 |
 | Mains kit (RCD, box, heatsinks, 2.0mm² wire, plug/socket, AC rocker, changeover) | ≈ ₱3,200–3,700 EST |
 | Appliances (2× heater-fan ₱2,791 + Omni 12" ~₱1,200 EST) | ≈ ₱3,990 |
 | Power conversion (1× pure sine inverter 3000W) | ≈ ₱5,500–8,500 EST |
 | Battery bank (2× 200Ah) + 20A charger | ≈ ₱19,800–20,500 |
 | Drivetrain (3 stations) | ≈ ₱5,510 |
 | Wiring, fuses (incl. 250A ANL kit), chassis, consumables | ≈ ₱2,700–3,300 |
-| **TOTAL** | **≈ ₱45,000–49,500** (≈ +₱23,000 vs Rev 5 — inverter, 200Ah bank, 20A charger, changeover, ANL kit) |
+| **TOTAL** | **≈ ₱43,600–48,100** (≈ +₱23,000 vs Rev 5 — inverter, 200Ah bank, 20A charger, changeover, ANL kit) |
 
 ## Rev-6 order notes
 
@@ -430,7 +430,7 @@ flowchart TB
 
 ### Cart A — makerlab.ph website
 - [ ] 3× Worm gear motor SGM-A58SW31ZY 12V **16RPM** = ₱3,747
-- [ ] 2× Fotek **SSR-40DA** = ₱1,700
+- [ ] 2× Fotek **SSR-40DA** = ₱320
 
 ### Cart B — Lazada PH
 - [ ] Arduino Mega 2560 R3 — ₱1,215

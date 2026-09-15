@@ -2,7 +2,7 @@
 
 > **Per-listing annex to [`docs/BOM.md`](BOM.md) §14** — backup listings, seller ratings and reasoning, and watch-outs. The consolidated order cart lives in BOM.md Appendix A.
 
-**Project:** Smart Umbrella Dryer (PUP Santa Maria, BS CpE capstone)
+**Project:** Smart Umbrella Dryer (BS CpE capstone)
 **Sourcing policy:** Makerlab PH first — verified trusted Lazada store (98% seller rating, 845.6K items sold, 10-Year Store, Bulacan). Items Makerlab doesn't carry → trusted third-party sellers with high rating/sold counts only.
 **Prices verified:** 2026-09-12 (Lazada prices move — re-check before ordering)
 **Rev 6 quantities:** 3× worm gear motors (one per umbrella station) · **2× Fotek SSR-40DA (AC output — mains heaters)** + 2× 2-CH relay modules · **2× 1500W 220V PTC heater-fans + 12" Omni exhaust fan** · **3000W pure sine inverter + 2P changeover switch + 250A ANL kit** · mains kit (RCD, grounded box, 10A fuses, 2.0mm² wire) · **2× 200Ah LiFePO4 + 14.6V 20A charger** · 3× shafts / bearing sets / couplings · 25A DC main fuse · MLX90614 removed.
@@ -55,9 +55,9 @@
 - URL: https://www.lazada.com.ph/products/omni-industrial-exhaust-fan-w-grill-wall-mounted-12-inch-14-inch-16-inch-i4020672066-s21738898500.html
 - ⚠️ **Select the 12-inch variant.** Runs on its own mains rocker gang — no SSR.
 
-**Fotek SSR-40DA ×2 — ₱850 ea (makerlab.ph)**
-- 3–32VDC input, 24–380VAC output, 40A. ⚠️ MUST be **DA** (AC output) for these 220V heaters — the DD type cannot switch AC loads. Heatsink mandatory (7–10W each).
-- URL: https://makerlab.ph/products/original-solid-state-relay-ssr-40da-ssr-75da-ssr-25dd-4-32v-dc-input
+**Fotek SSR-40DA ×2 — ₱160 ea (makerlab.ph, verified 2026-09-15)**
+- 3–32VDC input, 24–380VAC output, 40A, SKU MLE00140. Dedicated DA listing — no variant selection, so no risk of accidentally ordering the DD (DC output) type. Heatsink mandatory (7–10W each).
+- URL: https://makerlab.ph/products/fotek-solid-state-relay-module-ssr-40da
 
 **Hardware-store additions (EST, add at checkout):** RCD/GFCI 30mA outlet or breaker · grounded metal electrical box · 2-gang mains rocker + plate · 2.0mm² 3-core wire + plug/socket set · 2× SSR heatsink profiles.
 
