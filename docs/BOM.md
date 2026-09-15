@@ -109,28 +109,7 @@ Listings: makerlab.ph motors ×3 in one order.
 
 ---
 
-## 6. Sensors
-
-| Qty | Part | Notes | Price |
-|---|---|---|---|
-| 1 | DHT22 sensor module | Chamber humidity — one sensor, shared across all 3 stations | ₱210 |
-| 1 | DS18B20 waterproof | Chamber temperature probe — mounted near PTC heaters | ₱105 |
-
----
-
-## 7. UI
-
-| Qty | Part | Notes | Price |
-|---|---|---|---|
-| 1 | 16×2 LCD I2C | Displays status, humidity, temperature, station states | ₱165 |
-| 3 | 5mm LEDs (red, yellow, green) | Station status indicators | ₱29 |
-| 1 | Active buzzer 5V | Alert on cycle complete / fault | ₱35 |
-| 1 | Arcade LED push button (5V) | Start button (Circuitrocks) | ₱45 |
-| 2 | DC rocker switch 12V 10A | Labeled "DC" (battery kill) | ₱72 |
-
----
-
-## 8. Thermal design (12V DC)
+## 6. Thermal design (12V DC)
 
 | Item | Spec |
 |---|---|
@@ -144,17 +123,17 @@ Listings: makerlab.ph motors ×3 in one order.
 
 ---
 
-## 9. Capacity verification
+## 7. Capacity verification
 
-### 9a. Mechanical — per-station torque — PASS
+### 7a. Mechanical — per-station torque — PASS
 
 ≤3 kg·cm per station vs 14 kg·cm → ≥4.6× margin; KP08 >90× load margin; 6 RPM gentle; self-locking hold.
 
-### 9b. Thermal — PASS
+### 7b. Thermal — PASS
 
 300W per station (3× 100W PTC) with BLDC fan circulation → 40–60°C chamber; DS18B20 + thermal fuse + PTC self-regulation = triple over-temp protection.
 
-### 9c. Electrical — 12V DC — PASS
+### 7c. Electrical — 12V DC — PASS
 
 | Subsystem | Voltage | Current | Protection |
 |---|---|---|---|
@@ -166,7 +145,7 @@ Listings: makerlab.ph motors ×3 in one order.
 
 > **Note:** With 3A motor fuses, the motor-stall current (0.8A) is well within fuse rating. The 25A main fuse allows 1 station active (~45A) at a time. Staged operation (one station at a time) keeps total draw within the25A main fuse + battery BMS limits.
 
-### 9d. Battery runtime — PASS
+### 7d. Battery runtime — PASS
 
 | Mode | Load | Runtime |
 |---|---|---|
@@ -177,7 +156,7 @@ Listings: makerlab.ph motors ×3 in one order.
 
 ---
 
-## 10. Fuse plan (12V DC)
+## 8. Fuse plan (12V DC)
 
 | Fuse | Rating | Location | Protects |
 |---|---|---|---|
@@ -195,7 +174,7 @@ Listings: makerlab.ph motors ×3 in one order.
 
 ---
 
-## 11. Pin assignment (Mega 2560)
+## 9. Pin assignment (Mega 2560)
 
 | Pin | Net | Direction | Function |
 |---|---|---|---|
@@ -219,7 +198,7 @@ Listings: makerlab.ph motors ×3 in one order.
 
 ---
 
-## 12. Compatibility matrix
+## 10. Compatibility matrix
 
 | Subsystem | Voltage | Margin | Pin/Channel | Status |
 |---|---|---|---|---|
@@ -237,7 +216,7 @@ Listings: makerlab.ph motors ×3 in one order.
 
 ---
 
-## 13. BOM line-item table (Lazada + makerlab)
+## 11. BOM line-item table (Lazada + makerlab)
 
 | Qty | Part | Spec | Price | Seller (rating) | URL / note |
 |---|---|---|---|---|---|
@@ -249,20 +228,20 @@ Listings: makerlab.ph motors ×3 in one order.
 | 2 | Rigid coupling set (use 6×8) | 3 needed + spare | ₱82.84 ea = ₱165.68 | (185), 408 sold | https://www.lazada.com.ph/products/pdp-i2734273953.html |
 | 1 | Arduino Mega 2560 + USB cable | CH340G | ₱1,165 | Makerlab PH (98%) | https://www.lazada.com.ph/products/pdp-i5989151-s15092061710.html |
 | 1 | DHT22 sensor module | humidity | ₱210 | Makerlab PH | https://www.lazada.com.ph/products/pdp-i132179919-s144637867.html |
-| 1 | DS18B20 waterproof | temp probe | ₱105 | (258), 6K sold | https://www.lazada.com.ph/products/pdp-i3864018549.html |
-| 1 | LCD 16×2 I2C | black on white | ₱165 | (241), 2K sold | https://www.lazada.com.ph/products/pdp-i3934869498.html |
+| 1 | DS18B20 waterproof | temp probe | ₱105 | (258), 6K sold | https://www.lazada.com.ph/catalog/?q=DS18B20+waterproof+temperature+sensor+probe |
+| 1 | LCD 16×2 I2C | black on white | ₱165 | (241), 2K sold | https://www.lazada.com.ph/catalog/?q=LCD+16x2+I2C+module |
 | 6 | Single-channel relay (5V/12V, 10A, optocoupler) | PTC heater switching | ₱49 ea = ₱294 | Makerlab PH (14.6K sold) | https://www.lazada.com.ph/products/pdp-i100047427-s100061336.html |
 | 1 | 12V 40A automotive relay | BLDC fan power bus, 5-pin SPDT | ~₱80 | Lazada | https://www.lazada.com.ph/catalog/?q=12v+40a+automotive+relay |
 | 1 | LM2596S buck converter | 12V→5V | ₱49 | Makerlab PH (4.5K sold) | https://www.lazada.com.ph/products/pdp-i6005010-s7605914.html |
-| 1 | LED 5mm red | station indicator | ₱29 | (325), 3.4K sold | https://www.lazada.com.ph/products/pdp-i2573601435.html |
-| 1 | Active buzzer 5V | alarm | ₱35 | (163) | https://www.lazada.com.ph/products/pdp-i4472196293.html |
+| 1 | LED 5mm red | station indicator | ₱29 | (325), 3.4K sold | https://www.lazada.com.ph/catalog/?q=LED+5mm+red+yellow+green |
+| 1 | Active buzzer 5V | alarm | ₱35 | (163) | https://www.lazada.com.ph/catalog/?q=active+buzzer+5V+module |
 | 1 | Arcade LED push button 5V | start (Circuitrocks) | ₱45 | Circuitrocks | https://www.lazada.com.ph/products/i343850766.html |
-| 2 | DC rocker switch 12V 10A | labeled "DC" | ₱72 | Unnicoco (97%) | https://www.lazada.com.ph/products/pdp-i2808878488.html |
+| 2 | DC rocker switch 12V 10A | labeled "DC" | ₱72 | Unnicoco (97%) | https://www.lazada.com.ph/catalog/?q=DC+rocker+switch+12V+10A |
 | 1 | Dupont jumper kit 40-pin | logic hookups | ₱45 | Circuitrocks | https://www.lazada.com.ph/products/pdp-i245055558.html |
 | 1 | Terminal block 15A barrier | DC distribution | ₱106 | Laguna | https://www.lazada.com.ph/products/pdp-i2818578034.html |
 | 1 | Silicone wire kit 6–18AWG | 14 main, 16 station, 18 motor/fan, 20 logic | ₱218 | 6.2K sold | https://www.lazada.com.ph/products/pdp-i4880482146.html |
-| 1 | Heat-shrink tube kit | insulation | ₱111 | (461), 30K sold | https://www.lazada.com.ph/products/pdp-i2569065087.html |
-| 1 | 1/4W resistor kit | pull-ups, LED limiting | ₱69 | (108), 2K sold | https://www.lazada.com.ph/products/pdp-i2501387387.html |
+| 1 | Heat-shrink tube kit | insulation | ₱111 | (461), 30K sold | https://www.lazada.com.ph/catalog/?q=heat+shrink+tube+kit |
+| 1 | 1/4W resistor kit | pull-ups, LED limiting | ₱69 | (108), 2K sold | https://www.lazada.com.ph/catalog/?q=resistor+kit+1%2F4W |
 | 1 | Nylon standoff kit | board mounting | ₱97 | (252) | https://www.lazada.com.ph/products/pdp-i2946710217.html |
 | 2 | **LiFePO4 12.8V 200Ah w/ BMS 200A (PowMr)** | parallel bank, 5,120Wh — ORDER FIRST | ~₱8,900 ea = ~₱17,800 | PowMr, 4.8 (22) | https://h5.lazada.com.ph/products/powmr-12v-200ah-lifepo4-battery-lithium-battery-built-in-bms-6000-deep-cycles-rechargeable-solar-battery-i5047514166.html |
 | 1 | **LiFePO4 charger 14.6V 20A** | recharge ≈ 10 h | ~₱2,000–2,700 EST | Lazada (435 rated, 4.8) | https://www.lazada.com.ph/tag/lifepo4-charger-20a/ |
@@ -272,7 +251,7 @@ Listings: makerlab.ph motors ×3 in one order.
 
 ---
 
-## 14. Cost summary (12V DC)
+## 12. Cost summary (12V DC)
 
 | Category | Estimate |
 |---|---|
@@ -297,16 +276,16 @@ Listings: makerlab.ph motors ×3 in one order.
 ### Cart B — Lazada PH
 - [ ] ⚠️ 2× PowMr 200Ah — ORDER FIRST — ₱17,800 — https://h5.lazada.com.ph/products/powmr-12v-200ah-lifepo4-battery-lithium-battery-built-in-bms-6000-deep-cycles-rechargeable-solar-battery-i5047514166.html
 - [ ] LiFePO4 charger 20A — ~₱2,000–2,700 — https://www.lazada.com.ph/tag/lifepo4-charger-20a/
-- [ ] 9× PTC heater CHLOCH BAG 12V 100W — ₱4,995 — https://www.lazada.com.ph/products/i2649138541.html (select 12V 100W variant!)
+- [ ] 9× PTC heater MXKJING T30 12V 100W — ₱4,356 — https://www.lazada.com.ph/products/pdp-i15593670246.html (verify 12V variant, NOT 220V)
 - [ ] 9× BLDC fan 50mm 12V w/ ESC — ₱4,221 — https://www.lazada.com.ph/catalog/?q=50mm+BLDC+ducted+fan+12V+ESC (select 50mm variant)
 - [ ] Aluminum plate 6mm — ₱760 — https://www.lazada.com.ph/products/pdp-i4449859085.html
 - [ ] 6× single-channel relay — ₱294 — https://www.lazada.com.ph/products/pdp-i100047427-s100061336.html
 - [ ] 1× automotive relay 40A — ~₱80 — https://www.lazada.com.ph/catalog/?q=12v+40a+automotive+relay
-- [ ] DHT22 — ₱210 · DS18B20 — ₱105 · LCD I2C — ₱165 · buck — ₱49 — links in §13
-- [ ] LEDs — ₱29 · buzzer — ₱35 · arcade button — ₱45 · DC rocker — ₱72 — links in §2h
+- [ ] DHT22 — ₱210 · DS18B20 — ₱105 · LCD I2C — ₱165 · buck — ₱49 — links in §11
+- [ ] LEDs — ₱29 · buzzer — ₱35 · arcade button — ₱45 · DC rocker — ₱72 — links in §11
 - [ ] 3× shaft 6×300 SS — ~₱540 — https://www.lazada.com.ph/catalog/?q=304+stainless+steel+rod+6mm+300mm
 - [ ] 6× KP08 pillow block 6mm bore — ₱522 — https://www.lazada.com.ph/catalog/?q=kp08+pillow+block+bearing+6mm
-- [ ] Silicone wire — ₱218 · dupont — ₱45 · terminal block — ₱106 · heat-shrink — ₱111 · resistors — ₱69 · standoffs — ₱97 — links in §2i
+- [ ] Silicone wire — ₱218 · dupont — ₱45 · terminal block — ₱106 · heat-shrink — ₱111 · resistors — ₱69 · standoffs — ₱97 — links in §11
 - [ ] Automotive fuse kit — ~₱150 — https://www.lazada.com.ph/catalog/?q=automotive+blade+fuse+kit+assortment
 
 ### Cart C — hardware
