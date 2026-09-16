@@ -1,8 +1,6 @@
-# Umbrella Dryer V2 — Bill of Materials (Rev 8, canonical)
+# Umbrella Dryer V2 — Bill of Materials
 
 > **Design:** 12V DC-only system. Each umbrella station has 3× PTC heaters (100W each), 3× BLDC fans, and 1× worm gear motor. Battery-powered with **1× 200Ah LiFePO4**. **40A automotive relays** control PTC heaters (NPN-driven), **optocoupler module** controls worm motors, **ESC PWM** controls BLDC fans.
->
-> **Rev 8 changes:** Main fuse upgraded to 50A ANL; PTC relays upgraded to 40A automotive (4×); per-station PTC fuses 30A; thermal fuse 130°C per heater (9×); kill switch upgraded to 50A disconnect; LCD I2C on pins 20/21.
 
 ---
 
@@ -220,7 +218,7 @@ Energy per drying cycle (3 umbrellas per cycle):
 
 ---
 
-## 9. Pin assignment (Mega 2560) — canonical
+## 9. Pin assignment (Mega 2560)
 
 | Pin | Net | Direction | Function | Active level |
 |---|---|---|---|---|

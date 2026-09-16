@@ -3,7 +3,7 @@
 **Design and Development of a Multi-Umbrella Drying System with Energy Efficient Control**
 Capstone project (BS Computer Engineering).
 
-Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air and sensor-based (humidity + temperature) feedback control — powered entirely by a **12V LiFePO4 battery bank** with energy-efficient staged duty cycling.
+Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air and sensor-based (humidity + temperature) feedback control — powered entirely by a **12V LiFePO4 battery** with energy-efficient staged duty cycling.
 
 ## How it works
 
@@ -34,31 +34,13 @@ Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air 
 | 2 | [docs/HARDWARE.md](docs/HARDWARE.md) | What each part is and its ratings |
 | 3 | [model/README.md](model/README.md) | What you are building — dimensioned views |
 | 4 | [docs/BLOCK-DIAGRAM.md](docs/BLOCK-DIAGRAM.md) | How everything wires together |
-| 5 | [wiring/README.md](wiring/README.md) | **Canonical** pin map and all connections |
+| 5 | [wiring/README.md](wiring/README.md) | Pin map and all connections |
 | 6 | [docs/SETUP.md](docs/SETUP.md) | Build it — numbered steps, check after each |
 | 7 | [docs/FIRMWARE-GUIDE.md](docs/FIRMWARE-GUIDE.md) | Load and tune the code |
 | 8 | [docs/TESTING.md](docs/TESTING.md) | Prove it works, record results |
 | 9 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | When a check fails |
 
 Reference material: `docs/SYSTEM-ARCHITECTURE.md`, `docs/FLOWCHART.md`, `docs/STACKS.md`, `docs/SOURCING-ANNEX.md`.
-
-## Documentation
-
-| Doc | Contents |
-|---|---|
-| [docs/BOM.md](docs/BOM.md) | Itemized BOM with prices, sellers, and URLs |
-| [docs/SOURCING-ANNEX.md](docs/SOURCING-ANNEX.md) | Verified store links, seller ratings, backup listings |
-| [docs/HARDWARE.md](docs/HARDWARE.md) | Hardware reference — part ratings, module spec sheets, build standards |
-| [docs/STACKS.md](docs/STACKS.md) | Technology stacks — firmware/libraries, power chain, tooling |
-| [docs/BLOCK-DIAGRAM.md](docs/BLOCK-DIAGRAM.md) | Electrical block diagram — power domain, fuses, actuation, sensing (mermaid) |
-| [docs/SYSTEM-ARCHITECTURE.md](docs/SYSTEM-ARCHITECTURE.md) | Layered architecture, power domains, cycle sequence, design principles |
-| [docs/FLOWCHART.md](docs/FLOWCHART.md) | Control-loop and safety-interlock flowcharts (mermaid) |
-| [wiring/README.md](wiring/README.md) | **Canonical** pin map, all connections, wire gauge schedule |
-| [docs/SETUP.md](docs/SETUP.md) | Assembly, wiring, first power-on, Arduino IDE setup |
-| [docs/FIRMWARE-GUIDE.md](docs/FIRMWARE-GUIDE.md) | Complete staged sketch, state machine, wiring table, debug tips |
-| [docs/TESTING.md](docs/TESTING.md) | Test plan L1–L4: smoke → component → integration → stress |
-| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Symptom → cause → fix per subsystem |
-| [model/README.md](model/README.md) | Dimensioned 3D model views (PNG): exploded, front, side, top + generator script |
 
 ## Verified performance
 
@@ -69,7 +51,7 @@ Reference material: `docs/SYSTEM-ARCHITECTURE.md`, `docs/FLOWCHART.md`, `docs/ST
 
 ## Key design decisions
 
-1. **12V DC only** — eliminates mains wiring, RCD, changeover switch. Safer, simpler, cheaper.
+1. **12V DC only** — no mains wiring, no RCD, no changeover switch. Safer, simpler, cheaper.
 2. **PTC self-regulating** — no SSR needed; PTC heaters auto-limit current as temperature rises.
 3. **BLDC fans with ESC** — active air circulation for faster drying; PWM speed control via Arduino.
 4. **Staged operation** — one station at a time keeps total current within the 50A main fuse.

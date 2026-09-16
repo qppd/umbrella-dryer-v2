@@ -330,7 +330,7 @@ void setup() {
 void loop() {
   unsigned long now = millis();
   
-  // Stable 500 ms sampling step
+  // Stable 500 ms loop interval
   if (now - lastLoopTick < 500) return;
   lastLoopTick = now;
 

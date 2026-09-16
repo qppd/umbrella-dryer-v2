@@ -1,8 +1,6 @@
-# Wiring Reference — Arduino Mega 2560 (Rev 8, canonical)
+# Wiring Reference — Arduino Mega 2560
 
-Master connection list for every component. Pure 12V DC architecture: **all loads run
-from the battery bank** — no mains voltage, no inverter, no changeover switch.
-If any other doc disagrees with this file, this file wins.
+> Pin map for every component. Pure 12V DC architecture: **all loads run from the battery** — no mains voltage, no inverter, no changeover switch. If any other doc disagrees with this file, this file wins.
 
 ## 0. Domains overview
 
@@ -11,12 +9,12 @@ If any other doc disagrees with this file, this file wins.
 | 12V DC | 1× LiFePO4 200Ah → 50A main fuse | PTC heaters, BLDC fans, worm motors | 4× automotive 40A relays (3 PTC + 1 fan bus, NPN-driven), 4-CH opto module (motors), ESC PWM (fans) |
 | 5V DC | LM2596S buck (12V→5V) | Mega, sensors, LCD, 4-CH module coils | — |
 
-> **Relay architecture (why):** a station's 3 PTC heaters draw ~25A — over the 10A rating
+> **Relay architecture:** a station's 3 PTC heaters draw ~25A — over the 10A rating
 > of PCB relay modules. Every PTC group therefore uses a **40A automotive relay**. The
-> 10A-rated 4-CH opto module only switches the worm motors (~0.8A stall). The fan bus
+> 10A-rated 4-CH opto module only switches the worm motors (~0.8A). The fan bus
 > (9 fans, ~28.8A) uses a 4th automotive relay.
 
-## 1. Pin map — Mega 2560 side (canonical)
+## 1. Pin map — Mega 2560 side
 
 | Mega pin | Direction | Connects to | Active level | Wire / notes |
 |---|---|---|---|---|

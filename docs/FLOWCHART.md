@@ -1,6 +1,6 @@
 # Flowcharts — Control Loop & Safety Interlocks — 12V DC
 
-> Firmware behavior reference. Pin assignments per `wiring/README.md` (canonical); state machine per `docs/FIRMWARE-GUIDE.md`.
+> Firmware behavior reference. Pin assignments per `wiring/README.md`; state machine per `docs/FIRMWARE-GUIDE.md`.
 
 ---
 

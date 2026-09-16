@@ -6,7 +6,6 @@
 > control with NPN-driven 40A automotive relays for PTC heaters,
 > optocoupler relays for worm motors, and ESC PWM for BLDC fans.
 >
-> **Rev 8:** Main fuse 50A ANL; PTC relays 40A automotive; per-heater 130°C thermal fuse;
 > staged operation mandatory; LCD I2C on Mega pins 20/21.
 
 ---

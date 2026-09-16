@@ -176,7 +176,3 @@
 
 ---
 
-## Rev history
-
-- **Current:** Pure 12V DC. No mains, no inverter, no RCD. 9× PTC heaters, 9× BLDC fans with ESC, relay-switched. Total ~₱27,100–28,100.
-- **Previous:** Mains heat + inverter. Total ~₱40,800–45,200.

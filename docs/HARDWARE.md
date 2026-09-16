@@ -1,10 +1,9 @@
-# Hardware Reference — 12V DC System (Rev 8)
+# Hardware Reference — 12V DC System
 
 > **Major revision:** This version replaces the 220V mains + inverter architecture with an
 > all-12V DC system. No mains voltage, no inverter, no RCD, no changeover switch, no SSR-40DA.
 > All heating, fans, and motors run directly off the 12V LiFePO4 battery bank.
 >
-> **Rev 8 changes (site-wide fix):** main fuse 25A→50A ANL; per-station PTC fuses 10A→30A;
 > fan bus fuse 15A→30A; PTC relays upgraded from 10A PCB modules to 40A automotive (NPN-driven);
 > thermal fuse clarified as 130°C per heater (9×); pin map reconciled across all docs; LCD
 > I2C corrected to Mega pins 20/21 (not A4/A5); kill switch 10A rocker→50A disconnect;
@@ -252,7 +251,7 @@ graph TB
 
 > **Staged operation is mandatory.** One station full load = ~36A (3 PTC + 3 fans + motor).
 > The firmware rotates stations every 30 s so only one is active at a time. Two stations
-> simultaneously = ~72A — main fuse blows. This is the design intent.
+> simultaneously = ~72A — main fuse blows. Firmware enforces this limit.
 
 **Runtime estimates (1× 200 Ah battery, 144 Ah usable @ 80% DoD × 90% EoL):**
 
@@ -310,8 +309,8 @@ graph TB
 
 | Removed component | Reason |
 |---|---|
-| 220V mains + changeover switch | Eliminated entirely |
-| RCD/GFCI | Not needed — SELV 12V DC |
+| 220V mains + changeover switch | No mains voltage in the system |
+| RCD/GFCI | Not needed — 12V DC SELV cannot cause electric shock |
 | SSR-40DA solid-state relays | Replaced by 40A automotive relays (PTC) + opto module (motors) |
 | 3000W pure sine inverter | All loads run natively on 12V DC |
 | 14.6V lead-acid charger | LiFePO4 charger only |

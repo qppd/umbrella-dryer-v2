@@ -50,4 +50,4 @@ The 3D model shows:
 3. Insert shafts through pillow blocks, connect to motors via rigid couplings.
 4. Mount PTC heaters on heat-resistant brackets (ceramic standoffs). Include 130°C thermal fuse in each heater's + lead.
 5. Position BLDC fans to blow air across PTC heaters toward umbrella fabric.
-6. Wire everything per [wiring/README.md](../wiring/README.md) (canonical pin map) and [HARDWARE.md](../HARDWARE.md).
+6. Wire everything per [wiring/README.md](../wiring/README.md) and [HARDWARE.md](../HARDWARE.md).
