@@ -15,7 +15,7 @@
 
 ```mermaid
 flowchart TB
-    BAT["12V LiFePO4<br/>Battery Bank<br/>2× 200Ah, BMS Protected"]
+    BAT["12V LiFePO4<br/>Battery<br/>1× 200Ah, BMS Protected"]
 
     DISC["50A Disconnect<br/>Master Switch"]
     FMAIN["50A ANL<br/>Main Fuse"]
@@ -241,7 +241,7 @@ flowchart LR
 
 | Run | Gauge | Rationale |
 |---|---|---|
-| Battery main + parallel links | 8 AWG | 50A main, <3% drop |
+| Battery main + main links | 8 AWG | 50A main, <3% drop |
 | Station PTC + fan branches | 10 AWG | 30A, short runs |
 | Motor branches | 18 AWG | <1A |
 | Logic feed | 20 AWG | <0.5A |

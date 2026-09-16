@@ -1,6 +1,6 @@
 # System Architecture — 12V DC Umbrella Dryer
 
-Pure 12V DC umbrella dryer. No mains, no inverter, no AC anywhere. Everything runs from a parallel LiFePO4 battery bank through fused DC distribution.
+Pure 12V DC umbrella dryer. No mains, no inverter, no AC anywhere. Everything runs from a single LiFePO4 battery through fused DC distribution.
 
 ## 1. Layered architecture
 
@@ -71,7 +71,7 @@ Single domain: 12V DC throughout. The 50A main fuse allows one station at a time
 
 ```mermaid
 flowchart LR
-    BANK["LiFePO4 Bank<br/>2× 200Ah parallel<br/>400Ah / 5120Wh"]
+    BANK["LiFePO4 Bank<br/>2× 200Ah parallel<br/>200Ah / 2560Wh"]
     BMS["BMS 200A<br/>per pack"]
     DISC["50A disconnect"]
     FUSE_M["50A ANL<br/>main fuse"]

@@ -107,7 +107,7 @@
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
-| 2 | PowMr LiFePO4 12.8V 200Ah w/ BMS 200A | ~₱8,900 ea = ~₱17,800 | Lazada | https://h5.lazada.com.ph/products/powmr-12v-200ah-lifepo4-battery-lithium-battery-built-in-bms-6000-deep-cycles-rechargeable-solar-battery-i5047514166.html |
+| 2 | PowMr LiFePO4 12.8V 200Ah w/ BMS 200A | ~₱8,900 ea = ~₱8,900 | Lazada | https://h5.lazada.com.ph/products/powmr-12v-200ah-lifepo4-battery-lithium-battery-built-in-bms-6000-deep-cycles-rechargeable-solar-battery-i5047514166.html |
 | 1 | LiFePO4 charger 14.6V 20A | ~₱2,000–2,700 | Lazada | https://www.lazada.com.ph/tag/lifepo4-charger-20a/ |
 
 > **⚠️ ORDER BATTERY FIRST** — longest shipping time. Verify seller rating ≥4.5.
@@ -137,7 +137,7 @@
 | Relays, drivers, disconnect + fuses | ≈ ₱925 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
 | Wiring + consumables (Lazada) | ≈ ₱1,346 |
-| Battery bank (2× 200Ah) + charger | ≈ ₱19,800–20,500 |
+| Battery bank (2× 200Ah) + charger | ≈ ₱10,900–11,600 |
 | Hardware store consumables | ≈ ₱490 |
 | **GRAND TOTAL** | **≈ ₱36,000–37,000** |
 

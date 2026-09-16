@@ -64,7 +64,7 @@ Battery (12.8V 200Ah × 2 parallel)
 
 | Cable | From | To | AWG |
 |---|---|---|---|
-| Battery parallel links | battery + ↔ battery + | bank + | 4 |
+| battery main links | battery + ↔ battery + | bank + | 4 |
 | Bank → disconnect → main fuse → bus | bank + | distribution bus | 8 |
 | PTC heater branch | bus → 30A fuse → 40A auto relay → thermal fuse → heater + | PTC heater | 10 |
 | Motor branch | bus → 3A fuse → opto module → motor + | SGM-370 | 18 |
@@ -82,7 +82,7 @@ Battery (12.8V 200Ah × 2 parallel)
 
 | Layer | Price (est.) |
 |---|---|
-| Battery (2× 200Ah) + charger | ≈ ₱19,800 |
+| Battery (2× 200Ah) + charger | ≈ ₱10,900 |
 | PTC heaters (9×₱484) + thermal fuses (9×₱15) | ≈ ₱4,491 |
 | BLDC fans + ESCs (9×₱469) | ≈ ₱4,221 |
 | Motors + mechanical | ≈ ₱3,028 |

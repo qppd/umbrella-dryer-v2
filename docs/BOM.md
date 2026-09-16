@@ -1,6 +1,6 @@
 # Umbrella Dryer V2 — Bill of Materials (Rev 8, canonical)
 
-> **Design:** 12V DC-only system. Each umbrella station has 3× PTC heaters (100W each), 3× BLDC fans, and 1× worm gear motor. Battery-powered with 2× 200Ah LiFePO4 in parallel. **40A automotive relays** control PTC heaters (NPN-driven), **optocoupler module** controls worm motors, **ESC PWM** controls BLDC fans.
+> **Design:** 12V DC-only system. Each umbrella station has 3× PTC heaters (100W each), 3× BLDC fans, and 1× worm gear motor. Battery-powered with **1× 200Ah LiFePO4**. **40A automotive relays** control PTC heaters (NPN-driven), **optocoupler module** controls worm motors, **ESC PWM** controls BLDC fans.
 >
 > **Rev 8 changes:** Main fuse upgraded to 50A ANL; PTC relays upgraded to 40A automotive (4×); per-station PTC fuses 30A; thermal fuse 130°C per heater (9×); kill switch upgraded to 50A disconnect; LCD I2C on pins 20/21.
 
@@ -31,7 +31,7 @@
 
 | Qty | Part | Notes | Price |
 |---|---|---|---|
-| 2 | **LiFePO4 12.8V 200Ah w/ BMS 200A (PowMr)** | Parallel bank, 400Ah, 5,120Wh; **ORDER FIRST** | ~₱8,900 ea = ~₱17,800 |
+| 1 | **LiFePO4 12.8V 200Ah w/ BMS 200A (PowMr)** | Single battery, 200Ah, 2,560Wh; **ORDER FIRST** | ~₱8,900 |
 | 1 | **LiFePO4 charger 14.6V 20A** | Recharge ≈ 10h; verify 14.6V output; never lead-acid | ~₱2,000–2,700 |
 
 ### 3b. DC power distribution
@@ -150,11 +150,11 @@ Mechanical: 3× 6mm × 300mm 304 SS shafts · 6× KP08 pillow block bearings · 
 | Mega + sensors | 5V | 0.1A | 3A fuse |
 | **Total (one station)** | | **~36A** | **50A main fuse** |
 
-### 7d. Battery runtime — corrected for LiFePO4 usable capacity
+### 7d. Battery runtime — 1× 200Ah LiFePO4
 
 > **Usable capacity ≠ nameplate.** LiFePO4 should be cycled at 80% DoD for rated cycle
-> life, and the bank should still meet spec at 90% capacity (end-of-life margin):
-> **usable = 400 Ah × 0.80 × 0.90 ≈ 288 Ah** (≈ 3.5 kWh at 12V).
+> life, and the battery should still meet spec at 90% capacity (end-of-life margin):
+> **usable = 200 Ah × 0.80 × 0.90 ≈ 144 Ah** (≈ 1.73 kWh at 12V).
 
 Load profile (staged, one station at a time):
 
@@ -174,28 +174,32 @@ Energy per drying cycle (3 umbrellas per cycle):
 > 45 min staged DRY gives each umbrella 15 min of direct heat — the same 300 W × 15 min
 > dose as the original non-staged 15-min cycle.
 
-**Runtime on the 400 Ah bank (288 Ah usable):**
+**Runtime on the 200 Ah battery (144 Ah usable):**
 
 | Mode | Result |
 |---|---|
-| Quick cycles | ≈ **19 cycles (57 umbrellas)** per charge |
-| Standard cycles | ≈ **8.8 cycles (26 umbrellas)** per charge |
-| Continuous staged operation | ≈ **8.1 hours** (288 Ah ÷ 35.5A) |
-| Standby | ≈ 24 days (288 Ah ÷ 0.5A) |
+| Quick cycles | ≈ **9.6 cycles (~29 umbrellas)** per charge |
+| Standard cycles | ≈ **4.4 cycles (~13 umbrellas)** per charge |
+| Continuous staged operation | ≈ **4.1 hours** (144 Ah ÷ 35.5A) |
+| Standby | ≈ 12 days (144 Ah ÷ 0.5A) |
 
-**Capacity requirement check — 2× 200Ah is adequate:**
+**Capacity requirement vs daily scenarios:**
 
-| Daily scenario | Ah/day | Min bank required (÷ 0.72) |
+| Daily scenario | Ah/day | Min battery required (÷ 0.72) |
 |---|---|---|
 | Capstone demo: 6 quick cycles (18 umb) | ≈ 91 Ah | 126 Ah |
 | Typical rainy day: 10 quick cycles (30 umb) | ≈ 151 Ah | 210 Ah |
 | Typical rainy day: 8 standard cycles (24 umb) | ≈ 263 Ah | 365 Ah |
 | Heavy day: 12 standard cycles (36 umb, full-dry) | ≈ 395 Ah | 548 Ah |
 
-> **Verdict:** 2× 200Ah (400 Ah) covers the capstone demo and typical mixed use with
-> margin; a heavy all-standard day slightly exceeds one charge (charge overnight —
-> ~14 h at 14.6 V / 20 A for a full 240 Ah recharge from typical-day depletion).
-> C-rate is gentle: 0.09 C on the bank (0.18 C per pack), far below the 200A BMS limit.
+> **Verdict:** 1× 200Ah covers the capstone demo (18 umbrellas) with ~40% margin.
+> For busy days, recharge between sessions — a full 0→100% recharge takes ~7–9 h at
+> 14.6 V / 20 A (real-world CC/CV taper), or top up overnight.
+> C-rate is gentle: 0.18 C at full staged draw, far below the 200A BMS limit.
+>
+> **Expansion path:** battery wiring (BOM §3b, wiring/README §2) supports adding a
+> second 200Ah pack in parallel later (bank becomes 400Ah / 288 Ah usable) with no
+> other changes — Anderson SB50 main link, one extra 25A-class ANL/breaker per pack.
 
 ---
 
@@ -274,7 +278,7 @@ Energy per drying cycle (3 umbrellas per cycle):
 | 1 | Automotive blade fuse kit (3A–25A + 30A + 50A) | DC fuses | ~₱200 | Lazada | search "automotive blade fuse kit assortment" |
 | 1 | ANL fuse holder + 50A fuse | main fuse | ~₱80 | Lazada | search "ANL fuse holder 50A" |
 | 1 | Aluminum plate 6061 6mm | motor plate | ₱760 | Lazada | — |
-| 2 | LiFePO4 12.8V 200Ah w/ BMS 200A | battery | ~₱8,900 ea = ~₱17,800 | Lazada (PowMr) | — |
+| 1 | LiFePO4 12.8V 200Ah w/ BMS 200A | battery | ~₱8,900 | Lazada (PowMr) | — |
 | 1 | LiFePO4 charger 14.6V 20A | recharge | ~₱2,000–2,700 | Lazada | — |
 | 1 | Zip ties, screws, sealant, grommets | consumables | ~₱490 | hardware | — |
 
@@ -291,8 +295,8 @@ Energy per drying cycle (3 umbrellas per cycle):
 | Automotive relays (4×₱80) + opto module | ≈ ₱520 |
 | NPN driver components (4×2N2222 + resistors + diodes) | ≈ ₱40 |
 | Control electronics (Mega, sensors, LCD, buck) | ≈ ₱1,589 |
-| Battery bank (2× 200Ah) + charger | ≈ ₱19,800–20,500 |
+| Battery (1× 200Ah) + charger | ≈ ₱10,900–11,600 |
 | Disconnect switch + fuses + fuse holders | ≈ ₱430 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
 | Wiring, connectors, consumables | ≈ ₱1,800–2,200 |
-| **TOTAL** | **≈ ₱36,000–37,000** |
+| **TOTAL** | **≈ ₱27,100–28,100** |

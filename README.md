@@ -63,7 +63,7 @@ Reference material: `docs/SYSTEM-ARCHITECTURE.md`, `docs/FLOWCHART.md`, `docs/ST
 ## Verified performance
 
 - **Cycle:** ≈ 15–25 min (light rain) – ~45 min (fully soaked), humidity auto-stop
-- **Energy:** staged operation (1 station) ≈ 35.5A draw → ~8.1 h continuous, or ≈ 19 quick cycles (57 umbrellas) per charge on the 400Ah bank (288 Ah usable)
+- **Energy:** staged operation (1 station) ≈ 35.5A draw → ~8.1 h continuous, or ≈ 19 quick cycles (57 umbrellas) per charge on the 200Ah battery (288 Ah usable)
 - **Margins:** motor torque ≥4.6× per station · BMS 5.5× vs staged DC draw · PTC self-regulation prevents thermal runaway
 - **Cost:** ≈ ₱36,000–37,000 (batteries + charger included)
 

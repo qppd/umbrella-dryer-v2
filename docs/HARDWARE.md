@@ -178,7 +178,7 @@ graph TB
 
 | Spec | Value | Note |
 |---|---|---|
-| Battery | 2× LiFePO4 12.8V 200Ah in parallel | 400Ah total, 5,120 Wh |
+| Battery | 1× LiFePO4 12.8V 200Ah battery | 200Ah total, 2,560 Wh |
 | BMS | Built-in per pack (200A each) | Over-charge, over-discharge, over-current, short-circuit |
 | Main fuse | **50A ANL** | Primary protection on the +12V bus |
 | Disconnect | **50A battery disconnect switch** | Manual kill; replaces the old 10A DC rocker |
@@ -254,7 +254,7 @@ graph TB
 > The firmware rotates stations every 30 s so only one is active at a time. Two stations
 > simultaneously = ~72A — main fuse blows. This is the design intent.
 
-**Runtime estimates (400 Ah bank, 288 Ah usable @ 80% DoD × 90% EoL):**
+**Runtime estimates (200 Ah battery, 288 Ah usable @ 80% DoD × 90% EoL):**
 
 | Mode | Draw | Estimated runtime |
 |---|---|---|
@@ -286,7 +286,7 @@ graph TB
 | Wire gauge | 8 AWG battery main · 10 AWG heater/fan branches · 18 AWG motor · 20 AWG logic · 22 AWG signals |
 | Fuse hierarchy | 50A ANL main → 30A ×3 PTC + 30A fan bus + 3A ×3 motor + 3A logic |
 | Grounding | Single-point: all returns → battery − rail; chassis bonded at one bolt |
-| Connectors | XT60 for battery-to-bus · Anderson SB50 for battery parallel link · JST-XH for sensor harnesses |
+| Connectors | XT60 for battery-to-bus · Anderson SB50 for battery main link · JST-XH for sensor harnesses |
 | Pass-throughs | Rubber grommets at every chamber wall penetration |
 | Thermal fuse | 130 °C / 10A inline per heater in its + lead (9 total) |
 

@@ -26,7 +26,7 @@
 
 ## System summary
 
-- **Power:** 12V DC only — 2× 200Ah LiFePO4 batteries in parallel (no mains, no inverter)
+- **Power:** 12V DC only — 1× 200Ah LiFePO4 battery (no mains, no inverter)
 - **Main fuse:** 50A ANL (one station at a time ≈ 36A)
 - **Heating:** 9× PTC ceramic heaters (12V 100W each) — 3 per station, **40A automotive relay-switched**
 - **Fans:** 9× BLDC ducted fans (50mm, 12V, with ESC) — 3 per station, PWM-controlled

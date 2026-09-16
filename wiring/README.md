@@ -50,8 +50,8 @@ If any other doc disagrees with this file, this file wins.
 
 | From | To | Wire | Protection |
 |---|---|---|---|
-| Battery A + ↔ Battery B + (parallel link) | bank + | 4 AWG | — |
-| Battery A − ↔ Battery B − (parallel link) | bank − | 4 AWG | — |
+| Battery A + ↔ Battery B + (main link) | bank + | 4 AWG | — |
+| Battery A − ↔ Battery B − (main link) | bank − | 4 AWG | — |
 | Bank + | 50A battery disconnect switch | 8 AWG | — |
 | Disconnect | **50A ANL main fuse** → distribution bus | 8 AWG | 50 A ANL |
 | Bus | Station 1 PTC branch: **30A fuse** → auto relay 30 → 87 → heaters | 10 AWG | 30 A blade |
@@ -165,7 +165,7 @@ Mega PWM pin (signal wires in parallel) and the switched 12V fan bus.
 
 | Run | Gauge |
 |---|---|
-| Battery parallel links | 4 AWG |
+| battery main links | 4 AWG |
 | Bank → disconnect → ANL fuse → bus | 8 AWG |
 | Bus → station PTC fuse → relay → heaters | 10 AWG |
 | Bus → fan fuse → relay → ESC distribution | 10 AWG (18 AWG ESC pigtails) |

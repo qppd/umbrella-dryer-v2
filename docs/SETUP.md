@@ -60,7 +60,7 @@
 
 ### 5a. Power distribution
 
-1. Connect battery positives (parallel link) and negatives (parallel link) — use 4 AWG.
+1. Connect battery positives (main link) and negatives (main link) — use 4 AWG.
 2. Battery + → 50A disconnect switch → 50A ANL main fuse → terminal block (DC distribution bus) — 8 AWG.
 3. From distribution bus, run fused branches:
    - Station 1: 30A fuse → 40A auto relay (D4 via NPN) → thermal fuses → 3 PTC heaters
