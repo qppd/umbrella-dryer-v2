@@ -1,11 +1,16 @@
-# Hardware Reference — 12V DC System
+# Hardware Reference — 12V DC System (Rev 8)
 
 > **Major revision:** This version replaces the 220V mains + inverter architecture with an
 > all-12V DC system. No mains voltage, no inverter, no RCD, no changeover switch, no SSR-40DA.
 > All heating, fans, and motors run directly off the 12V LiFePO4 battery bank.
+>
+> **Rev 8 changes (site-wide fix):** main fuse 25A→50A ANL; per-station PTC fuses 10A→30A;
+> fan bus fuse 15A→30A; PTC relays upgraded from 10A PCB modules to 40A automotive (NPN-driven);
+> thermal fuse clarified as 130°C per heater (9×); pin map reconciled across all docs; LCD
+> I2C corrected to Mega pins 20/21 (not A4/A5); kill switch 10A rocker→50A disconnect;
+> staged operation mandatory (≤1 station at a time).
 
-Spec sheets for what was actually bought (sources & prices: `docs/BOM.md` §14). Use this during
-assembly and testing when you need a part's ratings, dimensions, or limits — not the store listing.
+---
 
 ## 1. System block diagram
 
@@ -13,29 +18,36 @@ assembly and testing when you need a part's ratings, dimensions, or limits — n
 graph TB
     subgraph Power["12V DC Power System"]
         BAT["2× LiFePO4 200Ah<br/>(parallel → 400Ah, 12.8V nominal)"]
-        FUSE_MAIN["25A main fuse"]
+        KILL["50A disconnect switch"]
+        FUSE_MAIN["50A ANL main fuse"]
         FUSE_CTRL["3A logic fuse"]
-        FUSE_FAN["15A fan bus fuse"]
-        FUSE_HEAT["20A heater fuse ×2"]
+        FUSE_FAN["30A fan bus fuse"]
+        FUSE_MOT["3A motor fuse ×3"]
+        FUSE_HEAT["30A heater fuse ×3"]
     end
 
     subgraph Control["Control Layer"]
-        MEGA["Arduino Mega 2560"]
+        MEGA["Arduino Mega 2560<br/>5V from buck"]
         DHT["DHT22<br/>(mid-chamber)"]
         DS["DS18B20<br/>(heater airstream)"]
-        LCD["LCD 16×2 I2C"]
-        BTN["Button D13"]
-        BUZ["Buzzer"]
-        LED["Status LEDs"]
+        LCD["LCD 16×2 I2C (20/21)"]
+        BTN["Button D14"]
+        BUZ["Buzzer D18"]
+        LED["Status LEDs D15–D17"]
+    end
+
+    subgraph NPN["NPN driver stages ×4 (D4/D6/D8/D13)"]
+        NPN1["2N2222 + 1kΩ base<br/>+10kΩ pull-down<br/>+1N4007 flyback"]
     end
 
     subgraph Station1["Station 1"]
-        RELAY_M1["Relay ch — Motor 1"]
-        MTR1["SGM-370 Motor"]
-        RELAY_H1A["Relay ch — PTC×3<br/>(Station 1)"]
+        RELAY_H1["40A automotive relay<br/>(D4 via NPN)"]
         PTC1A["PTC Heater 1"]
         PTC1B["PTC Heater 2"]
         PTC1C["PTC Heater 3"]
+        THF1["130°C thermal fuse<br/>(per heater)"]
+        RELAY_M1["Opto relay ch1<br/>(D5 active-LOW)"]
+        MTR1["SGM-370 Motor"]
         ESC1["ESC #1<br/>(D10 PWM)"]
         FAN1A["BLDC Fan 1"]
         FAN1B["BLDC Fan 2"]
@@ -43,12 +55,13 @@ graph TB
     end
 
     subgraph Station2["Station 2"]
-        RELAY_M2["Relay ch — Motor 2"]
-        MTR2["SGM-370 Motor"]
-        RELAY_H1B["Relay ch — PTC×3<br/>(Station 2)"]
+        RELAY_H2["40A automotive relay<br/>(D6 via NPN)"]
         PTC2A["PTC Heater 4"]
         PTC2B["PTC Heater 5"]
         PTC2C["PTC Heater 6"]
+        THF2["130°C thermal fuse<br/>(per heater)"]
+        RELAY_M2["Opto relay ch2<br/>(D7 active-LOW)"]
+        MTR2["SGM-370 Motor"]
         ESC2["ESC #2<br/>(D11 PWM)"]
         FAN2A["BLDC Fan 4"]
         FAN2B["BLDC Fan 5"]
@@ -56,12 +69,13 @@ graph TB
     end
 
     subgraph Station3["Station 3"]
-        RELAY_M3["Relay ch — Motor 3"]
-        MTR3["SGM-370 Motor"]
-        RELAY_H2["Relay ch — PTC×3<br/>(Station 3)"]
+        RELAY_H3["40A automotive relay<br/>(D8 via NPN)"]
         PTC3A["PTC Heater 7"]
         PTC3B["PTC Heater 8"]
         PTC3C["PTC Heater 9"]
+        THF3["130°C thermal fuse<br/>(per heater)"]
+        RELAY_M3["Opto relay ch3<br/>(D9 active-LOW)"]
+        MTR3["SGM-370 Motor"]
         ESC3["ESC #3<br/>(D12 PWM)"]
         FAN3A["BLDC Fan 7"]
         FAN3B["BLDC Fan 8"]
@@ -69,29 +83,35 @@ graph TB
     end
 
     subgraph FanBus["BLDC Fan Power Bus"]
-        FAN_RELAY["40A automotive relay<br/>(D9 gate)"]
+        FAN_RELAY["40A automotive relay<br/>(D13 via NPN)"]
     end
 
-    BAT --> FUSE_MAIN
+    subgraph BuckStage["Buck converter"]
+        BUCK["LM2596S 12V→5V<br/>(feeds Mega 5V pin only)"]
+    end
+
+    BAT --> KILL --> FUSE_MAIN
     FUSE_MAIN --> FUSE_CTRL
     FUSE_MAIN --> FUSE_FAN
     FUSE_MAIN --> FUSE_HEAT
+    FUSE_MAIN --> FUSE_MOT
 
-    FUSE_CTRL --> MEGA
+    FUSE_CTRL --> BUCK --> MEGA
     MEGA --> DHT & DS & LCD & BTN & BUZ & LED
 
-    FUSE_HEAT --> RELAY_H1A & RELAY_H1B & RELAY_H2
-    RELAY_H1A --> PTC1A & PTC1B & PTC1C
-    RELAY_H1B --> PTC2A & PTC2B & PTC2C
-    RELAY_H2 --> PTC3A & PTC3B & PTC3C
+    NPN1 --> RELAY_H1 & RELAY_H2 & RELAY_H3 & FAN_RELAY
 
-    FUSE_MAIN --> RELAY_M1 & RELAY_M2 & RELAY_M3
+    FUSE_HEAT --> RELAY_H1 & RELAY_H2 & RELAY_H3
+    RELAY_H1 --> THF1 --> PTC1A & PTC1B & PTC1C
+    RELAY_H2 --> THF2 --> PTC2A & PTC2B & PTC2C
+    RELAY_H3 --> THF3 --> PTC3A & PTC3B & PTC3C
+
+    FUSE_MOT --> RELAY_M1 & RELAY_M2 & RELAY_M3
     RELAY_M1 --> MTR1
     RELAY_M2 --> MTR2
     RELAY_M3 --> MTR3
 
-    FUSE_FAN --> FAN_RELAY
-    FAN_RELAY --> ESC1 & ESC2 & ESC3
+    FUSE_FAN --> FAN_RELAY --> ESC1 & ESC2 & ESC3
     ESC1 --> FAN1A & FAN1B & FAN1C
     ESC2 --> FAN2A & FAN2B & FAN2C
     ESC3 --> FAN3A & FAN3B & FAN3C
@@ -101,33 +121,35 @@ graph TB
     MEGA -->|"D12 PWM"| ESC3
 ```
 
+---
+
 ## 2. Module spec sheets
 
 ### Controller — Arduino Mega 2560 R3
 
 | Spec | Value | Design implication |
 |---|---|---|
-| MCU | ATmega2560, AVR 8-bit @ 16 MHz | Bare-metal firmware, no OS (`docs/STACKS.md`) |
-| Digital I/O | 54 (15 PWM) | 13 used — headroom remains |
-| Flash / SRAM / EEPROM | 256 KB / 8 KB / 4 KB | Watch SRAM with many string literals — use `F()` macro |
-| Logic level | 5V | Relay board inputs 5V-trigger; ESC PWM logic 5V compatible |
+| MCU | ATmega2560, AVR 8-bit @ 16 MHz | Bare-metal firmware, no OS |
+| Digital I/O | 54 (15 PWM) | 18 used — headroom remains |
+| Flash / SRAM / EEPROM | 256 KB / 8 KB / 4 KB | Use `F()` macro for string literals |
+| Logic level | 5V | Relay module inputs, ESC PWM compatible |
 | Power input | **5V pin from buck** | Never 12V on the barrel jack |
-| Serial | USB + Serial0 (pins 0/1), 115200 debug | Keep 0/1 free while debugging |
+| Serial | USB + Serial0 (pins 0/1), 115200 debug | Keep 0/1 free during development |
+| I2C | Hardware pins **20 (SDA) / 21 (SCL)** | NOT A4/A5 — those are ADC on the Mega |
 
 ### BLDC ducted fan modules — 9× 50 mm (3 per station)
 
 | Spec | Value | Note |
 |---|---|---|
-| Type | 50 mm ducted fan with integrated ESC | One wire harness: red = 12V, black = GND, white/yellow = PWM |
+| Type | 50 mm ducted fan with integrated ESC | One wire harness: red = 12V, black = GND, white = PWM |
 | Rated voltage | 12V DC | Direct from the 12V fan power bus |
 | Current draw | ~3.2A each @ full speed | ~0.6A idle/low-speed |
-| PWM control | 1000–2000 µs pulse, 50 Hz | Arduino `Servo.writeMicroseconds()` via `Servo.h` |
+| PWM control | 1000–2000 µs pulse, 50 Hz | `Servo.writeMicroseconds()` via `Servo.h` |
 | Speed range | 1000 µs = stop → 2000 µs = full RPM | Use 1100–1900 µs for safe operating window |
 | Role | Forced convection — pushes heated air across the wet canopy | 3 fans per station for even airflow coverage |
-| Mounting | Ducted into chamber wall or bracket, aimed at canopy underside | Keep wiring ≥ 5 cm from heater body |
 
-> **ESC arming:** Most BLDC ESCs require a 1000 µs pulse on power-up to arm. Write
-> `esc.writeMicroseconds(1000)` in `setup()` with a 2 s delay before allowing speed changes.
+> **ESC arming:** Write `esc.writeMicroseconds(1000)` in `setup()` with a 2 s delay before
+> allowing speed changes. Fan bus relay (D13) must be ON during arming to power the ESCs.
 
 ### PTC ceramic heaters — 9× 12V 100W (3 per station)
 
@@ -137,184 +159,170 @@ graph TB
 | Self-regulation | PTC effect: power drops as surface temp rises | No thermostat needed for basic overheat protection |
 | Mounting | Station bracket, aimed at canopy underside | ≥ 5 cm clearance to wiring, sensors, and plastic parts |
 | Role | Provides 40–60 °C warm airflow for drying | 3 heaters per station = 300W per station |
-| Protection | Built-in PTC self-limiting + external thermal fuse (115 °C) | Thermal fuse is the hard cutoff; PTC soft-limits naturally |
+| Protection | PTC self-limiting + **130 °C one-shot thermal fuse per heater** (9 total) | Thermal fuse is non-resettable hard cutoff; PTC soft-limits naturally |
+
+> **Why 130 °C:** PTC self-regulates around 150–200 °C element temperature. The 130 °C fuse
+> on the chamber-side heatsink catches any runaway before the plastic housing melts. It is
+> rated 10A — mounted in the + lead of each individual heater (not shared across 3).
 
 ### Motors — 3× SGM-370 worm gear (one per station)
 
 | Parameter | Value |
 |---|---|
 | Rated | 12 V, 6 RPM, **14 kg·cm**, ~0.2 A @ rated load |
-| No-load | 6 RPM, ~80 mA |
 | Stall | 28 kg·cm, ~0.8 A |
 | Shaft | 6 mm Ø × 15 mm, single shaft |
-| Body | ~95 × 32 × 28 mm, ~156 g |
 | Behavior | **Self-locking** (worm not back-drivable); stall-tolerant |
-
-### Mechanical drivetrain (per station ×3)
-
-| Part | Spec |
-|---|---|
-| Shaft | 304 SS, 6 mm Ø × 300 mm, ground finish |
-| Bearings | 2× KP08 pillow block, 6 mm bore insert, ~120 kgf dynamic — mount ≤ 40 mm from each shaft end |
-| Coupling | 6×8 mm rigid clamp sleeve — grub screws on motor flat + shaft, thread-check after first run |
-| Umbrella holder | Fabricated, one per station; canopy tip clearance ≥ 5 cm between stations and chamber walls |
 
 ### Battery bank + power distribution
 
 | Spec | Value | Note |
 |---|---|---|
-| Battery | 2× LiFePO4 200Ah in parallel | 12.8V nominal, 400Ah total, 5,120 Wh |
-| BMS | Built-in per pack (200A each) | Over-charge, over-discharge, over-current, short-circuit protection |
-| Main fuse | 25A blade fuse | Primary circuit protection on the +12V bus |
-| Heater fuses | 20A blade fuse ×2 | One per heater group (stations 1+2 and station 3) |
-| Fan bus fuse | 15A blade fuse | Protects the BLDC fan ESC power bus |
+| Battery | 2× LiFePO4 12.8V 200Ah in parallel | 400Ah total, 5,120 Wh |
+| BMS | Built-in per pack (200A each) | Over-charge, over-discharge, over-current, short-circuit |
+| Main fuse | **50A ANL** | Primary protection on the +12V bus |
+| Disconnect | **50A battery disconnect switch** | Manual kill; replaces the old 10A DC rocker |
+| Heater fuses | **30A blade fuse ×3** | One per station (all 3 PTC heaters on that branch) |
+| Fan bus fuse | **30A blade fuse** | 9 fans × 3.2A = 28.8A @ full speed |
+| Motor fuses | 3A blade fuse ×3 | One per SGM-370 motor |
 | Logic fuse | 3A blade fuse | Feeds the 5V buck → Arduino and sensors |
-| Wire gauge | 16 AWG battery main · 14 AWG heater branches · 18 AWG fan bus · 22 AWG logic | All stranded copper |
+| Wire gauge | 8 AWG battery main · 10 AWG heater/fan branches · 18 AWG motor · 20 AWG logic | All stranded copper |
 
-### Relay modules (optocoupler, low-level trigger) — 12V DC switching
+### Relay architecture
 
-| Spec | Value |
-|---|---|
-| Configuration | 2× 4-channel modules (8 channels total, 5 used) |
-| Contact rating | 10A @ 30VDC per channel |
-| Trigger | Optocoupler LED, active-LOW + 10 kΩ input pull-ups |
-| Coil power | 5V, ~70 mA — from buck 5V rail, **not** Mega pins |
-| Protection | Built-in flyback diode |
-| Duty | PTC heaters (~8.3A each, 3 per group) + motors (~0.8A stall) |
-| Channels used | CH1: PTC group A (stations 1+2, 6 heaters) · CH2: PTC group B (station 3, 3 heaters) · CH3: Motor 1 · CH4: Motor 2 · CH5: Motor 3 |
-| Limits | DC only, 30VDC max contacts; minimum 2 s on/off period for thermal margin |
+| Relay | Type | Rating | Driven by | Switches | Current |
+|---|---|---|---|---|---|
+| Station 1 PTC | 5-pin automotive SPDT | 40A @ 14VDC | D4 → 2N2222 NPN | 3× PTC heaters | ~25A |
+| Station 2 PTC | 5-pin automotive SPDT | 40A @ 14VDC | D6 → 2N2222 NPN | 3× PTC heaters | ~25A |
+| Station 3 PTC | 5-pin automotive SPDT | 40A @ 14VDC | D8 → 2N2222 NPN | 3× PTC heaters | ~25A |
+| Fan bus | 5-pin automotive SPDT | 40A @ 14VDC | D13 → 2N2222 NPN | 9× ESCs | ~28.8A |
+| Motor 1 | Optocoupler module ch | 10A @ 30VDC | D5 active-LOW | SGM-370 #1 | ~0.8A |
+| Motor 2 | Optocoupler module ch | 10A @ 30VDC | D7 active-LOW | SGM-370 #2 | ~0.8A |
+| Motor 3 | Optocoupler module ch | 10A @ 30VDC | D9 active-LOW | SGM-370 #3 | ~0.8A |
 
-### BLDC fan power bus relay
+> **Why automotive relays for PTC:** 3× 100W PTC = 25A — over the 10A rating of PCB
+> optocoupler modules. The 40A automotive relays handle this comfortably.
+>
+> **NPN driver stage** (4× total): Mega pin → 1 kΩ → 2N2222 base (base also has 10 kΩ
+> pull-down to GND); emitter → GND; collector → relay coil − (85); coil + (86) → +12V;
+> 1N4007 across coil (cathode to +12V).
 
-| Spec | Value |
-|---|---|
-| Type | 40A automotive relay (Bosch-style, 5-pin) |
-| Coil | 12V, ~150 mA — driven by Mega pin D9 via NPN transistor (2N2222) |
-| Contact | 40A @ 14VDC — switches 12V to all 3 ESCs per station |
-| Flyback | External 1N4007 diode across coil |
-| Mounting | On power distribution board, close to battery bus |
-
-> D9 cannot source enough current to drive a 12V relay coil directly. Use a 2N2222 NPN
-> transistor: D9 → 1 kΩ resistor → base; collector to relay coil −; coil + to +12V;
-> emitter to GND. Flyback diode across coil (cathode to +12V).
-
-### Sensing & UI
-
-| Part | Key specs |
-|---|---|
-| DHT22 | ±0.5 °C, ±2–5 %RH; **≥ 2 s between reads**; mount mid-chamber, away from air jets and drain |
-| DS18B20 waterproof | ±0.5 °C, 1-Wire, 4.7 kΩ pull-up; probe in the heater air stream |
-| LCD 16×2 I2C | 0x27 or 0x3F (scan), 5V |
-| LEDs / buzzer / button | 220 Ω series on LEDs; active buzzer; button D13 INPUT_PULLUP |
+---
 
 ## 3. Pin map
 
-| Arduino Pin | Function | Direction | Notes |
-|---|---|---|---|
-| D0 / D1 | Serial TX/RX | Debug | Keep free during development |
-| **D2** | **DHT22 data** | Input | 10 kΩ pull-up to 5V |
-| **D3** | **DS18B20 data** | Input | 4.7 kΩ pull-up to 5V (1-Wire) |
-| **D4** | **PTC relay group A** | Output (LOW) | Controls stations 1+2 heaters (6 PTCs) |
-| **D5** | **PTC relay group B** | Output (LOW) | Controls station 3 heaters (3 PTCs) |
-| **D6** | **Motor relay — Station 1** | Output (LOW) | SGM-370 worm gear motor 1 |
-| **D7** | **Motor relay — Station 2** | Output (LOW) | SGM-370 worm gear motor 2 |
-| **D8** | **Motor relay — Station 3** | Output (LOW) | SGM-370 worm gear motor 3 |
-| **D9** | **Fan bus relay** | Output (HIGH) | Via 2N2222 transistor → 40A relay coil |
-| **D10** | **ESC PWM — Station 1** | Output (PWM) | `Servo` library, 50 Hz, 1000–2000 µs |
-| **D11** | **ESC PWM — Station 2** | Output (PWM) | `Servo` library, 50 Hz, 1000–2000 µs |
-| **D12** | **ESC PWM — Station 3** | Output (PWM) | `Servo` library, 50 Hz, 1000–2000 µs |
-| **D13** | **Button** | Input (PULLUP) | Active LOW — press = GND |
-| A0 | LCD I2C SDA | I2C | 4.7 kΩ pull-up |
-| A1 | LCD I2C SCL | I2C | 4.7 kΩ pull-up |
+| Arduino Pin | Function | Direction | Active level | Notes |
+|---|---|---|---|---|
+| D0 / D1 | Serial TX/RX | Debug | — | Keep free during development |
+| **D2** | **DHT22 data** | Input | — | 10 kΩ pull-up to 5V |
+| **D3** | **DS18B20 data** | Input | — | 4.7 kΩ pull-up to 5V (1-Wire) |
+| **D4** | **PTC relay — Station 1** | Output | HIGH = ON | 2N2222 NPN → 40A auto relay |
+| **D5** | **Motor relay — Station 1** | Output | LOW = ON | Optocoupler module ch1 |
+| **D6** | **PTC relay — Station 2** | Output | HIGH = ON | 2N2222 NPN → 40A auto relay |
+| **D7** | **Motor relay — Station 2** | Output | LOW = ON | Optocoupler module ch2 |
+| **D8** | **PTC relay — Station 3** | Output | HIGH = ON | 2N2222 NPN → 40A auto relay |
+| **D9** | **Motor relay — Station 3** | Output | LOW = ON | Optocoupler module ch3 |
+| **D10** | **ESC PWM — Station 1** | Output (PWM) | — | `Servo` library, 50 Hz, 1000–2000 µs |
+| **D11** | **ESC PWM — Station 2** | Output (PWM) | — | `Servo` library, 50 Hz |
+| **D12** | **ESC PWM — Station 3** | Output (PWM) | — | `Servo` library, 50 Hz |
+| **D13** | **Fan bus relay** | Output | HIGH = ON | 2N2222 NPN → 40A auto relay |
+| **D14** | **Start button** | Input | LOW = pressed | INPUT_PULLUP |
+| **D15** | **Red LED** | Output | HIGH = ON | 220 Ω series |
+| **D16** | **Yellow LED** | Output | HIGH = ON | 220 Ω series |
+| **D17** | **Green LED** | Output | HIGH = ON | 220 Ω series |
+| **D18** | **Buzzer** | Output | HIGH = ON | Active buzzer |
+| **20 (SDA)** | **LCD I2C SDA** | I2C | — | addr 0x27 or 0x3F |
+| **21 (SCL)** | **LCD I2C SCL** | I2C | — | Mega hardware I2C |
 
-> Relay modules are **active-LOW**: writing `LOW` turns the relay ON (energizes the load).
-> The fan bus relay is **active-HIGH** (transistor-driven): writing `HIGH` turns the relay ON.
+> NPN-driven pins (D4/D6/D8/D13) are active-HIGH: 10 kΩ base pull-downs keep them OFF at
+> boot. Opto module pins (D5/D7/D9) are active-LOW with onboard pull-ups, also OFF at boot.
+> The `allOff()` function in `setup()` enforces a safe state regardless.
+
+---
 
 ## 4. Power budget
 
 | Load | Per unit | Qty | Total | Fuse |
 |---|---|---|---|---|
-| PTC heater (12V 100W) | 8.3A | 9 | 74.7A (all on) | 20A ×2 (grouped) |
-| BLDC fan + ESC (50 mm) | 3.2A | 9 | 28.8A (all on) | 15A fan bus |
-| SGM-370 motor | 0.2A | 3 | 0.6A | shared main |
+| PTC heater (12V 100W) | 8.3A | 9 | 74.7A (all on) | 30A ×3 (per station) |
+| BLDC fan + ESC (50 mm) | 3.2A | 9 | 28.8A (all on) | 30A fan bus |
+| SGM-370 motor | 0.2A / 0.8A stall | 3 | 0.6A / 2.4A | 3A ×3 |
 | Arduino Mega + sensors | 0.1A | 1 | 0.1A | 3A logic |
-| **Worst-case total** | | | **~104A** | **25A main** |
+| **Worst-case total** | | | **~104A** | **50A main** |
 
-> The 25A main fuse is the primary battery-side protection. Branch fuses (20A ×2 for
-> heaters, 15A for fans, 3A for logic) provide downstream protection. At worst-case all-on
-> draw (~104A), the main fuse will blow — this is intentional. The firmware limits operation
-> to **one station at a time** in normal mode, drawing ≈ 25–35A per station (3 PTC heaters
-> + 3 BLDC fans + 1 motor). Simultaneous multi-station is **boost mode only** with
-> firmware-enforced reduced heater duty.
+> **Staged operation is mandatory.** One station full load = ~36A (3 PTC + 3 fans + motor).
+> The firmware rotates stations every 30 s so only one is active at a time. Two stations
+> simultaneously = ~72A — main fuse blows. This is the design intent.
 
 **Runtime estimates (400 Ah bank):**
 
 | Mode | Draw | Estimated runtime |
 |---|---|---|
-| Single station full | ~25A | ~16 hours |
-| Two stations | ~50A | ~8 hours |
-| Three stations (boost) | ~75A (reduced duty) | ~5.3 hours |
+| Single station (staged, 1 at a time) | ~36A | ~11 hours |
 | Standby (sensors + idle) | ~0.5A | ~800 hours |
+
+---
 
 ## 5. Station layout
 
 | Parameter | Decision |
 |---|---|
-| Canopy state when drying | **Half-open** — projected Ø ≈ 650 mm. A fully-open commuter canopy spans 950–1000 mm, and three in a row would need a ~3.2 m chamber; half-open exposes the full wet surface with airflow across it and keeps the box realistic |
-| Chamber internal W × D × H | **2200 × 800 × 1300 mm** (walls +20 mm → cut panels 2240 × 840 × 1340) |
+| Canopy state when drying | **Half-open** — projected Ø ≈ 650 mm |
+| Chamber internal W × D × H | **2200 × 800 × 1300 mm** |
 | Station layout | Single row of 3 stations on the long axis, pitch **700 mm** |
-| Clearance check | Canopy edge at 700 + 325 = 1025 mm from center vs wall at 1100 mm → 75 mm each side; between adjacent canopies 700 − 650 = 50 mm — both pass the ≥50 mm rule |
-| Hanging length | Umbrella hangs from the holder; PTC heaters and BLDC fans blow across the canopy underside |
-| Services | **9× PTC ceramic heaters: 3 per station on brackets, aimed at canopy underside** · **9× BLDC ducted fans: 3 per station for forced convection** · **12V power bus runs along chamber ceiling** · DHT22 mid-chamber · DS18B20 probe in heater air stream |
+| Clearance | 75 mm each side; 50 mm between adjacent canopies (passes ≥50 mm rule) |
+| Services | 9× PTC heaters + 9× BLDC fans + 12V power bus + DHT22 + DS18B20 |
+
+---
 
 ## 6. Electrical build standards
 
 | Item | Standard |
 |---|---|
-| Wire gauge | 16 AWG battery main + heater branches · 14 AWG battery-to-fuse bus · 18 AWG fan bus · 22 AWG logic |
-| Fuse hierarchy | 25A main → 20A ×2 heater · 15A fan bus · 3A logic |
-| Grounding | Single-point: all returns → battery − rail; chassis bonded to − at one bolt |
-| Connector types | XT60 for battery-to-bus · Anderson SB50 for battery parallel link · JST-XH for sensor harnesses |
+| Wire gauge | 8 AWG battery main · 10 AWG heater/fan branches · 18 AWG motor · 20 AWG logic · 22 AWG signals |
+| Fuse hierarchy | 50A ANL main → 30A ×3 PTC + 30A fan bus + 3A ×3 motor + 3A logic |
+| Grounding | Single-point: all returns → battery − rail; chassis bonded at one bolt |
+| Connectors | XT60 for battery-to-bus · Anderson SB50 for battery parallel link · JST-XH for sensor harnesses |
 | Pass-throughs | Rubber grommets at every chamber wall penetration |
-| Condensate zone | No bare copper below 5 cm above the floor; silicone-sealed seams; drain tube 6–8 mm ID |
-| Environment | All-12V extra-low voltage (SELV); keep every connector ≥ 5 cm from the heater body |
-| Thermal fuse | 115 °C inline thermal fuse on each heater group — hard cutoff if PTC self-regulation fails |
+| Thermal fuse | 130 °C / 10A inline per heater in its + lead (9 total) |
+
+---
 
 ## 7. Safety provisions
 
-### 12V DC — no mains hazard, but DC arcs are real
-
 | Hazard | Mitigation |
 |---|---|
-| **Short circuit** | 25A main fuse + BMS over-current (200A each pack) + branch fuses |
-| **Over-temperature (heaters)** | PTC self-regulating (power drops as temp rises) + inline 115 °C thermal fuse per heater group + DS18B20 firmware cutoff |
-| **Over-temperature (chamber)** | DHT22 reads ambient; firmware shuts all heaters if T > 70 °C |
-| **Battery over-discharge** | BMS low-voltage cutoff (typically 2.5V/cell → ~10V pack) |
-| **Battery over-charge** | BMS high-voltage cutoff (3.65V/cell → ~14.6V pack) |
-| **ESC / BLDC stall** | ESCs have built-in over-current and stall protection; fans auto-restart on removal of stall |
-| **Motor stall** | SGM-370 worm gear is self-locking and stall-tolerant; stall current ~0.8A well within relay rating |
-| **DC arc on relay contacts** | Flyback diodes on all relay coils; minimum 2 s switching period; 10A contacts rated for 30VDC |
-| **Water ingress** | All sensors waterproof-rated; grommets on wall pass-throughs; silicone-sealed seams; no bare connections below 5 cm from floor |
-| **RCD / GFCI** | **Not required** — system is SELV (≤ 50V DC), no mains connection. The 12V DC source cannot deliver a lethal shock under normal conditions |
+| **Short circuit** | 50A ANL main fuse + BMS over-current (200A each pack) + branch fuses |
+| **Over-temperature (heaters)** | PTC self-regulating + 130 °C thermal fuse per heater (9×) + DS18B20 firmware cutoff |
+| **Over-temperature (chamber)** | DHT22 reads ambient; firmware shuts all loads if T > 65 °C |
+| **Battery over-discharge** | BMS low-voltage cutoff (~10V pack) |
+| **Battery over-charge** | BMS high-voltage cutoff (~14.6V pack) |
+| **DC arc on relay contacts** | 1N4007 flyback diodes on all relay coils; 40A contacts rated for 30VDC |
+| **Accidental heater on at boot** | NPN pull-downs keep PTC relays OFF; `allOff()` called first in `setup()` |
+| **Water ingress** | Waterproof sensors; grommets; silicone-sealed seams; no bare connections below 5 cm |
+| **RCD / GFCI** | **Not required** — SELV system, ≤ 50V DC |
 
 ### What was removed from previous revisions
 
 | Removed component | Reason |
 |---|---|
-| 220V mains + changeover switch | Eliminated entirely — no mains voltage in the system |
-| RCD/GFCI | Not needed — SELV 12V DC system cannot cause electric shock |
-| SSR-40DA solid-state relays | Replaced by DC-rated relay modules (10A @ 30VDC) for heater switching |
-| 3000W pure sine inverter | Eliminated — all loads run natively on 12V DC |
-| 14.6V lead-acid charger | Replaced by LiFePO4-compatible charger (CC/CV to 14.6V, 20A) if external charging is needed |
-| Mains rocker switches | Not needed — DC rocker or firmware control only |
+| 220V mains + changeover switch | Eliminated entirely |
+| RCD/GFCI | Not needed — SELV 12V DC |
+| SSR-40DA solid-state relays | Replaced by 40A automotive relays (PTC) + opto module (motors) |
+| 3000W pure sine inverter | All loads run natively on 12V DC |
+| 14.6V lead-acid charger | LiFePO4 charger only |
+| Mains rocker switches | Not needed — 50A disconnect switch + firmware control |
 
-## 8. Revision history of the hardware set
+---
+
+## 8. Revision history
 
 | Rev | Hardware change |
 |---|---|
 | Rev 2 | SSR-25DD + BTS7960 + single carousel motor + (optional) MLX90614 |
 | Rev 3 | Relays replace SSR + driver; MLX90614 dropped |
-| **Rev 4** | **3 independent stations** (3× motors, shafts, KP06 sets); 25A main fuse; per-station 3A fuses |
-| **Rev 5** | **Mains heat: 2× 1500W PTC heater-fans via 2× SSR-40DA; 12" Omni exhaust fan; battery = motors + control only; RCD + earthing added** |
-| **Rev 6** | **Dual source: wall outlet OR 3000W pure sine inverter via 2P changeover; 2× 200Ah LiFePO4 bank + 20A charger; firmware caps battery mode at stage 1 (D14)** |
-| **Rev 7** | **Complete 12V DC redesign: 9× PTC ceramic heaters (12V 100W), 9× BLDC ducted fans with ESC (50 mm), 3× SGM-370 motors; no mains, no inverter, no RCD, no SSR-40DA; relay modules + ESC PWM control from Arduino Mega** |
+| Rev 4 | 3 independent stations (3× motors, shafts, KP08 sets); 25A main fuse |
+| Rev 5 | Mains heat: 2× 1500W PTC heater-fans via 2× SSR-40DA; RCD added |
+| Rev 6 | Dual source: wall outlet OR 3000W inverter via changeover; 2× 200Ah LiFePO4 |
+| Rev 7 | Complete 12V DC redesign: 9× PTC + 9× BLDC + 3× SGM-370; no mains, no inverter |
+| **Rev 8** | **Fuse plan fixed (50A main, 30A PTC/fan, per-heater 130°C thermal fuse); PTC relays upgraded to 40A automotive; pin map reconciled; LCD I2C corrected to pins 20/21; staged operation mandatory** |

@@ -64,19 +64,24 @@
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
-- [ ] Arduino Mega 2560 + USB cable (₱1,165) — https://www.lazada.com.ph/products/pdp-i5989151-s15092061710.html
-| 1 | DHT22 sensor module | ₱210 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i132179919-s144637867.html |
+| 1 | Arduino Mega 2560 + USB cable (CH340G) | ₱1,165 | Makerlab PH | https://www.lazada.com.ph/products/pdp-i5989151-s15092061710.html |
+| 1 | DHT22 sensor module (black) | ₱210 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i132179919-s144637867.html |
 | 1 | DS18B20 waterproof probe (temp) | ₱105 | Lazada | https://www.lazada.com.ph/products/pdp-i3864018549.html |
 | 1 | LCD 16×2 I2C (black on white) | ₱165 | Lazada | https://www.lazada.com.ph/products/pdp-i3934869498.html |
-| 6 | Single-channel relay 5V/12V 10A optocoupler | ₱49 ea = ₱294 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i100047427-s100061336.html |
 | 1 | LM2596S DC-DC buck converter 12V→5V | ₱49 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i6005010-s7605914.html |
 
-### 2g. Automotive relay + fuses (Lazada)
+### 2g. Relays, drivers, and fuses (Lazada)
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
-| 1 | 12V 40A automotive relay 5-pin SPDT | ~₱80 | Lazada | https://www.lazada.com.ph/catalog/?q=12v+40a+automotive+relay |
-| 1 | Automotive blade fuse kit (3A, 10A, 15A, 20A, 25A assortment) | ~₱150 | Lazada | https://www.lazada.com.ph/catalog/?q=automotive+blade+fuse+kit+assortment |
+| 4 | **12V 40A automotive relay 5-pin SPDT** | ~₱80 ea = ~₱320 | Lazada | search "12v 40a automotive relay" |
+| 1 | **4-CH optocoupler relay module (10A @ 30VDC)** | ~₱200 | Lazada | search "4 channel relay module 12V" |
+| 4 | **2N2222 NPN transistor (TO-92)** | ~₱5 ea = ~₱20 | Lazada | search "2n2222 transistor" |
+| 4 | **1N4007 diode** (flyback) | from kit | Lazada | — |
+| 1 | **50A battery disconnect switch** | ~₱150 | Lazada | search "50a battery disconnect switch" |
+| 1 | **ANL fuse holder + 50A ANL fuse** | ~₱80 | Lazada | search "ANL fuse holder 50A" |
+| 9 | **130°C / 10A thermal fuse (one-shot)** | ~₱15 ea = ~₱135 | Lazada | search "thermal fuse 130C 10A" |
+| 1 | Automotive blade fuse kit (3A, 10A, 15A, 20A, 25A, 30A) | ~₱200 | Lazada | https://www.lazada.com.ph/catalog/?q=automotive+blade+fuse+kit+assortment |
 
 ### 2h. UI components (Lazada)
 
@@ -85,7 +90,6 @@
 | 1 | LED 5mm red | ₱29 | Lazada | https://www.lazada.com.ph/products/pdp-i2573601435.html |
 | 1 | Active buzzer 5V | ₱35 | Lazada | https://www.lazada.com.ph/products/pdp-i4472196293.html |
 | 1 | Arcade LED push button 5V (Circuitrocks) | ₱45 | Lazada | https://www.lazada.com.ph/products/i343850766.html |
-| 2 | DC rocker switch 12V 10A (labeled "DC") | ₱72 | Lazada | https://www.lazada.com.ph/products/pdp-i2808878488.html |
 
 ### 2i. Wiring + consumables (Lazada)
 
@@ -125,17 +129,17 @@
 
 | Category | Total |
 |---|---|
-| PTC heaters (9×₱555) | ≈ ₱4,995 |
+| PTC heaters (9×₱484) + thermal fuses (9×₱15) | ≈ ₱4,491 |
 | BLDC fans + ESCs (9×₱469) | ≈ ₱4,221 |
 | Motors + couplings (makerlab) | ≈ ₱1,749 |
 | Bearings + shafts (Lazada) | ≈ ₱1,062 |
-| Control electronics (Lazada) | ≈ ₱1,233 |
-| Relay + fuses (Lazada) | ≈ ₱230 |
-| UI (LEDs, buzzer, button, rockers) | ≈ ₱181 |
+| Control electronics (Lazada) | ≈ ₱1,589 |
+| Relays, drivers, disconnect + fuses | ≈ ₱925 |
+| UI (LEDs, buzzer, button) | ≈ ₱109 |
 | Wiring + consumables (Lazada) | ≈ ₱1,346 |
 | Battery bank (2× 200Ah) + charger | ≈ ₱19,800–20,500 |
 | Hardware store consumables | ≈ ₱490 |
-| **GRAND TOTAL** | **≈ ₱34,900–35,600** |
+| **GRAND TOTAL** | **≈ ₱36,000–37,000** |
 
 ---
 
@@ -161,8 +165,11 @@
 | Pillow block | KP08, 6mm bore | KP08, 8mm bore |
 | Shaft | 6mm × 300mm SS | 8mm (wrong) |
 | Coupling | 6×8mm rigid | Other sizes |
-| Relay module | 2-CH 10A optocoupler | 4-CH (waste) or 1-CH |
-| Automotive relay | 12V 40A 5-pin SPDT | 12V 80A (overkill) |
+| PTC relay | **12V 40A automotive 5-pin SPDT** | 10A PCB relay (burns out at 25A PTC draw!) |
+| Motor relay module | **4-CH optocoupler 10A** | 40A auto (overkill for 0.8A motor) |
+| Battery disconnect | **50A rated** | 10A DC rocker (can't handle 36A) |
+| Main fuse | **50A ANL** | 25A blade (blows with one station at 36A) |
+| Thermal fuse | **130°C / 10A per heater** | 80°C (too close to operating temp 40–60°C) |
 | Battery | LiFePO4 12.8V 200Ah | Lead-acid (too heavy) |
 | Charger | LiFePO4 14.6V 20A | Lead-acid charger (wrong!) |
 | DHT22 | Black module | Blue (less accurate) |

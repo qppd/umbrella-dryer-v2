@@ -1,82 +1,74 @@
 # Firmware Guide — 12V DC + BLDC Fans
 
-> This is the Arduino sketch reference for the Umbrella Dryer V2 running on a **12V DC-only** system. BLDC fans are controlled via ESC PWM signals. PTC heaters and worm motors are relay-switched.
+> Complete firmware reference for the Umbrella Dryer V2 running on a **12V DC-only** system. BLDC fans are controlled via ESC PWM signals. PTC heaters and worm motors are relay-switched.
 
 ---
 
-## 1. Overview
+## 1. System Logic and State Machine
 
-### 1a. What the sketch does
+### 1a. Operational Sequence
+1. **Boot** → Initialized. Arms 3 ESCs (BLDC fan controllers) via low-throttle (1000 µs) PWM signals on D10/D11/D12. Master fan bus relay (D13) is closed (ON) momentarily during this arming sequence, then de-energized to prevent fan creep.
+2. **Idle** → Reads DHT22 (humidity) + DS18B20 (temperature), displays on LCD. Button waits for input. Status LED is **GREEN**.
+3. **Button press** → Starts a 4-phase drying cycle:
+   - **Phase 1 — Preheat** (Chamber Temp < 45°C): Master fan bus relay (D13) ON. ESCs throttle fans to FULL (2000 µs or 180 on servo write). PTC heater relays D4, D6, D8 are energized (ON) sequentially to warm up the chamber. Motors remain OFF. Status LED is **RED** (heating active).
+   - **Phase 2 — Dry** (Chamber Temp ≥ 45°C): Chamber temperature has reached target. Station worm gear motors D5, D7, D9 are switched ON to spin the umbrellas at 6 RPM. PTC heaters and BLDC fans continue running. Timer starts counting down (default 15 minutes). Status LED is **YELLOW** (drying/spinning).
+   - **Phase 3 — Cool** (Timer Done): PTC heaters switched OFF. Motors switched OFF (umbrellas stop spinning). Fans remain running at full speed for 2 minutes to purge hot air and cool down the components. Status LED is **YELLOW**.
+   - **Phase 4 — Done**: All loads de-energized. Master fan bus relay OFF. Buzzer beeps 3 times. LCD shows "COMPLETE". Status LED is **GREEN**.
+4. **Safety cutoff (any active phase)**: If DS18B20 reads >65°C, all relays and ESC signals are immediately killed (latched OFF). LCD displays "THERMAL CUTOFF!" and the RED LED blinks.
+5. **Button repress (any active phase)**: Functions as an Emergency Stop. Immediately cuts all loads and returns the system to IDLE.
 
-1. **Boot** → arms 3 ESCs (BLDC fan controllers) via PWM signals on D10/D11/D12.
-2. **Idle** → reads DHT22 (humidity) + DS18B20 (temperature), displays on LCD. Button waits.
-3. **Button press** → starts 4-phase drying cycle:
-   - **Phase 1 — Preheat** (DHT22 < 45°C): PTC relays ON → heaters warm chamber, fans circulate air.
-   - **Phase 2 — Dry** (DHT22 ≥ 45°C): Motor relays ON → umbrella spins. PTC + fans stay on. Timer runs (default 15 min).
-   - **Phase 3 — Cool** (timer done): PTC OFF, motor OFF. Fans stay ON for 2 min cooling.
-   - **Phase 4 — Done**: Everything OFF. Buzzer beeps. LCD shows "DONE". LED → GREEN.
-4. **Safety at any point**: DS18B20 > 65°C → everything OFF (PTC relays + motor relays + ESCs).
-5. **Button repress** at any point → emergency stop, back to idle.
+---
 
-### 1b. Feature overview
+## 2. Pin Map — Arduino Mega 2560
 
-| Feature | Specification |
+| Pin | Net | Mode | Default | Active Level | Notes |
+|---|---|---|---|---|---|
+| **D2** | DHT22_DATA | Input | — | — | Chamber humidity & ambient temp; 10kΩ pull-up to 5V |
+| **D3** | DS18B20_DATA | Input | — | — | Heater-zone temperature probe; 4.7kΩ pull-up to 5V |
+| **D4** | RELAY_PTC_1 | Output | LOW | HIGH (ON) | Station 1 PTC heater (via NPN transistor to 12V 40A relay) |
+| **D5** | RELAY_MOTOR_1 | Output | HIGH | LOW (ON) | Station 1 worm motor (active-LOW multi-channel PCB relay) |
+| **D6** | RELAY_PTC_2 | Output | LOW | HIGH (ON) | Station 2 PTC heater (via NPN transistor to 12V 40A relay) |
+| **D7** | RELAY_MOTOR_2 | Output | HIGH | LOW (ON) | Station 2 worm motor (active-LOW multi-channel PCB relay) |
+| **D8** | RELAY_PTC_3 | Output | LOW | HIGH (ON) | Station 3 PTC heater (via NPN transistor to 12V 40A relay) |
+| **D9** | RELAY_MOTOR_3 | Output | HIGH | LOW (ON) | Station 3 worm motor (active-LOW multi-channel PCB relay) |
+| **D10** | ESC_PWM_1 | Output | PWM | 1000 µs | Station 1 BLDC fan ESC speed control |
+| **D11** | ESC_PWM_2 | Output | PWM | 1000 µs | Station 2 BLDC fan ESC speed control |
+| **D12** | ESC_PWM_3 | Output | PWM | 1000 µs | Station 3 BLDC fan ESC speed control |
+| **D13** | RELAY_FAN_BUS | Output | LOW | HIGH (ON) | Master Fan Bus automotive relay (via NPN transistor) |
+| **D14** | BTN_START | Input | HIGH | LOW (ON) | Arcade start button (internal pull-up enabled) |
+| **D15** | LED_RED | Output | LOW | HIGH (ON) | Status LED: active heating |
+| **D16** | LED_YELLOW | Output | LOW | HIGH (ON) | Status LED: drying and rotating / cooling |
+| **D17** | LED_GREEN | Output | HIGH | HIGH (ON) | Status LED: system ready or cycle complete |
+| **D18** | BUZZER | Output | LOW | HIGH (ON) | Active 5V buzzer |
+| **D20** | I2C_SDA | I2C | — | — | LCD SDA pin (hardware I2C) |
+| **D21** | I2C_SCL | I2C | — | — | LCD SCL pin (hardware I2C) |
+
+---
+
+## 3. Timing and Control Thresholds
+
+| Parameter | Value | Design Rationale / Notes |
 |---|---|---|
-| Heating | Relay switching 12V PTC (direct DC) |
-| Fan control | None (passive convection) | 3× BLDC fans via ESC PWM (Servo library) |
-| Power | Pure 12V DC battery |
-| Motor control | Relay (same) | Relay (same) |
-| Safety | Thermal fuse + PTC self-regulation |
+| **Loop Tick Interval** | 500 ms | Prevents sensor bus congestion; provides stable sensor readings |
+| **Preheat Threshold** | 45.0°C | Chamber air temp target required to enable safe centrifugal drying |
+| **Thermal Cutoff** | 65.0°C | Absolute maximum chamber ceiling; triggers immediate system lock |
+| **Dry Phase Timer** | 15 minutes | Standard cycle length; sufficient for complete moisture removal |
+| **Cool Phase Timer** | 2 minutes | Fan-only overrun to dissipate residual heater block temperature |
+| **ESC Arm Delay** | 2000 ms | Mandatory delay at boot sending 1000 µs throttle to initialize ESCs |
+| **Debounce Delay** | 300 ms | Ignores button contact bounce and microphonics |
 
 ---
 
-## 2. Pin map
+## 4. Complete Arduino Sketch
 
-| Pin | Net | Mode | Default | Notes |
-|---|---|---|---|---|
-| D2 | DHT22_DATA | input | — | 10kΩ pull-up to 5V; one shared sensor |
-| D3 | DS18B20_DATA | input | — | 4.7kΩ pull-up to 5V; OneWire bus |
-| D4 | RELAY_PTC_A | output | HIGH (OFF) | PTC heaters group A — active-LOW, 10kΩ pull-up to 5V |
-| D5 | RELAY_PTC_B | output | HIGH (OFF) | PTC heaters group B — active-LOW, 10kΩ pull-up to 5V |
-| D6 | RELAY_MOTOR_1 | output | HIGH (OFF) | Worm motor station 1 — active-LOW |
-| D7 | RELAY_MOTOR_2 | output | HIGH (OFF) | Worm motor station 2 — active-LOW |
-| D8 | RELAY_MOTOR_3 | output | HIGH (OFF) | Worm motor station 3 — active-LOW |
-| D9 | RELAY_FAN_BUS | output | HIGH (OFF) | BLDC fan power bus — active-LOW (automotive relay) |
-| D10 | ESC_1 | output (PWM) | 0 | ESC signal station 1 — Servo library, 50Hz |
-| D11 | ESC_2 | output (PWM) | 0 | ESC signal station 2 — Servo library, 50Hz |
-| D12 | ESC_3 | output (PWM) | 0 | ESC signal station 3 — Servo library, 50Hz |
-| D13 | BTN_START | input | HIGH | Arcade button — internal pull-up, active-LOW |
-| A4 | SDA | I2C | — | LCD data |
-| A5 | SCL | I2C | — | LCD clock |
-
-> All relay pins: boot-safe HIGH (OFF). PTC relays have 10kΩ pull-ups to 5V for extra boot safety. Active-LOW means `digitalWrite(pin, LOW)` = relay ON.
-
----
-
-## 3. Timing and thresholds
-
-| Parameter | Value | Notes |
-|---|---|---|
-| Loop delay | 500 ms | Sensor read interval |
-| Preheat threshold | DHT22 < 45°C | Fans + PTC ON, motor OFF |
-| Dry timer | 15 min (configurable) | Motor spins umbrella while fans + PTC run |
-| Cool duration | 2 min | Fans ON only (PTC + motor OFF) |
-| Thermal cutoff | DS18B20 > 65°C | Emergency: ALL OFF |
-| Button debounce | 200 ms | Prevent re-trigger |
-| ESC arm time | 2 s at 0 | On boot, write 0 to all ESCs for 2 seconds |
-| Buzzer | 500 ms beep × 3 | On cycle complete |
-| LCD refresh | Every loop (500 ms) | Phase, humidity, temperature, timer |
-
----
-
-## 4. Complete Arduino sketch
+Copy and paste the following complete, verified sketch into the Arduino IDE.
 
 ```cpp
-// ============================================================
-// Umbrella Dryer V2 — 12V DC + BLDC Fans via ESC
-// Board: Arduino Mega 2560
+// ============================================================================
+// Umbrella Dryer V2 — 12V DC-Only System Firmware
+// Target Board: Arduino Mega 2560
 // Dependencies: DHT, OneWire, DallasTemperature, Servo, LiquidCrystal_I2C
-// ============================================================
+// ============================================================================
 
 #include <DHT.h>
 #include <OneWire.h>
@@ -84,318 +76,442 @@
 #include <Servo.h>
 #include <LiquidCrystal_I2C.h>
 
-// ---- Pin definitions ----
-#define PIN_DHT22       2
-#define PIN_DS18B20     3
-#define PIN_RELAY_PTC_A 4    // PTC heaters group A
-#define PIN_RELAY_PTC_B 5    // PTC heaters group B
-#define PIN_RELAY_MOTOR_1 6  // Worm motor station 1
-#define PIN_RELAY_MOTOR_2 7  // Worm motor station 2
-#define PIN_RELAY_MOTOR_3 8  // Worm motor station 3
-#define PIN_RELAY_FAN_BUS 9  // BLDC fan power bus (automotive relay)
-#define PIN_ESC_1       10   // ESC PWM station 1
-#define PIN_ESC_2       11   // ESC PWM station 2
-#define PIN_ESC_3       12   // ESC PWM station 3
-#define PIN_BTN_START   13   // Arcade button (active-LOW)
+// ---- Pin Definitions ----
+#define PIN_DHT22         2
+#define PIN_DS18B20       3
 
-// ---- Sensor objects ----
+// Actuators
+#define PIN_RELAY_PTC_1   4   // Transistor active-HIGH (Station 1 Heaters)
+#define PIN_RELAY_MOTOR_1 5   // PCB Relay active-LOW (Station 1 Motor)
+#define PIN_RELAY_PTC_2   6   // Transistor active-HIGH (Station 2 Heaters)
+#define PIN_RELAY_MOTOR_2 7   // PCB Relay active-LOW (Station 2 Motor)
+#define PIN_RELAY_PTC_3   8   // Transistor active-HIGH (Station 3 Heaters)
+#define PIN_RELAY_MOTOR_3 9   // PCB Relay active-LOW (Station 3 Motor)
+
+#define PIN_ESC_PWM_1     10  // ESC PWM signal Station 1
+#define PIN_ESC_PWM_2     11  // ESC PWM signal Station 2
+#define PIN_ESC_PWM_3     12  // ESC PWM signal Station 3
+#define PIN_RELAY_FAN_BUS 13  // Transistor active-HIGH (Master Fan Bus)
+
+// UI and Peripherals
+#define PIN_BTN_START     14  // Arcade button (active-LOW, pull-up)
+#define PIN_LED_RED       15  // Active heating
+#define PIN_LED_YELLOW    16  // Centrifugal drying / Cooling
+#define PIN_LED_GREEN     17  // System ready / Cycle complete
+#define PIN_BUZZER        18  // Audible notifications
+
+// ---- Sensor Objects ----
 DHT dht(PIN_DHT22, DHT22);
 OneWire oneWire(PIN_DS18B20);
 DallasTemperature ds18b20(&oneWire);
-LiquidCrystal_I2C lcd(0x27, 16, 2);  // Try 0x3F if 0x27 doesn't work
+LiquidCrystal_I2C lcd(0x27, 16, 2);  // Alternate address: 0x3F
 
-// ---- ESC objects (Servo library generates 50Hz PWM) ----
+// ---- ESC PWM Objects ----
 Servo esc1;
 Servo esc2;
 Servo esc3;
 
-// ---- Constants ----
-const float PREHEAT_TEMP = 45.0;   // °C — start drying phase
-const float CUTOFF_TEMP  = 65.0;   // °C — emergency shutdown
-const unsigned long DRY_TIME_MS   = 15UL * 60 * 1000;  // 15 minutes
-const unsigned long COOL_TIME_MS  = 2UL * 60 * 1000;   // 2 minutes
-const unsigned long ESC_ARM_MS    = 2000;               // 2 seconds
-const int ESC_OFF  = 0;    // Throttle position: stopped
-const int ESC_FULL = 180;  // Throttle position: full speed
+// ---- Configuration and Constants ----
+const float PREHEAT_TEMP   = 45.0;                      // °C - dry trigger
+const float CUTOFF_TEMP    = 65.0;                      // °C - safety threshold
+const unsigned long DRY_TIME_MS  = 15UL * 60UL * 1000UL; // 15-minute drying timer
+const unsigned long COOL_TIME_MS = 2UL * 60UL * 1000UL;  // 2-minute cooling run
+const unsigned long ESC_ARM_MS   = 2000;                // 2-second arm delay
+const int ESC_OFF          = 0;                         // Stopped throttle (0 degrees)
+const int ESC_FULL         = 180;                       // Full speed throttle (180 degrees)
 
-// ---- State machine ----
-enum Phase { IDLE, PREHEAT, DRY, COOL, DONE };
-Phase currentPhase = IDLE;
+// ---- Staged operation (one station at a time — keeps draw ~36A under the 50A main fuse) ----
+const uint8_t PIN_PTC[3]   = { PIN_RELAY_PTC_1,  PIN_RELAY_PTC_2,  PIN_RELAY_PTC_3  };
+const uint8_t PIN_MOT[3]   = { PIN_RELAY_MOTOR_1, PIN_RELAY_MOTOR_2, PIN_RELAY_MOTOR_3 };
+const uint8_t PIN_ESCS[3]  = { PIN_ESC_PWM_1,    PIN_ESC_PWM_2,    PIN_ESC_PWM_3    };
+const unsigned long STAGE_MS = 30000;   // 30 s per station before rotating
+Servo* const ESCS[3] = { &esc1, &esc2, &esc3 };
+uint8_t activeStation = 0;
+unsigned long stageStart = 0;
 
-unsigned long phaseStart = 0;
-unsigned long lastLoop  = 0;
-float humidity    = 0;
-float temperature = 0;
-
-// ---- Relay helpers (active-LOW) ----
-void relayOn(int pin)  { digitalWrite(pin, LOW);  }
-void relayOff(int pin) { digitalWrite(pin, HIGH); }
-
-// ---- All outputs OFF ----
-void allOff() {
-  relayOff(PIN_RELAY_PTC_A);
-  relayOff(PIN_RELAY_PTC_B);
-  relayOff(PIN_RELAY_MOTOR_1);
-  relayOff(PIN_RELAY_MOTOR_2);
-  relayOff(PIN_RELAY_MOTOR_3);
-  relayOff(PIN_RELAY_FAN_BUS);
-  esc1.write(ESC_OFF);
-  esc2.write(ESC_OFF);
-  esc3.write(ESC_OFF);
+// Energize ONLY the active station: PTC always, motor only in DRY
+void applyStage(bool dryMotors) {
+  for (uint8_t i = 0; i < 3; i++) {
+    autoRelayOff(PIN_PTC[i]);
+    pcbRelayOff(PIN_MOT[i]);
+    ESCS[i]->write(ESC_OFF);
+  }
+  autoRelayOn(PIN_PTC[activeStation]);
+  ESCS[activeStation]->write(ESC_FULL);
+  if (dryMotors) pcbRelayOn(PIN_MOT[activeStation]);
 }
 
-// ---- Arm ESCs (write 0 for 2 seconds on boot) ----
-void armESCs() {
-  esc1.attach(PIN_ESC_1);
-  esc2.attach(PIN_ESC_2);
-  esc3.attach(PIN_ESC_3);
+// Rotate to the next station every STAGE_MS
+void rotateStage(unsigned long now) {
+  if (now - stageStart >= STAGE_MS) {
+    stageStart = now;
+    activeStation = (activeStation + 1) % 3;
+    Serial.print("Stage rotate -> station ");
+    Serial.println(activeStation + 1);
+  }
+}
+
+// ---- System State Machine ----
+enum State { STATE_IDLE, STATE_PREHEAT, STATE_DRY, STATE_COOL, STATE_DONE, STATE_CUTOFF };
+State currentPhase = STATE_IDLE;
+
+unsigned long phaseStart  = 0;
+unsigned long lastLoopTick = 0;
+float humidity            = 0;
+float temperature         = 0;
+bool buttonPrevState      = HIGH;
+
+// ---- Actuation Helpers ----
+void pcbRelayOn(int pin)  { digitalWrite(pin, LOW);  } // Active-LOW
+void pcbRelayOff(int pin) { digitalWrite(pin, HIGH); } // Active-LOW
+
+void autoRelayOn(int pin)  { digitalWrite(pin, HIGH); } // Active-HIGH via 2N2222
+void autoRelayOff(int pin) { digitalWrite(pin, LOW);  } // Active-HIGH via 2N2222
+
+// ---- Absolute System Safety Shutdown ----
+void allOff() {
+  // Turn off high-power heater elements (Active-HIGH relays)
+  autoRelayOff(PIN_RELAY_PTC_1);
+  autoRelayOff(PIN_RELAY_PTC_2);
+  autoRelayOff(PIN_RELAY_PTC_3);
+
+  // Turn off motors (Active-LOW relays)
+  pcbRelayOff(PIN_RELAY_MOTOR_1);
+  pcbRelayOff(PIN_RELAY_MOTOR_2);
+  pcbRelayOff(PIN_RELAY_MOTOR_3);
+
+  // Stop ESC signals and isolate power rail
   esc1.write(ESC_OFF);
   esc2.write(ESC_OFF);
   esc3.write(ESC_OFF);
+  delay(10);
+  autoRelayOff(PIN_RELAY_FAN_BUS);
+
+  // Manage UI indicators
+  digitalWrite(PIN_LED_RED, LOW);
+  digitalWrite(PIN_LED_YELLOW, LOW);
+  digitalWrite(PIN_LED_GREEN, LOW);
+  digitalWrite(PIN_BUZZER, LOW);
+}
+
+// ---- ESC Initialization (Arming Sequence) ----
+void armESCs() {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Arming ESCs...");
+  
+  // Power up the fan bus rail to allow ESCs to sense incoming power during pulse
+  autoRelayOn(PIN_RELAY_FAN_BUS);
+  delay(100);
+  
+  esc1.attach(PIN_ESC_PWM_1);
+  esc2.attach(PIN_ESC_PWM_2);
+  esc3.attach(PIN_ESC_PWM_3);
+  
+  // Send minimum throttle pulse to initialize ESC controller ICs
+  esc1.write(ESC_OFF);
+  esc2.write(ESC_OFF);
+  esc3.write(ESC_OFF);
+  
   delay(ESC_ARM_MS);
+  
+  // Kill power to bus to prevent any fan creep before active start
+  autoRelayOff(PIN_RELAY_FAN_BUS);
   lcd.clear();
 }
 
-// ---- Start fans (enable fan bus relay + ESC throttle) ----
+// ---- Fan Speed Control ----
 void fansOn() {
-  relayOn(PIN_RELAY_FAN_BUS);
-  delay(100);  // Let relay settle
+  autoRelayOn(PIN_RELAY_FAN_BUS);
+  delay(100); // Allow automotive relay contact debounce and rail stabilization
   esc1.write(ESC_FULL);
   esc2.write(ESC_FULL);
   esc3.write(ESC_FULL);
 }
 
-// ---- Stop fans ----
 void fansOff() {
   esc1.write(ESC_OFF);
   esc2.write(ESC_OFF);
   esc3.write(ESC_OFF);
-  delay(100);
-  relayOff(PIN_RELAY_FAN_BUS);
+  delay(50);
+  autoRelayOff(PIN_RELAY_FAN_BUS);
 }
 
-// ---- Read sensors ----
+// ---- Sensor Data Acquisition ----
 void readSensors() {
   humidity = dht.readHumidity();
-  temperature = ds18b20.getTempCByIndex(0);
-  ds18b20.requestTemperatures();  // Start next conversion
+  ds18b20.requestTemperatures();
+  float tempRead = ds18b20.getTempCByIndex(0);
+  
+  if (tempRead != DEVICE_DISCONNECTED_C) {
+    temperature = tempRead;
+  }
 }
 
-// ---- LCD update ----
-void lcdUpdate(const char* phase, int timerMin, int timerSec) {
+// ---- Display Management ----
+void lcdUpdate(const char* stateName, int rMin, int rSec) {
   lcd.setCursor(0, 0);
   lcd.print("H:");
-  lcd.print((int)humidity);
-  lcd.print("% T:");
+  if (isnan(humidity)) {
+    lcd.print("ERR");
+  } else {
+    lcd.print((int)humidity);
+    lcd.print("%");
+  }
+  lcd.print(" T:");
   lcd.print((int)temperature);
-  lcd.print("C  ");
+  lcd.print("C    ");
 
   lcd.setCursor(0, 1);
-  lcd.print(phase);
+  lcd.print(stateName);
   lcd.print(" ");
-  if (timerMin >= 0) {
-    if (timerMin < 10) lcd.print("0");
-    lcd.print(timerMin);
+  if (rMin >= 0) {
+    if (rMin < 10) lcd.print("0");
+    lcd.print(rMin);
     lcd.print(":");
-    if (timerSec < 10) lcd.print("0");
-    lcd.print(timerSec);
+    if (rSec < 10) lcd.print("0");
+    lcd.print(rSec);
   } else {
-    lcd.print("      ");
+    lcd.print("     ");
   }
   lcd.print("  ");
 }
 
-// ---- Setup ----
+// ---- System Initialization ----
 void setup() {
-  // Serial for debug
   Serial.begin(115200);
-  Serial.println("Umbrella Dryer V2 — 12V DC + BLDC");
+  Serial.println("Umbrella Dryer V2 — 12V DC System Boot Initializing");
 
-  // Relay pins — default HIGH (OFF)
-  pinMode(PIN_RELAY_PTC_A, OUTPUT);
-  pinMode(PIN_RELAY_PTC_B, OUTPUT);
+  // Actuator Output Setup & Hard Pull-Offs
+  pinMode(PIN_RELAY_PTC_1, OUTPUT);
+  pinMode(PIN_RELAY_PTC_2, OUTPUT);
+  pinMode(PIN_RELAY_PTC_3, OUTPUT);
   pinMode(PIN_RELAY_MOTOR_1, OUTPUT);
   pinMode(PIN_RELAY_MOTOR_2, OUTPUT);
   pinMode(PIN_RELAY_MOTOR_3, OUTPUT);
   pinMode(PIN_RELAY_FAN_BUS, OUTPUT);
+
+  pinMode(PIN_LED_RED, OUTPUT);
+  pinMode(PIN_LED_YELLOW, OUTPUT);
+  pinMode(PIN_LED_GREEN, OUTPUT);
+  pinMode(PIN_BUZZER, OUTPUT);
+
+  // Put system in completely safe offline state
   allOff();
 
-  // Button — internal pull-up
+  // Input Setup
   pinMode(PIN_BTN_START, INPUT_PULLUP);
 
-  // Sensors
+  // Initialize Peripherals
   dht.begin();
   ds18b20.begin();
-  ds18b20.requestTemperatures();
-
-  // LCD
   lcd.init();
   lcd.backlight();
-  lcd.clear();
+
   lcd.setCursor(0, 0);
   lcd.print("Umbrella Dryer");
   lcd.setCursor(0, 1);
-  lcd.print("Umbrella Dryer V2");
-  delay(2000);
+  lcd.print("V2 DC SYSTEM");
+  delay(1500);
 
-  // Arm ESCs
+  // Core ESC Calibration & Arming
   armESCs();
 
+  // Settle on READY State
+  digitalWrite(PIN_LED_GREEN, HIGH);
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("READY");
+  lcd.print("SYSTEM READY");
   lcd.setCursor(0, 1);
-  lcd.print("Press to start");
+  lcd.print("Press Button");
 }
 
-// ---- Main loop ----
+// ---- Main Control Loop ----
 void loop() {
   unsigned long now = millis();
-  if (now - lastLoop < 500) return;  // 500ms loop interval
-  lastLoop = now;
+  
+  // Stable 500 ms sampling step
+  if (now - lastLoopTick < 500) return;
+  lastLoopTick = now;
 
-  // Read sensors every loop
   readSensors();
 
-  // ---- Thermal safety check (all phases) ----
-  if (temperature > CUTOFF_TEMP && currentPhase != IDLE && currentPhase != DONE) {
-    Serial.print("THERMAL CUTOFF: ");
+  // ---- Absolute Over-Temperature Interlock ----
+  if (temperature > CUTOFF_TEMP && currentPhase != STATE_IDLE && currentPhase != STATE_CUTOFF) {
+    Serial.print("CRITICAL THERMAL CUTOFF TRIP: ");
     Serial.println(temperature);
     allOff();
-    currentPhase = DONE;
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("THERMAL CUTOFF!");
-    lcd.setCursor(0, 1);
-    lcd.print("T=");
-    lcd.print(temperature);
-    lcd.print("C > 65C");
+    currentPhase = STATE_CUTOFF;
+    phaseStart = now;
     return;
   }
 
-  // ---- Button: start or emergency stop ----
-  bool btnPressed = (digitalRead(PIN_BTN_START) == LOW);
+  // ---- Non-blocking Button Edge Detection ----
+  bool buttonState = digitalRead(PIN_BTN_START);
+  bool buttonClicked = (buttonState == LOW && buttonPrevState == HIGH);
+  buttonPrevState = buttonState;
 
+  // ---- State Machine Logic ----
   switch (currentPhase) {
 
-    // ========== IDLE ==========
-    case IDLE:
-      lcdUpdate("IDLE", -1, -1);
-      if (btnPressed) {
-        delay(200);  // Debounce
-        Serial.println("CYCLE START");
-        currentPhase = PREHEAT;
+    // ================= STATE READY/IDLE =================
+    case STATE_IDLE:
+      digitalWrite(PIN_LED_GREEN, HIGH);
+      digitalWrite(PIN_LED_RED, LOW);
+      digitalWrite(PIN_LED_YELLOW, LOW);
+      lcdUpdate("READY", -1, -1);
+
+      if (buttonClicked) {
+        Serial.println("CYCLE COMMENCING");
+        digitalWrite(PIN_LED_GREEN, LOW);
+        digitalWrite(PIN_LED_RED, HIGH);
+        currentPhase = STATE_PREHEAT;
         phaseStart = now;
-        // Turn on fans + PTC for preheat
         fansOn();
-        relayOn(PIN_RELAY_PTC_A);
-        relayOn(PIN_RELAY_PTC_B);
+        activeStation = 0;
+        stageStart = now;
+        applyStage(false); // PTC heaters only, motors off
       }
       break;
 
-    // ========== PREHEAT ==========
-    case PREHEAT:
+    // ================= STATE PREHEAT =================
+    case STATE_PREHEAT:
       {
         int elapsed = (int)((now - phaseStart) / 1000);
         lcdUpdate("PREHEAT", elapsed / 60, elapsed % 60);
+
+        applyStage(false);  // staged: rotates station every 30 s automatically
+        rotateStage(now);
+
         if (temperature >= PREHEAT_TEMP) {
-          Serial.println("PREHEAT -> DRY (temp reached)");
-          currentPhase = DRY;
+          Serial.println("CHAMBER WARMED. ENTERING CENTRIFUGAL DRYING PHASE");
+          digitalWrite(PIN_LED_RED, LOW);
+          digitalWrite(PIN_LED_YELLOW, HIGH);
+          currentPhase = STATE_DRY;
           phaseStart = now;
-          // Turn on all motors
-          relayOn(PIN_RELAY_MOTOR_1);
-          relayOn(PIN_RELAY_MOTOR_2);
-          relayOn(PIN_RELAY_MOTOR_3);
+          stageStart = now;
+          applyStage(true); // staged PTC + motor for active station
         }
-        if (btnPressed) {
-          delay(200);
+        
+        if (buttonClicked) {
+          Serial.println("CYCLE ABORTED DURING PREHEAT");
           allOff();
-          currentPhase = IDLE;
-          Serial.println("ABORT from PREHEAT");
+          currentPhase = STATE_IDLE;
         }
       }
       break;
 
-    // ========== DRY ==========
-    case DRY:
+    // ================= STATE CENTRIFUGAL DRYING =================
+    case STATE_DRY:
       {
         unsigned long elapsed = now - phaseStart;
         unsigned long remaining = 0;
+        
         if (elapsed < DRY_TIME_MS) {
           remaining = (DRY_TIME_MS - elapsed) / 1000;
         }
+        
         int rMin = (int)(remaining / 60);
         int rSec = (int)(remaining % 60);
-        lcdUpdate("DRY", rMin, rSec);
+        lcdUpdate("DRYING", rMin, rSec);
+
+        applyStage(true);   // staged: PTC + motor for active station
+        rotateStage(now);
 
         if (elapsed >= DRY_TIME_MS) {
-          Serial.println("DRY -> COOL (timer done)");
-          currentPhase = COOL;
+          Serial.println("TIMER ELAPSED. ENTERING COOL-DOWN");
+          currentPhase = STATE_COOL;
           phaseStart = now;
-          // PTC off, motor off — fans stay on
-          relayOff(PIN_RELAY_PTC_A);
-          relayOff(PIN_RELAY_PTC_B);
-          relayOff(PIN_RELAY_MOTOR_1);
-          relayOff(PIN_RELAY_MOTOR_2);
-          relayOff(PIN_RELAY_MOTOR_3);
         }
-        if (btnPressed) {
-          delay(200);
+        
+        if (buttonClicked) {
+          Serial.println("CYCLE ABORTED DURING DRYING RUN");
           allOff();
-          currentPhase = IDLE;
-          Serial.println("ABORT from DRY");
+          currentPhase = STATE_IDLE;
         }
       }
       break;
 
-    // ========== COOL ==========
-    case COOL:
+    // ================= STATE COOL-DOWN PURGE =================
+    case STATE_COOL:
       {
         unsigned long elapsed = now - phaseStart;
         unsigned long remaining = 0;
+        
         if (elapsed < COOL_TIME_MS) {
           remaining = (COOL_TIME_MS - elapsed) / 1000;
         }
+        
         int rMin = (int)(remaining / 60);
         int rSec = (int)(remaining % 60);
-        lcdUpdate("COOL", rMin, rSec);
+        lcdUpdate("COOLING", rMin, rSec);
 
         if (elapsed >= COOL_TIME_MS) {
-          Serial.println("COOL -> DONE");
-          currentPhase = DONE;
+          Serial.println("CYCLE COMPLETE. DE-ENERGIZING FANS.");
           fansOff();
-          // Buzzer
+          allOff();
+          currentPhase = STATE_DONE;
+          phaseStart = now;
+          
+          // Audible cycle completion notification (3 long beeps)
+          digitalWrite(PIN_LED_GREEN, HIGH);
           for (int i = 0; i < 3; i++) {
-            lcd.setCursor(0, 1);
-            lcd.print("** CYCLE DONE **");
+            digitalWrite(PIN_BUZZER, HIGH);
             delay(500);
-            lcd.setCursor(0, 1);
-            lcd.print("                ");
-            delay(500);
+            digitalWrite(PIN_BUZZER, LOW);
+            delay(300);
           }
         }
-        if (btnPressed) {
-          delay(200);
+        
+        if (buttonClicked) {
+          Serial.println("CYCLE ABORTED DURING COOL-DOWN");
           allOff();
-          currentPhase = IDLE;
-          Serial.println("ABORT from COOL");
+          currentPhase = STATE_IDLE;
         }
       }
       break;
 
-    // ========== DONE ==========
-    case DONE:
-      lcdUpdate("DONE", -1, -1);
+    // ================= STATE CYCLE COMPLETE =================
+    case STATE_DONE:
+      digitalWrite(PIN_LED_GREEN, HIGH);
+      lcdUpdate("COMPLETE", -1, -1);
       lcd.setCursor(0, 1);
-      lcd.print("Press to reset   ");
-      if (btnPressed) {
-        delay(200);
+      lcd.print("Press to Reset ");
+
+      if (buttonClicked) {
+        Serial.println("SYSTEM RESET TO IDLE STATUS");
         allOff();
-        currentPhase = IDLE;
-        Serial.println("Reset to IDLE");
+        currentPhase = STATE_IDLE;
+      }
+      break;
+
+    // ================= STATE EMERGENCY CUTOFF =================
+    case STATE_CUTOFF:
+      // Rapid blinking red LED as alarm
+      digitalWrite(PIN_LED_RED, (millis() % 300 < 150) ? HIGH : LOW);
+      digitalWrite(PIN_LED_GREEN, LOW);
+      digitalWrite(PIN_LED_YELLOW, LOW);
+      
+      lcd.setCursor(0, 0);
+      lcd.print("CRITICAL ERROR! ");
+      lcd.setCursor(0, 1);
+      lcd.print("OVERHEAT: ");
+      lcd.print((int)temperature);
+      lcd.print("C  ");
+
+      if (buttonClicked) {
+        // Enforce cooling wait period before allowing a manual override reset
+        if (temperature < 50.0) {
+          Serial.println("TEMPERATURE RESTORED TO SAFE THRESHOLD. SYSTEM RESETTABLE.");
+          allOff();
+          currentPhase = STATE_IDLE;
+        } else {
+          Serial.println("RESET ATTEMPT BLOCKED. SURFACE TEMPERATURE EXCEEDS SAFE 50C RETRY.");
+          // Chirp buzzer as error warning
+          digitalWrite(PIN_BUZZER, HIGH);
+          delay(100);
+          digitalWrite(PIN_BUZZER, LOW);
+        }
       }
       break;
   }
@@ -404,126 +520,56 @@ void loop() {
 
 ---
 
-## 5. Wiring table (all connections)
+## 5. Wiring and Connectivity Master Guide
 
-| From | To | Cable | Notes |
-|---|---|---|---|
-| LM2596S OUT+ | Mega Vin (or 5V pin) | 20 AWG red | Set to 5.0V before connecting |
-| LM2596S OUT− | Mega GND | 20 AWG black | Common ground |
-| LM2596S IN+ | 12V bus (after main fuse) | 18 AWG red | Input from battery |
-| LM2596S IN− | 12V bus GND | 18 AWG black | Common ground |
-| DHT22 VCC | 5V rail | 20 AWG red | — |
-| DHT22 GND | GND rail | 20 AWG black | — |
-| DHT22 DATA | D2 | jumper | 10kΩ pull-up to 5V |
-| DS18B20 VCC | 5V rail | 20 AWG red | Red wire |
-| DS18B20 GND | GND rail | 20 AWG black | Black wire |
-| DS18B20 DATA | D3 | jumper | 4.7kΩ pull-up to 5V |
-| Relay module VCC | 5V rail | 20 AWG red | Optocoupler side |
-| Relay module GND | GND rail | 20 AWG black | Optocoupler side |
-| Relay 1A IN | D4 | jumper | PTC group A |
-| Relay 1B IN | D5 | jumper | PTC group B |
-| Relay 2A IN | D6 | jumper | Motor station 1 |
-| Relay 2B IN | D7 | jumper | Motor station 2 |
-| Automotive relay coil+ | D9 (via NPN transistor) | jumper | Fan bus relay |
-| Automotive relay coil− | GND | jumper | — |
-| ESC 1 signal | D10 | jumper (orange/white) | Station 1 fans |
-| ESC 2 signal | D11 | jumper (orange/white) | Station 2 fans |
-| ESC 3 signal | D12 | jumper (orange/white) | Station 3 fans |
-| ESC VCC (red) | 12V bus (via fan relay) | 18 AWG red | Switched by automotive relay |
-| ESC GND (black) | 12V bus GND | 18 AWG black | Common ground |
-| Button pin 1 | D13 | jumper | — |
-| Button pin 2 | GND | jumper | Internal pull-up; active-LOW |
-| LCD SDA | A4 | jumper | I2C |
-| LCD SCL | A5 | jumper | I2C |
-| LCD VCC | 5V rail | 20 AWG red | — |
-| LCD GND | GND rail | 20 AWG black | — |
-| LED (R) | D14 via 220Ω | 22 AWG | Red = heating/active |
-| LED (Y) | D15 via 220Ω | 22 AWG | Yellow = drying/spinning |
-| LED (G) | D16 via 220Ω | 22 AWG | Green = done |
-| Buzzer + | D17 | 22 AWG | Active buzzer |
-| Buzzer − | GND | 22 AWG | — |
-
-> All GND points are common. Connect battery negative, Mega GND, buck GND, relay GND, and ESC GND together.
+| Wire Number | Pin / Connection | Wire Gauge (AWG) | Wire Color | Destination | Function |
+|---|---|---|---|---|---|
+| **1** | LM2596S OUT+ | 20 AWG | Red | Arduino Mega `5V` Pin | Regulated logic power supply (MUST calibrate to 5V beforehand) |
+| **2** | LM2596S OUT− | 20 AWG | Black | Arduino Mega `GND` Pin | Common negative logic ground link |
+| **3** | Mega Pin D2 | 22 AWG | Yellow | DHT22 DATA | Ambient chamber relative humidity input (10kΩ pull-up to 5V) |
+| **4** | Mega Pin D3 | 22 AWG | Blue | DS18B20 DATA | Heater surface temperature reading (4.7kΩ pull-up to 5V) |
+| **5** | Mega Pin D4 | 22 AWG | Red | Relay 1 Trigger (PTC 1) | Transistor base 1kΩ resistor (HIGH = closes 40A PTC 1 circuit) |
+| **6** | Mega Pin D5 | 22 AWG | Orange | Relay 2 Trigger (M1) | PCB Relay opto-coupler channel 1 (LOW = turns on Worm Motor 1) |
+| **7** | Mega Pin D6 | 22 AWG | Red | Relay 3 Trigger (PTC 2) | Transistor base 1kΩ resistor (HIGH = closes 40A PTC 2 circuit) |
+| **8** | Mega Pin D7 | 22 AWG | Orange | Relay 4 Trigger (M2) | PCB Relay opto-coupler channel 2 (LOW = turns on Worm Motor 2) |
+| **9** | Mega Pin D8 | 22 AWG | Red | Relay 5 Trigger (PTC 3) | Transistor base 1kΩ resistor (HIGH = closes 40A PTC 3 circuit) |
+| **10** | Mega Pin D9 | 22 AWG | Orange | Relay 6 Trigger (M3) | PCB Relay opto-coupler channel 3 (LOW = turns on Worm Motor 3) |
+| **11** | Mega Pin D10 | 22 AWG | White | ESC 1 Signal | PWM control line for Station 1 BLDC ducted fans |
+| **12** | Mega Pin D11 | 22 AWG | White | ESC 2 Signal | PWM control line for Station 2 BLDC ducted fans |
+| **13** | Mega Pin D12 | 22 AWG | White | ESC 3 Signal | PWM control line for Station 3 BLDC ducted fans |
+| **14** | Mega Pin D13 | 22 AWG | Purple | Relay 7 Trigger (Fan Bus) | Transistor base 1kΩ resistor (HIGH = closes master 40A Fan Bus) |
+| **15** | Mega Pin D14 | 22 AWG | Green | Arcade Button NO | Active-LOW trigger logic; button NC is unmapped |
+| **16** | Mega Pin D15 | 22 AWG | Red | Status LED (Red) | Connected via series 220Ω current-limiting resistor |
+| **17** | Mega Pin D16 | 22 AWG | Yellow | Status LED (Yellow) | Connected via series 220Ω current-limiting resistor |
+| **18** | Mega Pin D17 | 22 AWG | Green | Status LED (Green) | Connected via series 220Ω current-limiting resistor |
+| **19** | Mega Pin D18 | 22 AWG | White | Active Buzzer + | Emits cycles alerts (Audible notification) |
+| **20** | Mega Pin D20 | 22 AWG | Green | LCD I2C SDA | Hardware SDA interface (pull-ups usually integrated on I2C board) |
+| **21** | Mega Pin D21 | 22 AWG | Yellow | LCD I2C SCL | Hardware SCL interface (pull-ups usually integrated on I2C board) |
 
 ---
 
-## 6. Library dependencies
+## 6. Sourcing Software Dependencies
 
-Install via Arduino IDE Library Manager:
-
-| Library | Author | Install name |
-|---|---|---|
-| DHT sensor library | Adafruit | `DHT sensor library` |
-| OneWire | Paul Stoffregen | `OneWire` |
-| DallasTemperature | Miles Burton | `DallasTemperature` |
-| Servo | Arduino built-in | (included with IDE) |
-| LiquidCrystal I2C | Frank de Brabander | `LiquidCrystal I2C` |
-
-Also install Adafruit Unified Sensor (dependency of DHT library).
+1. **DHT Sensor Library** by Adafruit (ver 1.4.x+)
+2. **Adafruit Unified Sensor** by Adafruit (ver 1.1.x+)
+3. **OneWire** by Paul Stoffregen (ver 2.3.x+)
+4. **DallasTemperature** by Miles Burton (ver 3.9.x+)
+5. **LiquidCrystal I2C** by Frank de Brabander (ver 1.1.2+)
+6. **Servo** (Standard library built directly into the Arduino IDE environment)
 
 ---
 
-## 7. Wiring diagram (Mermaid)
+## 7. ESC calibration (first-time setup)
 
-```mermaid
-graph TB
-    subgraph Battery["12V Battery Bank"]
-        BAT["2× 200Ah LiFePO4<br/>parallel (12.8V)"]
-        FUSE_MAIN["25A main fuse"]
-    end
+If BLDC fans don't respond to throttle commands:
 
-    subgraph DC_Distribution["12V DC Distribution"]
-        FUSE_PTC["10A fuses ×3<br/>(PTC per station)"]
-        FUSE_MOTOR["3A fuses ×3<br/>(motor per station)"]
-        FUSE_FAN["15A fuse<br/>(fan bus)"]
-        FUSE_LOGIC["3A fuse<br/>(logic)"]
-    end
+1. **Power on** with ESC signal wire disconnected from Mega.
+2. **Connect ESC signal** to a known PWM source (or Mega running calibration sketch).
+3. **Send MAX throttle** (`write(180)`) for 3 seconds — ESC beeps to confirm max.
+4. **Send MIN throttle** (`write(0)`) for 3 seconds — ESC beeps to confirm min.
+5. ESC is now calibrated. Power cycle and test.
 
-    subgraph Buck["Voltage Conversion"]
-        BUCK["LM2596S<br/>12V → 5V"]
-    end
-
-    subgraph Logic["Arduino Mega 2560"]
-        MEGA["Mega 2560"]
-        DHT["DHT22<br/>(shared)"]
-        DS["DS18B20<br/>(probe)"]
-        LCD["16×2 LCD I2C"]
-        BTN["Arcade button"]
-    end
-
-    subgraph Relays["Relay Switching"]
-        R_PTC["2-CH relay<br/>PTC heaters"]
-        R_MOTOR["2-CH relay<br/>worm motors"]
-        R_FAN["12V 40A auto<br/>relay (fan bus)"]
-    end
-
-    subgraph Loads["12V DC Loads"]
-        PTC["9× PTC heaters<br/>12V 100W each"]
-        MOT["3× SGM-370<br/>12V 6RPM"]
-        FAN_ESC["9× BLDC fans<br/>w/ ESC (50mm)"]
-    end
-
-    BAT --> FUSE_MAIN --> DC_Distribution
-    FUSE_PTC --> R_PTC --> PTC
-    FUSE_MOTOR --> R_MOTOR --> MOT
-    FUSE_FAN --> R_FAN --> FAN_ESC
-    FUSE_LOGIC --> BUCK --> MEGA
-
-    MEGA --> D4["D4/D5<br/>PTC relays"]
-    MEGA --> D6["D6/D7/D8<br/>Motor relays"]
-    MEGA --> D9["D9<br/>Fan bus relay"]
-    MEGA --> D10["D10/D11/D12<br/>ESC PWM"]
-
-    D4 --> R_PTC
-    D6 --> R_MOTOR
-    D9 --> R_FAN
-    D10 --> FAN_ESC
-
-    MEGA --> LCD
-    MEGA --> BTN
-    DHT --> MEGA
-    DS --> MEGA
-```
+Some ESCs auto-calibrate on first power-up if they detect a valid signal range.
 
 ---
 
@@ -531,30 +577,46 @@ graph TB
 
 | Symptom | Check |
 |---|---|
-| ESC doesn't arm | Verify D10/D11/D12 wired correctly; check Servo library attached(); ensure fan bus relay ON before ESC write |
-| Fans spin then stop | ESC lost signal — check jumper continuity; ensure `esc.write()` called in loop |
-| No humidity reading | Verify DHT22 VCC→5V, GND→GND, DATA→D2 with 10kΩ pull-up; check `DHT22 Black` module (not bare probe) |
-| No temperature reading | Check DS18B20 red→5V, black→GND, white→D3 with 4.7kΩ pull-up; run OneWire scanner |
-| LCD blank / garbage | I2C address may be 0x3F not 0x27; try `lcd.init()` vs `lcd.begin()`; check SDA→A4, SCL→A5 |
-| Relay clicks but load doesn't turn on | Check high-voltage wiring on relay COM/NO terminals; verify 12V bus connected to relay COM |
-| Button not responding | Verify D13 → button pin 1, button pin 2 → GND; `INPUT_PULLUP` enabled; `digitalRead == LOW` = pressed |
-| Thermal cutoff triggers immediately | DS18B20 may be reading ambient (normal 25–30°C) — verify probe is mounted in chamber near heaters |
+| ESC doesn't arm | Verify D10/D11/D12 wired correctly; check `esc.attach()` called; fan bus relay (D13) must be ON during arming — it powers the ESCs |
+| Fans spin then stop | ESC lost signal — check jumper continuity; keep `esc.write()` values refreshed |
+| No humidity reading | DHT22 VCC→5V, GND→GND, DATA→D2 with 10kΩ pull-up; use the DHT22 **module**, not a bare sensor |
+| No temperature reading | DS18B20 red→5V, black→GND, yellow→D3 with 4.7kΩ pull-up; run a OneWire scanner sketch |
+| LCD blank / garbage | Try address 0x3F; call `lcd.init()`; on the **Mega, I2C is pins 20/21 — NOT A4/A5** |
+| Heater relay doesn't click | D4/D6/D8 → 1kΩ → 2N2222 base; collector → coil 85; coil 86 → +12V; emitter → GND; 10kΩ base→GND pull-down |
+| Motor relay doesn't click | D5/D7/D9 → module IN1/IN2/IN3; module VCC → 5V buck rail (NOT Mega pin); active-LOW: LOW = ON |
+| Relay clicks but load stays off | Check COM/NO high-current side: fused 12V → COM, load → NO; verify branch fuse is intact |
+| Button not responding | D14 → button pin 1, pin 2 → GND; INPUT_PULLUP; LOW = pressed |
+| Thermal cutoff triggers immediately | DS18B20 may be heated by direct contact — mount probe in the air stream, not touching heater body |
 | Buck output not 5V | Adjust potentiometer with multimeter BEFORE connecting to Mega; must be 5.0V ± 0.1V |
-| Motors spin wrong direction | Swap any two motor leads (DC motor polarity determines direction) |
+| Motors spin wrong direction | Swap the two motor leads (DC motor direction = polarity) |
+| Main fuse blows during cycle | Firmware staged operation broken? Check that only ONE station's heaters are ever ON (see §9) |
 
 ---
 
-## 9. ESC calibration (first-time setup)
+## 9. Staged operation (IMPORTANT — fuse budget)
 
-If BLDC fans don't respond to throttle commands:
+One station's full load = 3 PTC (25A) + 3 fans (9.7A) + motor (0.8A) ≈ **36A**.
+The 50A main fuse supports **one station at a time**, plus the fan bus.
 
-1. **Power on** with ESC signal wire disconnected from Mega.
-2. **Connect ESC signal** to a known PWM source (or Mega running calibration sketch).
-3. **Send MAX throttle** (write 180) for 3 seconds — ESC beeps to confirm max.
-4. **Send MIN throttle** (write 0) for 3 seconds — ESC beeps to confirm min.
-5. ESC is now calibrated. Power cycle and test.
+The stock sketch runs all 3 stations' heaters simultaneously in PREHEAT (~75A +
+fans ≈ 105A — the main fuse WILL blow). Two options:
 
-Some ESCs auto-calibrate on first power-up if they detect a valid signal range.
+1. **Stock behavior is for bench testing only** (no heaters connected, TESTING L1/L2).
+2. **For real cycles**, enable staged mode by defining `STAGED` at the top of the
+   sketch — heaters round-robin 30 s per station; only the active station's
+   motor + ESC throttle run. Staged mode keeps worst-case draw ≈ 36A.
+
+```cpp
+// Add at top of sketch:
+#define STAGED 1   // 1 = one station at a time (deploy), comment out for bench tests
+
+#ifdef STAGED
+uint8_t activeStation = 0;  // 0..2 round-robin during PREHEAT/DRY
+#endif
+```
+
+In staged mode, PREHEAT and DRY energize only `PIN_RELAY_PTC_1 + activeStation`
+and throttle only that station's ESC; rotate `activeStation` every 30 s.
 
 ---
 
@@ -563,8 +625,11 @@ Some ESCs auto-calibrate on first power-up if they detect a valid signal range.
 - The system runs on **12V DC only** — no mains voltage anywhere.
 - Battery BMS protects against over-discharge, over-charge, and short circuit.
 - DS18B20 thermal cutoff at 65°C is the primary software safety.
-- Appliance thermal fuse (80°C) on each PTC cluster is the hardware backup.
+- 130°C one-shot thermal fuse **per heater** (9×) is the hardware backup.
 - PTC heaters are self-regulating — they auto-limit current as temperature rises.
-- Per-station fuses prevent one station's fault from affecting others.
-- All relay pins boot HIGH (OFF) — no accidental heater activation on power-up.
-- 10kΩ pull-ups on PTC relay pins provide extra boot-safety for heater lines.
+- Per-branch fuses (30A PTC ×3, 30A fan bus, 3A motor ×3, 3A logic) isolate faults.
+- Relay pins boot in their OFF state: NPN stages have 10kΩ base pull-downs
+  (active-HIGH pins default LOW), and the opto module has onboard pull-ups
+  (active-LOW pins default HIGH). `setup()` calls `allOff()` first regardless.
+- Mega is powered ONLY from the calibrated buck via the 5V pin — never the
+  barrel jack, never raw 12V.
