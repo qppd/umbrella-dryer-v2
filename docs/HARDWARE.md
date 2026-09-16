@@ -254,12 +254,16 @@ graph TB
 > The firmware rotates stations every 30 s so only one is active at a time. Two stations
 > simultaneously = ~72A — main fuse blows. This is the design intent.
 
-**Runtime estimates (400 Ah bank):**
+**Runtime estimates (400 Ah bank, 288 Ah usable @ 80% DoD × 90% EoL):**
 
 | Mode | Draw | Estimated runtime |
 |---|---|---|
-| Single station (staged, 1 at a time) | ~36A | ~11 hours |
-| Standby (sensors + idle) | ~0.5A | ~800 hours |
+| Single station (staged, 1 at a time) | ~35.5A | ~8.1 hours |
+| Quick drying cycle (3 umbrellas) | 27 min | ≈ 19 cycles per charge |
+| Standard drying cycle (fully soaked) | 57 min | ≈ 8.8 cycles per charge |
+| Standby (sensors + idle) | ~0.5A | ~24 days |
+
+> See `docs/BOM.md` §7d for the full capacity-requirement analysis.
 
 ---
 

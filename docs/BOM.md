@@ -150,13 +150,52 @@ Mechanical: 3× 6mm × 300mm 304 SS shafts · 6× KP08 pillow block bearings · 
 | Mega + sensors | 5V | 0.1A | 3A fuse |
 | **Total (one station)** | | **~36A** | **50A main fuse** |
 
-### 7d. Battery runtime — PASS
+### 7d. Battery runtime — corrected for LiFePO4 usable capacity
 
-| Mode | Load | Runtime |
+> **Usable capacity ≠ nameplate.** LiFePO4 should be cycled at 80% DoD for rated cycle
+> life, and the bank should still meet spec at 90% capacity (end-of-life margin):
+> **usable = 400 Ah × 0.80 × 0.90 ≈ 288 Ah** (≈ 3.5 kWh at 12V).
+
+Load profile (staged, one station at a time):
+
+| Phase | Draw | Notes |
 |---|---|---|
-| One station (staged) | ~36A | ~11 hours |
-| Typical cycle (1 station, 30 min) | ~36A × 0.5h = 18Ah | 400Ah ÷ 18Ah ≈ **22 cycles per charge** |
-| Standby | ~0.5A | ~800 hours |
+| PREHEAT / DRY (active station) | ~35.5A | 3 PTC (25A) + 3 fans full (9.6A) + motor (0.2A) + logic (0.4A) + idle ESCs (0.3A) |
+| COOL | ~10.3A | Fans only |
+| Standby | ~0.5A | Sensors + LCD |
+
+Energy per drying cycle (3 umbrellas per cycle):
+
+| Cycle type | Duration | Energy | Per umbrella |
+|---|---|---|---|
+| Quick (surface dry, light rain) | 10 min preheat + 15 min dry + 2 min cool ≈ 27 min | ≈ 15 Ah (≈ 182 Wh) | ≈ 5 Ah |
+| Standard (fully soaked) | 10 min preheat + 45 min dry + 2 min cool ≈ 57 min | ≈ 33 Ah (≈ 395 Wh) | ≈ 11 Ah |
+
+> 45 min staged DRY gives each umbrella 15 min of direct heat — the same 300 W × 15 min
+> dose as the original non-staged 15-min cycle.
+
+**Runtime on the 400 Ah bank (288 Ah usable):**
+
+| Mode | Result |
+|---|---|
+| Quick cycles | ≈ **19 cycles (57 umbrellas)** per charge |
+| Standard cycles | ≈ **8.8 cycles (26 umbrellas)** per charge |
+| Continuous staged operation | ≈ **8.1 hours** (288 Ah ÷ 35.5A) |
+| Standby | ≈ 24 days (288 Ah ÷ 0.5A) |
+
+**Capacity requirement check — 2× 200Ah is adequate:**
+
+| Daily scenario | Ah/day | Min bank required (÷ 0.72) |
+|---|---|---|
+| Capstone demo: 6 quick cycles (18 umb) | ≈ 91 Ah | 126 Ah |
+| Typical rainy day: 10 quick cycles (30 umb) | ≈ 151 Ah | 210 Ah |
+| Typical rainy day: 8 standard cycles (24 umb) | ≈ 263 Ah | 365 Ah |
+| Heavy day: 12 standard cycles (36 umb, full-dry) | ≈ 395 Ah | 548 Ah |
+
+> **Verdict:** 2× 200Ah (400 Ah) covers the capstone demo and typical mixed use with
+> margin; a heavy all-standard day slightly exceeds one charge (charge overnight —
+> ~14 h at 14.6 V / 20 A for a full 240 Ah recharge from typical-day depletion).
+> C-rate is gentle: 0.09 C on the bank (0.18 C per pack), far below the 200A BMS limit.
 
 ---
 

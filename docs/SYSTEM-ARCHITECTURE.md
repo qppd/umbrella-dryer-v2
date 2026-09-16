@@ -216,7 +216,7 @@ sequenceDiagram
 |---|---|
 | **No mains anywhere** | Entire system 12V DC — no RCD, no changeover, no AC wiring |
 | **Defense in depth on heat** | DS18B20 → PTC self-regulation → 130°C thermal fuse (per heater) → branch fuses → BMS: five layers |
-| **Staged operation** | Firmware rotates stations every 30s; only one station's heaters active at a time; keeps draw ~36A under the 50A main fuse |
+| **Staged operation** | Firmware rotates stations every 30s; only one station's heaters active at a time; keeps draw ~35.5A at 71% of the 50A main fuse |
 | **Fault isolation** | Per-branch fuses: one station's fault doesn't affect the others |
 | **ESC for fan speed** | BLDC fans with ESC PWM give variable speed; automotive relay on D13 gives instant all-fan kill |
 | **Worm drive self-locking** | SGM-370 motors hold position when de-energized — no brake, no holding current |
