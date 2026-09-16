@@ -13,7 +13,7 @@ The 3D model shows:
 - **PTC heater placement** — 3× PTC ceramic heaters per station, positioned for airflow
 - **BLDC fan placement** — 3× 50mm ducted fans per station, positioned for air circulation
 - **Electronics enclosure** — Mega, relays, buck, fuse block
-- **Battery compartment** — 2× LiFePO4 200Ah batteries (parallel)
+- **Battery compartment** — 1× LiFePO4 200Ah battery
 - **Drip tray** — under each station for water collection
 
 ---

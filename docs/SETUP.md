@@ -6,7 +6,7 @@
 
 ## 1. Unbox and verify
 
-- [ ] Battery bank: 2× LiFePO4 12.8V 200Ah with BMS
+- [ ] Battery bank: 1× LiFePO4 12.8V 200Ah with BMS
 - [ ] Charger: 14.6V 20A LiFePO4 charger
 - [ ] Mega 2560 clone + USB cable
 - [ ] 4× 40A automotive relay (5-pin SPDT) + 1× 4-CH opto module

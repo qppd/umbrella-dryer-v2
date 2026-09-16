@@ -17,7 +17,7 @@
 ```mermaid
 graph TB
     subgraph Power["12V DC Power System"]
-        BAT["2× LiFePO4 200Ah<br/>(parallel → 400Ah, 12.8V nominal)"]
+        BAT["1× LiFePO4 200Ah<br/>(12.8V nominal)"]
         KILL["50A disconnect switch"]
         FUSE_MAIN["50A ANL main fuse"]
         FUSE_CTRL["3A logic fuse"]
@@ -254,14 +254,14 @@ graph TB
 > The firmware rotates stations every 30 s so only one is active at a time. Two stations
 > simultaneously = ~72A — main fuse blows. This is the design intent.
 
-**Runtime estimates (200 Ah battery, 288 Ah usable @ 80% DoD × 90% EoL):**
+**Runtime estimates (1× 200 Ah battery, 144 Ah usable @ 80% DoD × 90% EoL):**
 
 | Mode | Draw | Estimated runtime |
 |---|---|---|
-| Single station (staged, 1 at a time) | ~35.5A | ~8.1 hours |
-| Quick drying cycle (3 umbrellas) | 27 min | ≈ 19 cycles per charge |
-| Standard drying cycle (fully soaked) | 57 min | ≈ 8.8 cycles per charge |
-| Standby (sensors + idle) | ~0.5A | ~24 days |
+| Single station (staged, 1 at a time) | ~35.5A | ~4.1 hours |
+| Quick drying cycle (3 umbrellas) | 27 min | ≈ 9.6 cycles per charge |
+| Standard drying cycle (fully soaked) | 57 min | ≈ 4.4 cycles per charge |
+| Standby (sensors + idle) | ~0.5A | ≈ 12 days |
 
 > See `docs/BOM.md` §7d for the full capacity-requirement analysis.
 

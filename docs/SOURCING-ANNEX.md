@@ -137,9 +137,9 @@
 | Relays, drivers, disconnect + fuses | ≈ ₱925 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
 | Wiring + consumables (Lazada) | ≈ ₱1,346 |
-| Battery bank (2× 200Ah) + charger | ≈ ₱10,900–11,600 |
+| Battery (1× 200Ah) + charger | ≈ ₱10,900–11,600 |
 | Hardware store consumables | ≈ ₱490 |
-| **GRAND TOTAL** | **≈ ₱36,000–37,000** |
+| **GRAND TOTAL** | **≈ ₱27,100–28,100** |
 
 ---
 
@@ -178,5 +178,5 @@
 
 ## Rev history
 
-- **Current:** Pure 12V DC. No mains, no inverter, no RCD. 9× PTC heaters, 9× BLDC fans with ESC, relay-switched. Total ~₱34,900–35,600.
+- **Current:** Pure 12V DC. No mains, no inverter, no RCD. 9× PTC heaters, 9× BLDC fans with ESC, relay-switched. Total ~₱27,100–28,100.
 - **Previous:** Mains heat + inverter. Total ~₱40,800–45,200.

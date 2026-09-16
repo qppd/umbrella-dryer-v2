@@ -9,7 +9,7 @@
 - An Arduino-controlled umbrella dryer with 3 stations.
 - Each station has 3× PTC ceramic heaters (12V 100W) and 3× BLDC fans (50mm ducted, ESC-controlled).
 - Each station has 1× SGM-370 worm gear motor for umbrella rotation.
-- Everything runs on 12V DC from a 2× 200Ah LiFePO4 battery bank.
+- Everything runs on 12V DC from a single 1× 200Ah LiFePO4 battery.
 - **40A automotive relays** (NPN-driven) switch PTC heaters; **optocoupler module** switches motors; **ESC PWM** controls BLDC fans.
 - Staged operation: one station at a time (firmware-enforced).
 
@@ -19,7 +19,7 @@
 
 | Layer | Components |
 |---|---|
-| Power | 2× LiFePO4 200Ah → 50A disconnect → 50A ANL main fuse → DC distribution → per-branch fuses |
+| Power | 1× LiFePO4 200Ah → 50A disconnect → 50A ANL main fuse → DC distribution → per-branch fuses |
 | Conversion | LM2596S buck: 12V → 5V for Mega (5V pin only) |
 | Actuation | 3× PTC heater groups (40A automotive relays via 2N2222), 3× BLDC fan groups (ESC PWM + 40A auto relay bus), 3× worm motors (10A opto module) |
 | Thermal protection | 130°C one-shot thermal fuse per heater (9×), PTC self-regulation, DS18B20 firmware cutoff |
@@ -32,7 +32,7 @@
 ## 3. Power tree
 
 ```
-Battery (12.8V 200Ah × 2 parallel)
+Battery (12.8V 200Ah)
   └─ 50A disconnect switch
       └─ 50A ANL main fuse
           ├─ 30A fuse → Station 1 PTC (3× 100W, ~25A)
@@ -82,11 +82,11 @@ Battery (12.8V 200Ah × 2 parallel)
 
 | Layer | Price (est.) |
 |---|---|
-| Battery (2× 200Ah) + charger | ≈ ₱10,900 |
+| Battery (1× 200Ah) + charger | ≈ ₱10,900 |
 | PTC heaters (9×₱484) + thermal fuses (9×₱15) | ≈ ₱4,491 |
 | BLDC fans + ESCs (9×₱469) | ≈ ₱4,221 |
 | Motors + mechanical | ≈ ₱3,028 |
 | Automotive relays (4) + opto module + NPN components | ≈ ₱580 |
 | Control electronics (Mega, sensors, LCD, buck) | ≈ ₱1,589 |
 | Disconnect switch + fuses + UI + wiring + consumables | ≈ ₱2,330 |
-| **Total** | **≈ ₱36,000–37,000** |
+| **Total** | **≈ ₱27,100–28,100** |

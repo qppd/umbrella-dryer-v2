@@ -38,7 +38,7 @@ flowchart TD
     end
 
     subgraph L1["LAYER 1 — Power"]
-        BANK["2× LiFePO4 12.8V 200Ah parallel<br/>BMS 200A per pack"]
+        BANK["1× LiFePO4 12.8V 200Ah<br/>BMS 200A"]
         DISC["50A disconnect switch"]
         FUSE_MAIN["50A ANL main fuse"]
         DIST["12V DC distribution bus"]
@@ -71,7 +71,7 @@ Single domain: 12V DC throughout. The 50A main fuse allows one station at a time
 
 ```mermaid
 flowchart LR
-    BANK["LiFePO4 Bank<br/>2× 200Ah parallel<br/>200Ah / 2560Wh"]
+    BANK["LiFePO4 Battery<br/>1× 200Ah<br/>2560 Wh"]
     BMS["BMS 200A<br/>per pack"]
     DISC["50A disconnect"]
     FUSE_M["50A ANL<br/>main fuse"]

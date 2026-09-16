@@ -8,7 +8,7 @@ If any other doc disagrees with this file, this file wins.
 
 | Domain | Source | Loads | Switched by |
 |---|---|---|---|
-| 12V DC | 2× LiFePO4 200Ah (parallel) → 50A main fuse | PTC heaters, BLDC fans, worm motors | 4× automotive 40A relays (3 PTC + 1 fan bus, NPN-driven), 4-CH opto module (motors), ESC PWM (fans) |
+| 12V DC | 1× LiFePO4 200Ah → 50A main fuse | PTC heaters, BLDC fans, worm motors | 4× automotive 40A relays (3 PTC + 1 fan bus, NPN-driven), 4-CH opto module (motors), ESC PWM (fans) |
 | 5V DC | LM2596S buck (12V→5V) | Mega, sensors, LCD, 4-CH module coils | — |
 
 > **Relay architecture (why):** a station's 3 PTC heaters draw ~25A — over the 10A rating

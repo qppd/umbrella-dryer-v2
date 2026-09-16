@@ -34,7 +34,7 @@
 - **Control:** Arduino Mega 2560 with DHT22 + DS18B20 sensors, 16×2 LCD (I2C pins 20/21), staged relay + ESC PWM
 - **Thermal safety:** DS18B20 firmware cutoff (65°C) + 130°C thermal fuse per heater (9×) + PTC self-regulation + BMS
 - **Staged operation:** one station at a time (firmware-enforced 30s rotation)
-- **Cost:** ≈ ₱36,000–37,000 (batteries + charger included)
+- **Cost:** ≈ ₱27,100–28,100 (batteries + charger included)
 
 ---
 
