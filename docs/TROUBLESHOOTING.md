@@ -134,8 +134,8 @@ Serial.print("Phase: "); Serial.print(currentPhase);
 Serial.print(" | Stn: "); Serial.print(activeStation);
 Serial.print(" | H: "); Serial.print(humidity);
 Serial.print(" | T: "); Serial.print(temperature);
-Serial.print(" | PTC1: "); Serial.print(digitalRead(PIN_RELAY_PTC_1));
-Serial.print(" | PTC2: "); Serial.print(digitalRead(PIN_RELAY_PTC_2));
-Serial.print(" | PTC3: "); Serial.print(digitalRead(PIN_RELAY_PTC_3));
-Serial.print(" | FAN: "); Serial.println(digitalRead(PIN_RELAY_FAN_BUS));
+Serial.print(" | PTC1: "); Serial.print(digitalRead(PIN_SSR_PTC_1));
+Serial.print(" | PTC2: "); Serial.print(digitalRead(PIN_SSR_PTC_2));
+Serial.print(" | PTC3: "); Serial.print(digitalRead(PIN_SSR_PTC_3));
+Serial.print(" | FAN: "); Serial.println(digitalRead(PIN_SSR_FAN_BUS));
 ```

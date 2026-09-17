@@ -21,27 +21,27 @@
 
 ## 2. Pin Map — Arduino Mega 2560
 
-| Pin | Net | Mode | Default | Active Level | Notes |
+|| Pin | Net | Mode | Default | Active Level | Notes |
 |---|---|---|---|---|---|
-| **D2** | DHT22_DATA | Input | — | — | Chamber humidity & ambient temp; 10kΩ pull-up to 5V |
-| **D3** | DS18B20_DATA | Input | — | — | Heater-zone temperature probe; 4.7kΩ pull-up to 5V |
-| **D4** | RELAY_PTC_1 | Output | LOW | HIGH (ON) | Station 1 PTC heater (via NPN transistor to 12V 40A relay) |
-| **D5** | RELAY_MOTOR_1 | Output | HIGH | LOW (ON) | Station 1 worm motor (active-LOW multi-channel PCB relay) |
-| **D6** | RELAY_PTC_2 | Output | LOW | HIGH (ON) | Station 2 PTC heater (via NPN transistor to 12V 40A relay) |
-| **D7** | RELAY_MOTOR_2 | Output | HIGH | LOW (ON) | Station 2 worm motor (active-LOW multi-channel PCB relay) |
-| **D8** | RELAY_PTC_3 | Output | LOW | HIGH (ON) | Station 3 PTC heater (via NPN transistor to 12V 40A relay) |
-| **D9** | RELAY_MOTOR_3 | Output | HIGH | LOW (ON) | Station 3 worm motor (active-LOW multi-channel PCB relay) |
-| **D10** | ESC_PWM_1 | Output | PWM | 1000 µs | Station 1 BLDC fan ESC speed control |
-| **D11** | ESC_PWM_2 | Output | PWM | 1000 µs | Station 2 BLDC fan ESC speed control |
-| **D12** | ESC_PWM_3 | Output | PWM | 1000 µs | Station 3 BLDC fan ESC speed control |
-| **D13** | RELAY_FAN_BUS | Output | LOW | HIGH (ON) | Master Fan Bus automotive relay (via NPN transistor) |
-| **D14** | BTN_START | Input | HIGH | LOW (ON) | Arcade start button (internal pull-up enabled) |
-| **D15** | LED_RED | Output | LOW | HIGH (ON) | Status LED: active heating |
-| **D16** | LED_YELLOW | Output | LOW | HIGH (ON) | Status LED: drying and rotating / cooling |
-| **D17** | LED_GREEN | Output | HIGH | HIGH (ON) | Status LED: system ready or cycle complete |
-| **D18** | BUZZER | Output | LOW | HIGH (ON) | Active 5V buzzer |
-| **D20** | I2C_SDA | I2C | — | — | LCD SDA pin (hardware I2C) |
-| **D21** | I2C_SCL | I2C | — | — | LCD SCL pin (hardware I2C) |
+|| **D2** | DHT22_DATA | Input | — | — | Chamber humidity & ambient temp; 10kΩ pull-up to 5V |
+|| **D3** | DS18B20_DATA | Input | — | — | Heater-zone temperature probe; 4.7kΩ pull-up to 5V |
+|| **D4** | SSR_PTC_1 | Output | LOW | HIGH (ON) | Station 1 PTC heater (LCTC DC-DC SSR 40A) |
+|| **D5** | SSR_MOTOR_1 | Output | LOW | HIGH (ON) | Station 1 worm motor (LCTC DC-DC SSR 10A) |
+|| **D6** | SSR_PTC_2 | Output | LOW | HIGH (ON) | Station 2 PTC heater (LCTC DC-DC SSR 40A) |
+|| **D7** | SSR_MOTOR_2 | Output | LOW | HIGH (ON) | Station 2 worm motor (LCTC DC-DC SSR 10A) |
+|| **D8** | SSR_PTC_3 | Output | LOW | HIGH (ON) | Station 3 PTC heater (LCTC DC-DC SSR 40A) |
+|| **D9** | SSR_MOTOR_3 | Output | LOW | HIGH (ON) | Station 3 worm motor (LCTC DC-DC SSR 10A) |
+|| **D10** | ESC_PWM_1 | Output | PWM | 1000 µs | Station 1 BLDC fan ESC speed control |
+|| **D11** | ESC_PWM_2 | Output | PWM | 1000 µs | Station 2 BLDC fan ESC speed control |
+|| **D12** | ESC_PWM_3 | Output | PWM | 1000 µs | Station 3 BLDC fan ESC speed control |
+|| **D13** | SSR_FAN_BUS | Output | LOW | HIGH (ON) | Master Fan Bus (LCTC DC-DC SSR 40A) |
+|| **D14** | BTN_START | Input | HIGH | LOW (ON) | Arcade start button (internal pull-up enabled) |
+|| **D15** | LED_RED | Output | LOW | HIGH (ON) | Status LED: active heating |
+|| **D16** | LED_YELLOW | Output | LOW | HIGH (ON) | Status LED: drying and rotating / cooling |
+|| **D17** | LED_GREEN | Output | HIGH | HIGH (ON) | Status LED: system ready or cycle complete |
+|| **D18** | BUZZER | Output | LOW | HIGH (ON) | Active 5V buzzer |
+|| **D20** | I2C_SDA | I2C | — | — | LCD SDA pin (hardware I2C) |
+|| **D21** | I2C_SCL | I2C | — | — | LCD SCL pin (hardware I2C) |
 
 ---
 
@@ -81,17 +81,17 @@ Copy and paste the following complete, verified sketch into the Arduino IDE.
 #define PIN_DS18B20       3
 
 // Actuators
-#define PIN_RELAY_PTC_1   4   // Transistor active-HIGH (Station 1 Heaters)
-#define PIN_RELAY_MOTOR_1 5   // PCB Relay active-LOW (Station 1 Motor)
-#define PIN_RELAY_PTC_2   6   // Transistor active-HIGH (Station 2 Heaters)
-#define PIN_RELAY_MOTOR_2 7   // PCB Relay active-LOW (Station 2 Motor)
-#define PIN_RELAY_PTC_3   8   // Transistor active-HIGH (Station 3 Heaters)
-#define PIN_RELAY_MOTOR_3 9   // PCB Relay active-LOW (Station 3 Motor)
+#define PIN_SSR_PTC_1   4   // LCTC DC-DC SSR 40A (Station 1 Heaters)
+#define PIN_SSR_MOTOR_1 5   // LCTC DC-DC SSR 10A (Station 1 Motor)
+#define PIN_SSR_PTC_2   6   // LCTC DC-DC SSR 40A (Station 2 Heaters)
+#define PIN_SSR_MOTOR_2 7   // LCTC DC-DC SSR 10A (Station 2 Motor)
+#define PIN_SSR_PTC_3   8   // LCTC DC-DC SSR 40A (Station 3 Heaters)
+#define PIN_SSR_MOTOR_3 9   // LCTC DC-DC SSR 10A (Station 3 Motor)
 
 #define PIN_ESC_PWM_1     10  // ESC PWM signal Station 1
 #define PIN_ESC_PWM_2     11  // ESC PWM signal Station 2
 #define PIN_ESC_PWM_3     12  // ESC PWM signal Station 3
-#define PIN_RELAY_FAN_BUS 13  // Transistor active-HIGH (Master Fan Bus)
+#define PIN_SSR_FAN_BUS   13  // LCTC DC-DC SSR 40A (Master Fan Bus)
 
 // UI and Peripherals
 #define PIN_BTN_START     14  // Arcade button (active-LOW, pull-up)

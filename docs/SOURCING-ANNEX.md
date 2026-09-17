@@ -70,18 +70,16 @@
 | 1 | LCD 16×2 I2C (black on white) | ₱165 | Lazada | https://www.lazada.com.ph/products/pdp-i3934869498.html |
 | 1 | LM2596S DC-DC buck converter 12V→5V | ₱49 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i6005010-s7605914.html |
 
-### 2g. Relays, drivers, and fuses (Lazada)
+### 2g. SSRs, drivers, and modules (Lazada)
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
-| 4 | **12V 40A automotive relay 5-pin SPDT** | ~₱80 ea = ~₱320 | Lazada | search "12v 40a automotive relay" |
-| 1 | **4-CH optocoupler relay module (10A @ 30VDC)** | ~₱200 | Lazada | search "4 channel relay module 12V" |
-| 4 | **2N2222 NPN transistor (TO-92)** | ~₱5 ea = ~₱20 | Lazada | search "2n2222 transistor" |
-| 4 | **1N4007 diode** (flyback) | from kit | Lazada | — |
-| 1 | **50A battery disconnect switch** | ~₱150 | Lazada | search "50a battery disconnect switch" |
-| 1 | **ANL fuse holder + 50A ANL fuse** | ~₱80 | Lazada | search "ANL fuse holder 50A" |
-| 9 | **130°C / 10A thermal fuse (one-shot)** | ~₱15 ea = ~₱135 | Lazada | search "thermal fuse 130C 10A" |
-| 1 | Automotive blade fuse kit (3A, 10A, 15A, 20A, 25A, 30A) | ~₱200 | Lazada | https://www.lazada.com.ph/catalog/?q=automotive+blade+fuse+kit+assortment |
+| 4 | **SSR-40DD DC-output solid-state relay (40A)** | ~₱200 ea = ~₱800 EST | Lazada | search "SSR-40DD 40A DC output" — VERIFY PRICE |
+| 4 | Heatsinks for SSR-40DD | ~₱50 ea = ~₱200 | Lazada | search "SSR heatsink" |
+| 1 | **4-CH optocoupler relay module (10A @ 30VDC)** | ~₱200 | Lazada | search "4 channel relay module 12V optocoupler" |
+| 1 | **Screw terminal 2-pin** | ₱10 | Lazada | — |
+
+> **Important:** SSR-40DD must be **DC-output** type (input 3–32VDC, DC output). Do NOT buy the AC-output 'DA' type. The SSRs are driven directly from Mega pins (D4/D6/D8 for PTC, D13 for fan bus).
 
 ### 2h. UI components (Lazada)
 
@@ -98,6 +96,7 @@
 | 1 | Silicone wire kit 6–18AWG | ₱218 | Lazada | https://www.lazada.com.ph/products/pdp-i4880482146.html |
 | 1 | Dupont jumper kit 40-pin | ₱45 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
 | 1 | Terminal block 15A barrier strip | ₱106 | Lazada | https://www.lazada.com.ph/products/pdp-i2818578034.html |
+| 2 | 10-Terminal Bus Bar 150A (Copper) | ~₱350 ea = ₱700 | Lazada | https://www.lazada.com.ph/products/814-terminal-bus-bar-150a-high-current-dc-busbar-12-48v-copper-power-distribution-terminal-block-for-car-boat-i5119401028-s30216194181.html |
 | 1 | Heat-shrink tube kit | ₱111 | Lazada | https://www.lazada.com.ph/products/pdp-i2569065087.html |
 | 1 | 1/4W resistor kit | ₱69 | Lazada | https://www.lazada.com.ph/products/pdp-i2501387387.html |
 | 1 | Nylon standoff kit | ₱97 | Lazada | https://www.lazada.com.ph/products/pdp-i2946710217.html |
@@ -107,7 +106,7 @@
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
-| 2 | PowMr LiFePO4 12.8V 200Ah w/ BMS 200A | ~₱8,900 ea = ~₱8,900 | Lazada | https://h5.lazada.com.ph/products/powmr-12v-200ah-lifepo4-battery-lithium-battery-built-in-bms-6000-deep-cycles-rechargeable-solar-battery-i5047514166.html |
+| 1 | PowMr LiFePO4 12.8V 200Ah w/ BMS 200A | ~₱8,900 ea | Lazada | https://h5.lazada.com.ph/products/powmr-12v-200ah-lifepo4-battery-lithium-battery-built-in-bms-6000-deep-cycles-rechargeable-solar-battery-i5047514166.html |
 | 1 | LiFePO4 charger 14.6V 20A | ~₱2,000–2,700 | Lazada | https://www.lazada.com.ph/tag/lifepo4-charger-20a/ |
 
 > **⚠️ ORDER BATTERY FIRST** — longest shipping time. Verify seller rating ≥4.5.
@@ -129,17 +128,17 @@
 
 | Category | Total |
 |---|---|
-| PTC heaters (9×₱484) + thermal fuses (9×₱15) | ≈ ₱4,491 |
+| PTC heaters (9×₱484) | ≈ ₱4,356 |
 | BLDC fans + ESCs (9×₱469) | ≈ ₱4,221 |
 | Motors + couplings (makerlab) | ≈ ₱1,749 |
 | Bearings + shafts (Lazada) | ≈ ₱1,062 |
 | Control electronics (Lazada) | ≈ ₱1,589 |
-| Relays, drivers, disconnect + fuses | ≈ ₱925 |
+| SSRs + opto module + heatsinks + terminals | ≈ ₱1,210 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
 | Wiring + consumables (Lazada) | ≈ ₱1,346 |
 | Battery (1× 200Ah) + charger | ≈ ₱10,900–11,600 |
 | Hardware store consumables | ≈ ₱490 |
-| **GRAND TOTAL** | **≈ ₱27,100–28,100** |
+| **GRAND TOTAL** | **≈ ₱27,000–28,000** |
 
 ---
 
@@ -152,7 +151,7 @@
 | KP08 pillow blocks | Kuan Kee Hardware | Manila |
 | Steel shafts | Manila Trading (steel) | Various |
 | Arduino + sensors | e-Gizmo / Circuitrocks | QC / Online |
-| Automotive relay | Any auto parts shop | Universal |
+| SSR-40DD | Any electronics parts shop | Universal |
 
 ---
 
@@ -165,14 +164,23 @@
 | Pillow block | KP08, 6mm bore | KP08, 8mm bore |
 | Shaft | 6mm × 300mm SS | 8mm (wrong) |
 | Coupling | 6×8mm rigid | Other sizes |
-| PTC relay | **12V 40A automotive 5-pin SPDT** | 10A PCB relay (burns out at 25A PTC draw!) |
+| PTC relay | **SSR-40DD DC-output 40A** | 40A automotive relay (has moving parts, needs NPN driver) |
+| PTC relay | **DC-output** (3–32VDC input, DC output) | AC-output (DA type) |
 | Motor relay module | **4-CH optocoupler 10A** | 40A auto (overkill for 0.8A motor) |
-| Battery disconnect | **50A rated** | 10A DC rocker (can't handle 36A) |
-| Main fuse | **50A ANL** | 25A blade (blows with one station at 36A) |
-| Thermal fuse | **130°C / 10A per heater** | 80°C (too close to operating temp 40–60°C) |
+| Main protection | **No fuses** — BMS + firmware cutoff only | Any fuses (removed per no-fuse design) |
 | Battery | LiFePO4 12.8V 200Ah | Lead-acid (too heavy) |
 | Charger | LiFePO4 14.6V 20A | Lead-acid charger (wrong!) |
 | DHT22 | Black module | Blue (less accurate) |
 
 ---
 
+## 6. Notes on the no-fuse design
+
+The no-fuse SSR build removes all fuses (50A ANL, 30A blade, 3A blade, 130°C thermal fuses, disconnect switch) from the power path. The battery connects directly to the distribution bus through a 2-pin screw terminal. Emergency kill is achieved by unplugging the battery cable.
+
+**Protection scheme:**
+- Over-current: BMS 200A cutoff
+- Over-temperature: DS18B20 firmware cutoff at 65°C + PTC self-regulation
+- Boot-safe: SSRs are active-HIGH (floating pin = OFF)
+
+**SSR-40DD sourcing note:** These are DC-output solid-state relays with 40A rating. They require heatsinks due to ~1W/A dissipation (~25W per PTC SSR at 25A). The price estimate (~₱200 each) should be verified on Lazada — prices may vary.

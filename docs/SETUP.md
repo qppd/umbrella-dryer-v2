@@ -9,10 +9,9 @@
 - [ ] Battery bank: 1× LiFePO4 12.8V 200Ah with BMS
 - [ ] Charger: 14.6V 20A LiFePO4 charger
 - [ ] Mega 2560 clone + USB cable
-- [ ] 4× 40A automotive relay (5-pin SPDT) + 1× 4-CH opto module
-- [ ] 4× 2N2222 + 4× 1kΩ + 4× 10kΩ + 4× 1N4007 (NPN driver components)
+- [ ] 4× LCTC DC-DC SSR 40A (for PTC heaters + fan bus) + 3× LCTC DC-DC SSR 10A (for motors)
+- [ ] 7× SSR heatsinks (~₱50 each)
 - [ ] 9× PTC ceramic heaters (12V 100W) — verify 12V, not 220V!
-- [ ] 9× thermal fuse 130°C / 10A
 - [ ] 9× BLDC fan modules (50mm, with ESC) — verify ESC included
 - [ ] 3× SGM-370 worm gear motors
 - [ ] 6× KP08 pillow block bearing (6mm bore)
@@ -20,8 +19,8 @@
 - [ ] 2× rigid coupling sets (use 6×8 bore)
 - [ ] DHT22 module, DS18B20 waterproof, LCD 16×2 I2C
 - [ ] LM2596S buck module
-- [ ] LEDs (R/Y/G), buzzer, arcade button, 50A disconnect switch
-- [ ] Wire kit (6–18 AWG silicone), fuses, connectors, heat-shrink
+- [ ] LEDs (R/Y/G), buzzer, arcade button
+- [ ] Wire kit (6–18 AWG silicone), connectors, heat-shrink
 - [ ] Zip ties, M3/M4 screws, sealant, drip tray, velcro, grommets
 
 ---
@@ -60,35 +59,28 @@
 
 ### 5a. Power distribution
 
-1. Connect battery positives (main link) and negatives (main link) — use 4 AWG.
-2. Battery + → 50A disconnect switch → 50A ANL main fuse → terminal block (DC distribution bus) — 8 AWG.
-3. From distribution bus, run fused branches:
-   - Station 1: 30A fuse → 40A auto relay (D4 via NPN) → thermal fuses → 3 PTC heaters
-   - Station 2: 30A fuse → 40A auto relay (D6 via NPN) → thermal fuses → 3 PTC heaters
-   - Station 3: 30A fuse → 40A auto relay (D8 via NPN) → thermal fuses → 3 PTC heaters
-   - Fan bus: 30A fuse → 40A auto relay (D13 via NPN) → ESC distribution
-   - Motor 1/2/3: 3A fuse each → opto module → SGM-370 motor
-   - Logic: 3A fuse → buck module → 5V to Mega
+1. Connect battery positives (main link) and negatives (main link) — use 8 AWG.
+2. Battery + → 2-pin screw terminal → **positive 150A bus bar** — 8 AWG.
+3. From the **positive bus bar**, run branches:
+   - Station 1 PTC: 10 AWG → LCTC DC-DC SSR 40A (D4) → 3 PTC heaters
+   - Station 2 PTC: 10 AWG → LCTC DC-DC SSR 40A (D6) → 3 PTC heaters
+   - Station 3 PTC: 10 AWG → LCTC DC-DC SSR 40A (D8) → 3 PTC heaters
+   - Fan bus: 10 AWG → LCTC DC-DC SSR 40A (D13) → ESC distribution
+   - Motor 1/2/3: 18 AWG → LCTC DC-DC SSR 10A (D5/D7/D9) → SGM-370 motor
+   - Logic: 20 AWG → buck module → 5V to Mega
 
-### 5b. NPN driver stage (for each 40A automotive relay — 4 total)
+### 5b. SSR wiring (for each LCTC DC-DC SSR — 7 total)
 
-```
-Mega pin (D4/D6/D8/D13) ── 1kΩ ── 2N2222 base
-2N2222 base ── 10kΩ ── GND                    (boot pull-down)
-2N2222 emitter ── GND
-2N2222 collector ── relay coil − (pin 85)
-Relay coil + (pin 86) ── +12V bus (after main fuse)
-1N4007 across coil: cathode (band) → +12V, anode → collector
-```
+| SSR terminal | Goes to |
+|---|---|
+| IN+ | Mega pin (D4/D6/D8 for PTC, D13 for fan, D5/D7/D9 for motor) |
+| IN− | GND |
+| COM (input side) | +12V bus |
+| NO (output side) | Load (heaters/fans/motors) |
 
-### 5c. Opto module wiring (for worm motors)
+Active-HIGH: `digitalWrite(pin, HIGH)` = SSR ON. Onboard optocoupler holds SSR OFF at boot.
 
-1. Module VCC → 5V buck rail (NOT Mega pin). Module GND → GND rail.
-2. Mega D5 → module IN1, D7 → IN2, D9 → IN3 (active-LOW: LOW = ON).
-3. Module COM/NO → 3A-fused 12V → motor + / motor − → GND.
-4. Keep JD-VCC jumper ON.
-
-### 5d. ESC wiring
+### 5c. ESC wiring
 
 1. Each ESC has 3 wires: black (GND), red (VCC 12V), white/orange (signal).
 2. Connect ESC GND → common GND bus.
@@ -111,8 +103,8 @@ Relay coil + (pin 86) ── +12V bus (after main fuse)
 
 ## 6. Power-on test (no load)
 
-1. **Disconnect all relay outputs** (no PTC heaters, no motors, no fans yet).
-2. Connect battery. Flip 50A disconnect switch.
+1. **Disconnect all SSR outputs** (no PTC heaters, no motors, no fans yet).
+2. Connect battery.
 3. Buck LED should light. Measure 5V at Mega 5V pin.
 4. Mega should boot. LCD shows "Umbrella Dryer V2 DC SYSTEM".
 5. ESCs should arm (fan twitch or beep) — D13 briefly turns on during arming.
@@ -124,7 +116,7 @@ Relay coil + (pin 86) ── +12V bus (after main fuse)
 
 ## 7. Functional test (with loads)
 
-1. Reconnect relay outputs to PTC heaters, motors, and fans.
+1. Reconnect SSR outputs to PTC heaters, motors, and fans.
 2. Press button → fans spin up, PTC heaters warm (feel heat after 30s).
 3. Wait for DHT22 to read ≥45°C → motor starts spinning (staged — one at a time).
 4. Timer counts down 15 min → enters COOL phase for 2 min.

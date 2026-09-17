@@ -12,7 +12,7 @@ The 3D model shows:
 - **Shaft alignment** — 6mm shafts through KP08 pillow blocks, connected via rigid couplings
 - **PTC heater placement** — 3× PTC ceramic heaters per station, positioned for airflow
 - **BLDC fan placement** — 3× 50mm ducted fans per station, positioned for air circulation
-- **Electronics enclosure** — Mega, relays, buck, fuse block
+- **Electronics enclosure** — Mega, SSR modules, buck converter
 - **Battery compartment** — 1× LiFePO4 200Ah battery
 - **Drip tray** — under each station for water collection
 
@@ -48,6 +48,6 @@ The 3D model shows:
 1. Print or fabricate motor mount plates from aluminum.
 2. Bolt KP08 pillow blocks to frame rails.
 3. Insert shafts through pillow blocks, connect to motors via rigid couplings.
-4. Mount PTC heaters on heat-resistant brackets (ceramic standoffs). Include 130°C thermal fuse in each heater's + lead.
+4. Mount PTC heaters on heat-resistant brackets (ceramic standoffs).
 5. Position BLDC fans to blow air across PTC heaters toward umbrella fabric.
 6. Wire everything per [wiring/README.md](../wiring/README.md) and [HARDWARE.md](../HARDWARE.md).

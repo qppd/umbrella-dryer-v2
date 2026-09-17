@@ -7,8 +7,8 @@ Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air 
 
 ## How it works
 
-1. Each umbrella mounts on its **own motorized station** — a SGM-370 worm gear motor (14 kg·cm) direct-driving a 6mm shaft — inside the drying chamber. Stations run independently; firmware stages one station at a time to stay within fuse budget.
-2. **9× PTC ceramic heaters (12V 100W)** provide heating (3 per station), switched by **40A automotive relays** (NPN-driven from Mega). **9× BLDC ducted fans (50mm, ESC-controlled)** circulate warm air (40–60°C).
+1. Each umbrella mounts on its **own motorized station** — a SGM-370 worm gear motor (14 kg·cm) direct-driving a 6mm shaft — inside the drying chamber. Stations run independently; firmware stages one station at a time to stay within the BMS current budget.
+2. **9× PTC ceramic heaters (12V 100W)** provide heating (3 per station), switched by **DC-output SSRs (SSR-40DD class)** driven directly from the Mega. **9× BLDC ducted fans (50mm, ESC-controlled)** circulate warm air (40–60°C).
 3. **DHT22** (humidity) + **DS18B20** (heater-zone temp) drive the duty-cycling controller on the **Arduino Mega 2560** — heaters run only while chamber humidity is above threshold (the "energy efficient control" of the study).
 4. When chamber humidity drops below threshold → auto-shutoff + buzzer + green LED. Condensate drains passively (sloped floor → drain tube → drip tray).
 
@@ -17,12 +17,11 @@ Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air 
 | Subsystem | Component |
 |---|---|
 | Controller | Arduino Mega 2560 |
-| Heat | **9× PTC ceramic heaters 12V 100W** (3 per station), **40A automotive relay-switched** |
-| Air circulation | **9× BLDC ducted fans 50mm 12V** (3 per station), ESC PWM-controlled |
-| Rotation | **3× SGM-370 worm gear motors** 12V (14 kg·cm each), optocoupler relay-switched (6 RPM) |
-| Power | **1× LiFePO4 12.8V 200Ah** → 50A disconnect → 50A ANL main fuse → per-branch fuses |
+| Heat | **9× PTC ceramic heaters 12V 100W** (3 per station), **LCTC DC-DC SSR 40A switched** |
+| Rotation | **3× SGM-370 worm gear motors** 12V (14 kg·cm each), LCTC DC-DC SSR 10A switched (6 RPM) |
+| Power | **1× LiFePO4 12.8V 200Ah (BMS 200A)** → 12V bus (fuseless — BMS + firmware cutoff + PTC self-regulation) |
 | Sensors | DHT22 (humidity) · DS18B20 (heater-zone temp) |
-| Thermal safety | 130°C one-shot thermal fuse per heater (9×) · PTC self-regulation · firmware 65°C cutoff · BMS |
+| Thermal safety | PTC self-regulation · firmware 65°C cutoff · BMS |
 | UI | 16×2 LCD (I2C, pins 20/21), 3 status LEDs, buzzer, illuminated arcade start button |
 | Mechanical | 3× 6mm SS shafts, 6× KP08 pillow blocks, 3× 6×8 couplings, aluminum chassis |
 

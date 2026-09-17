@@ -10,8 +10,8 @@
 |---|---|
 | Power | 1× LiFePO4 200Ah → 50A disconnect → 50A ANL main fuse → DC distribution → per-branch fuses |
 | Conversion | LM2596S buck: 12V → 5V for Mega (5V pin only) |
-| Actuation | 3× PTC heater groups (40A automotive relays via 2N2222), 3× BLDC fan groups (ESC PWM + 40A auto relay bus), 3× worm motors (10A opto module) |
-| Thermal protection | 130°C one-shot thermal fuse per heater (9×), PTC self-regulation, DS18B20 firmware cutoff |
+|| Actuation | 3× PTC heater groups (LCTC DC-DC SSR 40A), 3× BLDC fan groups (ESC PWM + LCTC DC-DC SSR 40A bus), 3× worm motors (LCTC DC-DC SSR 10A) |
+|| Thermal protection | PTC self-regulation, DS18B20 firmware cutoff |
 | Sensing | DHT22 (humidity), DS18B20 (temperature) |
 | Control | Arduino Mega 2560 |
 | UI | 16×2 LCD I2C (pins 20/21), 3× LEDs (D15–D17), buzzer (D18), arcade button (D14) |
@@ -35,10 +35,12 @@
 | Layer | Price (est.) |
 |---|---|
 | Battery (1× 200Ah) + charger | ≈ ₱10,900 |
-| PTC heaters (9×₱484) + thermal fuses (9×₱15) | ≈ ₱4,491 |
-| BLDC fans + ESCs (9×₱469) | ≈ ₱4,221 |
-| Motors + mechanical | ≈ ₱3,028 |
-| Automotive relays (4) + opto module + NPN components | ≈ ₱580 |
-| Control electronics (Mega, sensors, LCD, buck) | ≈ ₱1,589 |
-| Disconnect switch + fuses + UI + wiring + consumables | ≈ ₱2,330 |
-| **Total** | **≈ ₱27,100–28,100** |
+|| PTC heaters (9×₱484) + thermal fuses (9×₱15) | ≈ ₱4,491 |
+|| BLDC fans + ESCs (9×₱469) | ≈ ₱4,221 |
+|| Motors + mechanical | ≈ ₱3,028 |
+|| LCTC DC-DC SSR 40A (4×₱344) + SSR 10A (3×₱164) + heatsinks | ≈ ₱2,068 |
+|| Control electronics (Mega, sensors, LCD, buck) | ≈ ₱1,589 |
+|| Battery (1× 200Ah) + charger | ≈ ₱10,900–11,600 |
+|| UI (LEDs, buzzer, button) | ≈ ₱109 |
+|| Wiring + consumables | ≈ ₱1,500–1,900 |
+|| **Total** | **≈ ₱27,600–28,100** |

@@ -9,16 +9,16 @@
 | Level | What | Pass criteria |
 |---|---|---|
 | L1 — Smoke test | Power on with no loads | Buck outputs 5V, Mega boots, LCD shows "READY", ESCs arm |
-| L2 — Component test | Each subsystem individually | Each relay clicks, each ESC spins fan, each motor rotates, sensors read values |
-| L3 — Integration test | Full cycle with loads | PREHEAT → DRY → COOL → COMPLETE completes; safety cutoff works |
-| L4 — Stress test | Extended run | Battery drains correctly, no overheating, fuse ratings correct |
+|| L2 — Component test | Each subsystem individually | Each SSR triggers, each ESC spins fan, each motor rotates, sensors read values |
+|| L3 — Integration test | Full cycle with loads | PREHEAT → DRY → COOL → COMPLETE completes; safety cutoff works |
+|| L4 — Stress test | Extended run | Battery drains correctly, no overheating, SSR ratings adequate |
 
 ---
 
 ## 2. L1 — Smoke test
 
-1. Disconnect all relay outputs (no PTC, no motors, no fans).
-2. Connect battery, flip 50A disconnect switch.
+1. Disconnect all SSR outputs (no PTC, no motors, no fans).
+2. Connect battery.
 3. **Check:**
    - [ ] Buck LED lights, output = 5.0V at Mega **5V pin** (NOT barrel jack)
    - [ ] Mega boots, Serial Monitor prints "Umbrella Dryer V2"
@@ -31,19 +31,19 @@
 
 ## 3. L2 — Component tests
 
-### 3a. Relay test
+### 3a. SSR test
 
-1. Connect only relay modules (no loads on COM/NO).
+1. Connect only SSR modules (no loads on COM/NO).
 2. Press button → PREHEAT phase.
 3. **Check:**
-   - [ ] D4 goes HIGH → station 1 PTC automotive relay clicks ON
+   - [ ] D4 goes HIGH → station 1 PTC SSR clicks ON
    - [ ] Fans spin (D13 HIGH + ESC throttle)
 4. Wait for DRY phase:
-   - [ ] D5 goes LOW → station 1 motor opto relay clicks ON
-   - [ ] After 30s rotation: D5→OFF, D6→HIGH (station 2 PTC), D7→LOW (station 2 motor)
-5. COOL phase: all relays OFF, fans stay ON.
-6. If PTC relay doesn't click → check D4 → 1kΩ → 2N2222 base, collector → coil 85, coil 86 → +12V, emitter → GND; 10kΩ base pull-down present.
-7. If motor relay doesn't click → check D5 → module IN1; module VCC → 5V; active-LOW (LOW = ON).
+   - [ ] D5 goes HIGH → station 1 motor SSR clicks ON
+   - [ ] After 30s rotation: D5→OFF, D6→HIGH (station 2 PTC), D7→HIGH (station 2 motor)
+5. COOL phase: all SSRs OFF, fans stay ON.
+6. If PTC SSR doesn't trigger → check D4 connection to SSR IN+; IN− → GND; COM → +12V, NO → heaters.
+7. If motor SSR doesn't trigger → check D5 → SSR IN+; SSR IN− → GND; COM → +12V.
 
 ### 3b. ESC / BLDC fan test
 
@@ -58,12 +58,12 @@
 
 ### 3c. Motor test
 
-1. Connect one SGM-370 motor to opto module output.
-2. Press button → DRY phase → staged rotation → D5 goes LOW for station 1.
+1. Connect one SGM-370 motor to LCTC DC-DC SSR 10A output.
+2. Press button → DRY phase → staged rotation → D5 goes HIGH for station 1.
 3. **Check:**
    - [ ] Motor rotates at ~6 RPM
    - [ ] Direction: umbrella should spin (reverse any two leads if wrong)
-   - [ ] Motor stops when relay OFF (D5 goes HIGH)
+   - [ ] Motor stops when SSR OFF (D5 goes LOW)
    - [ ] Motor holds position when off (self-locking)
 
 ### 3d. Sensor test

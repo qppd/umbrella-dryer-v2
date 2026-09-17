@@ -1,10 +1,10 @@
 # Electrical Block Diagram — 12V DC Umbrella Dryer
 
 > **Pure 12V DC system.** No mains voltage. No inverter. No RCD/GFCI.
-> All heating, motor, and fan loads run from a 12V LiFePO4 battery bank
-> through fused DC distribution. Arduino Mega 2560 provides closed-loop
-> control with NPN-driven 40A automotive relays for PTC heaters,
-> optocoupler relays for worm motors, and ESC PWM for BLDC fans.
+> All heating, motor, and fan loads run from a 12V LiFePO4 battery
+> through direct DC distribution. Arduino Mega 2560 provides closed-loop
+> control with LCTC DC-DC SSRs (40A for PTC/fan, 10A for motors) for heaters and motors,
+> and ESC PWM for BLDC fans.
 >
 > staged operation mandatory; LCD I2C on Mega pins 20/21.
 
@@ -16,23 +16,13 @@
 flowchart TB
     BAT["12V LiFePO4<br/>Battery<br/>1× 200Ah, BMS Protected"]
 
-    DISC["50A Disconnect<br/>Master Switch"]
-    FMAIN["50A ANL<br/>Main Fuse"]
-    BUS["12V DC Bus"]
-
-    FS1["30A Fuse<br/>Station 1 PTC"]
-    FS2["30A Fuse<br/>Station 2 PTC"]
-    FS3["30A Fuse<br/>Station 3 PTC"]
-    FM1["3A Fuse<br/>Motor 1"]
-    FM2["3A Fuse<br/>Motor 2"]
-    FM3["3A Fuse<br/>Motor 3"]
-    FF["30A Fuse<br/>Fan Bus"]
-    FL["3A Fuse<br/>Logic"]
+    BUS_POS["12V Positive Bus Bar<br/>(10-Terminal Copper)"]
+    BUS_NEG["12V Negative Bus Bar<br/>(10-Terminal Copper)"]
 
     ST1["Station 1<br/>3x PTC + Motor"]
     ST2["Station 2<br/>3x PTC + Motor"]
     ST3["Station 3<br/>3x PTC + Motor"]
-    FBUS["40A Auto Relay<br/>9x BLDC Fan Power"]
+    FBUS["DC SSR (SSR-40DD)<br/>9x BLDC Fan Power"]
 
     BUCK["LM2596S Buck<br/>12V to 5V"]
     MEGA["Arduino Mega 2560"]
@@ -40,26 +30,29 @@ flowchart TB
     DS["DS18B20<br/>Heater T"]
     LCD["LCD 16x2<br/>I2C (pins 20/21)"]
 
-    BAT --> DISC --> FMAIN --> BUS
-    BUS --> FS1 --> ST1
-    BUS --> FS2 --> ST2
-    BUS --> FS3 --> ST3
-    BUS --> FM1
-    BUS --> FM2
-    BUS --> FM3
-    BUS --> FF --> FBUS
-    BUS --> FL --> BUCK --> MEGA
+    BAT --> BUS_POS
+    BAT --> BUS_NEG
+    BUS_POS --> ST1
+    BUS_POS --> ST2
+    BUS_POS --> ST3
+    BUS_POS --> FBUS
+    BUS_POS --> BUCK --> MEGA
     DHT --> MEGA
     DS --> MEGA
     MEGA <--> LCD
-    MEGA -. "D4/D6/D8<br/>NPN→40A auto relay" .-> ST1
-    MEGA -. "D4/D6/D8<br/>NPN→40A auto relay" .-> ST2
-    MEGA -. "D4/D6/D8<br/>NPN→40A auto relay" .-> ST3
-    MEGA -. "D13 NPN→40A auto relay" .-> FBUS
-    MEGA -. "D5/D7/D9<br/>opto module (LOW=ON)" .-> ST1
-    MEGA -. "D5/D7/D9<br/>opto module (LOW=ON)" .-> ST2
-    MEGA -. "D5/D7/D9<br/>opto module (LOW=ON)" .-> ST3
+    MEGA -. "D4/D6/D8<br/>DC SSR (SSR-40DD)" .-> ST1
+    MEGA -. "D4/D6/D8<br/>DC SSR (SSR-40DD)" .-> ST2
+    MEGA -. "D4/D6/D8<br/>DC SSR (SSR-40DD)" .-> ST3
+    MEGA -. "D13 DC SSR (SSR-40DD)" .-> FBUS
+    MEGA -. "D5/D7/D9<br/>DC SSR (SSR-10A)" .-> ST1
+    MEGA -. "D5/D7/D9<br/>DC SSR (SSR-10A)" .-> ST2
+    MEGA -. "D5/D7/D9<br/>DC SSR (SSR-10A)" .-> ST3
     MEGA -. "D10-D12<br/>ESC PWM" .-> FBUS
+    ST1 -. "GND Return" .-> BUS_NEG
+    ST2 -. "GND Return" .-> BUS_NEG
+    ST3 -. "GND Return" .-> BUS_NEG
+    FBUS -. "GND Return" .-> BUS_NEG
+    MEGA -. "GND Return" .-> BUS_NEG
 ```
 
 ---
@@ -68,42 +61,35 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    BAT["12V LiFePO4<br/>Battery Bank"]
-    DISC["50A Disconnect<br/>Master Switch"]
-    FMAIN["50A ANL Fuse"]
-    BUS["12V DC Bus<br/>Terminal Strip"]
+    BAT["12V LiFePO4<br/>Battery"]
+    BUS["12V Positive Bus Bar<br/>(10-Terminal Copper)"]
 
     subgraph STA["STATION BRANCH - x3 IDENTICAL"]
         direction TB
-        F_PTC["30A Blade Fuse<br/>(PTC heaters)"]
-        RELAY_H["40A Auto Relay<br/>via 2N2222 NPN"]
-        THF["130°C Thermal Fuse<br/>(per heater, ×3)"]
+        SSR_H["DC SSR (SSR-40DD)<br/>Input: Mega pin<br/>Output: PTC heaters"]
         PTC["3× PTC Heater<br/>12V 100W each<br/>Parallel: 300W"]
-        F_MOT["3A Blade Fuse<br/>(worm motor)"]
         RELAY_M["Opto Module CH<br/>Active-LOW"]
         MOT["SGM-370<br/>Worm Motor"]
     end
 
     subgraph FANBUS["BLDC FAN BUS"]
         direction TB
-        FF["30A Blade Fuse"]
-        RELAY_F["40A Auto Relay<br/>via 2N2222 NPN"]
+        SSR_F["DC SSR (SSR-40DD)<br/>Input: Mega D13<br/>Output: ESCs"]
         ESC["3× ESC Module<br/>(per station, parallel)"]
         BLDC["3× 50mm Ducted<br/>BLDC Fan"]
     end
 
     subgraph LOGIC["LOGIC FEED"]
         direction TB
-        FL["3A Blade Fuse"]
         BUCK["LM2596S Buck<br/>12V to 5V"]
         MEGA["Arduino Mega 2560"]
     end
 
-    BAT --> DISC --> FMAIN --> BUS
-    BUS --> F_PTC --> RELAY_H --> THF --> PTC
-    BUS --> F_MOT --> RELAY_M --> MOT
-    BUS --> FF --> RELAY_F --> ESC --> BLDC
-    BUS --> FL --> BUCK --> MEGA
+    BAT --> BUS
+    BUS --> SSR_H --> PTC
+    BUS --> RELAY_M --> MOT
+    BUS --> SSR_F --> ESC --> BLDC
+    BUS --> BUCK --> MEGA
 ```
 
 ---
@@ -114,51 +100,34 @@ One drying station in full detail. All three stations are electrically identical
 
 ```mermaid
 flowchart TB
-    FUSE_PTC["30A Blade Fuse<br/>from DC Bus"]
-    FUSE_MOT["3A Blade Fuse<br/>from DC Bus"]
-
-    subgraph NPN_DRV["2N2222 NPN Driver"]
-        R_BASE["1kΩ base<br/>from Mega D4/D6/D8"]
-        R_PULL["10kΩ pull-down<br/>to GND"]
-        D_FLY["1N4007 flyback<br/>across coil"]
-    end
-
-    subgraph RELAY_H["40A Automotive Relay"]
-        COIL["Coil: +12V → 86<br/>-85 → NPN collector"]
-        CONTACTS["30: fused 12V<br/>87: to PTC heaters"]
-    end
+    SSR_PTC["DC SSR (SSR-40DD)<br/>Input +: Mega D4/D6/D8<br/>Input −: GND<br/>Output: from 12V bus"]
 
     subgraph HEATERS["PTC Heater Array - 300W"]
-        THF1["130°C fuse"]
         H1["PTC 1<br/>12V 100W"]
-        THF2["130°C fuse"]
         H2["PTC 2<br/>12V 100W"]
-        THF3["130°C fuse"]
         H3["PTC 3<br/>12V 100W"]
     end
 
+    SSR_PTC --> H1 & H2 & H3
+
     subgraph OPTO["Opto Module CH"]
         OPTO_COIL["5V coil (buck rail)<br/>10kΩ pull-up (boot-safe)"]
-        OPTO_CONTACTS["COM: fused 12V<br/>NO: to motor +"]
+        OPTO_CONTACTS["COM: 12V bus<br/>NO: to motor +"]
     end
 
     MOTOR["SGM-370<br/>12V 6RPM<br/>Motor − to GND"]
 
     subgraph FANS["BLDC Fans ×3 (parallel)"]
         ESC_S["ESC signal<br/>from Mega D10/D11/D12"]
-        ESC_V["ESC VIN<br/>from fan bus relay"]
+        ESC_V["ESC VIN<br/>from fan bus SSR"]
         BLDC_F["50mm ducted<br/>BLDC fans"]
     end
 
-    FUSE_PTC --> NPN_DRV --> RELAY_H --> THF1 --> H1
-    RELAY_H --> THF2 --> H2
-    RELAY_H --> THF3 --> H3
-
-    FUSE_MOT --> OPTO --> OPTO_CONTACTS --> MOTOR
+    OPTO --> OPTO_CONTACTS --> MOTOR
     MOTOR -. "− lead" .-> GND["Common GND"]
 
     FANS
-    ESC_V -->|"from D13 fan relay"| ESC_S --> BLDC_F
+    ESC_V -->|"from D13 fan SSR"| ESC_S --> BLDC_F
 ```
 
 ---
@@ -178,7 +147,7 @@ flowchart LR
         LCD["LCD 16x2<br/>SDA: D20<br/>SCL: D21"]
     end
 
-    subgraph PTC_OUT["PTC HEATER RELAYS (40A auto, NPN-driven, active-HIGH)"]
+    subgraph PTC_OUT["PTC HEATER SSRs (SSR-40DD, DC output, active-HIGH)"]
         R1["D4: Station 1 PTC<br/>(~25A)"]
         R2["D6: Station 2 PTC<br/>(~25A)"]
         R3["D8: Station 3 PTC<br/>(~25A)"]
@@ -191,7 +160,7 @@ flowchart LR
     end
 
     subgraph FAN_OUT["FAN BUS + ESC PWM"]
-        FB["D13: Fan bus relay<br/>(40A auto, NPN, active-HIGH)"]
+        FB["D13: Fan bus SSR<br/>(SSR-40DD, active-HIGH)"]
         E1["D10: ESC 1 PWM<br/>Station 1 fans"]
         E2["D11: ESC 2 PWM<br/>Station 2 fans"]
         E3["D12: ESC 3 PWM<br/>Station 3 fans"]
@@ -216,31 +185,30 @@ flowchart LR
 
 ---
 
-## 5. Fuse and Wire Schedule
+## 5. Wire Schedule
 
-| Path | Fuse Rating | Fuse Type | Wire Gauge | Notes |
-|------|-------------|-----------|------------|-------|
-| Battery to disconnect | — | 50A switch | 8 AWG | Manual kill |
-| Disconnect to main fuse | 50A | ANL | 8 AWG | Primary protection |
-| Station 1 PTC branch | 30A | ATO blade | 10 AWG | 3× PTC heaters |
-| Station 2 PTC branch | 30A | ATO blade | 10 AWG | 3× PTC heaters |
-| Station 3 PTC branch | 30A | ATO blade | 10 AWG | 3× PTC heaters |
-| Motor 1 | 3A | ATO blade | 18 AWG | SGM-370 |
-| Motor 2 | 3A | ATO blade | 18 AWG | SGM-370 |
-| Motor 3 | 3A | ATO blade | 18 AWG | SGM-370 |
-| BLDC fan bus | 30A | ATO blade | 10 AWG | 9 ESCs, 18 AWG pigtails |
-| Logic feed | 3A | ATO blade | 20 AWG | Buck converter input |
-| Buck to Mega | — | PCB trace | 20 AWG | 5V regulated rail |
-| PTC heater branch | 40A | Automotive relay | 10 AWG | Per relay COM→NO |
-| Motor branch | 10A | Opto module | 18 AWG | Per module COM→NO |
-| ESC power input | 3A per ESC | Bus bar | 18 AWG | From auto relay bus |
-| ESC signal wire | Logic level | Jumper | 22 AWG | PWM from Mega |
+| Path | Wire Gauge | Notes |
+|------|------------|-------|
+| Battery to bus | 8 AWG | Direct connection |
+| Station 1 PTC branch | 10 AWG | 3× PTC heaters via SSR |
+| Station 2 PTC branch | 10 AWG | 3× PTC heaters via SSR |
+| Station 3 PTC branch | 10 AWG | 3× PTC heaters via SSR |
+| Motor 1 | 18 AWG | SGM-370 |
+| Motor 2 | 18 AWG | SGM-370 |
+| Motor 3 | 18 AWG | SGM-370 |
+| BLDC fan bus | 10 AWG | 9 ESCs, 18 AWG pigtails |
+| Logic feed | 20 AWG | Buck converter input |
+| Buck to Mega | 20 AWG | 5V regulated rail |
+| PTC heater branch | 10 AWG | Per SSR output→PTC heaters |
+| Motor branch | 18 AWG | Per opto module COM→NO |
+| ESC power input | 18 AWG | From fan bus SSR |
+| ESC signal wire | 22 AWG | PWM from Mega |
 
 ## 6. Wire Gauge Rationale
 
 | Run | Gauge | Rationale |
 |---|---|---|
-| Battery main + main links | 8 AWG | 50A main, <3% drop |
+| Battery main + main links | 8 AWG | 200A BMS peak, <3% drop |
 | Station PTC + fan branches | 10 AWG | 30A, short runs |
 | Motor branches | 18 AWG | <1A |
 | Logic feed | 20 AWG | <0.5A |
@@ -248,11 +216,11 @@ flowchart LR
 
 ## 7. Design Notes
 
-1. **Staged operation is mandatory.** One station draws ~36A; two stations ≈ 72A exceeds the 50A main fuse. Firmware enforces one station at a time with 30s rotation.
+1. **Staged operation is mandatory.** One station draws ~36A; two stations ≈ 72A. The BMS is rated 200A, so this is not a fuse limitation — staged operation preserves battery/BMS current budget and follows the study's energy-efficient control strategy. Firmware enforces one station at a time with 30s rotation.
 2. **PTC self-limiting.** PTC elements reduce current as temperature rises. Inrush is brief; steady-state per station ~15–20A.
 3. **No mains voltage anywhere.** Entire system is 12V DC SELV.
-4. **PTC relays are 40A automotive-grade** (not 10A PCB relays). Driven by 2N2222 NPN transistors with 10kΩ base pull-downs for boot-safety.
+4. **PTC heaters and fan bus are switched by SSR-40DD solid-state relays** (input 3–32VDC, DC output, 40A rated). Driven directly from Mega digital pins — no NPN transistors, no base resistors, no flyback diodes needed. Active HIGH = ON; no input current = OFF (boot-safe).
 5. **Motor relays use a 4-CH optocoupler module** (10A channels — more than adequate for 0.8A motors).
-6. **130°C thermal fuse per heater (9×).** Mounted in the + lead of each individual PTC heater. Rated 10A — safe for single-heater current (~8.3A).
-7. **ESC PWM protocol.** 1000–2000 µs at 50 Hz. Fan bus relay (D13) must be ON for ESCs to receive power.
+6. **No thermal fuses.** Over-temperature protection relies on PTC self-regulation and DS18B20 firmware 65 °C cutoff. Over-current protection relies on BMS 200A cutoff and PTC self-regulation. There is no hardware fuse backstop.
+7. **ESC PWM protocol.** 1000–2000 µs at 50 Hz. Fan bus SSR (D13) must be ON for ESCs to receive power.
 8. **LCD I2C is on Mega pins 20/21** (hardware I2C) — NOT A4/A5 (which are ADC on the Mega).
