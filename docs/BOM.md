@@ -74,8 +74,8 @@
 
 | Qty | Part | Notes | Price |
 |---|---|---|---|
-|| 4 | **LCTC DC-DC SSR 40A** | DC input (3-32VDC) → DC output, 40A rated; 3× PTC + 1× fan bus; direct-drive from Mega | ~₱344 ea = ~₱1,376 |
-|| 3 | **LCTC DC-DC SSR 10A** | DC input (3-32VDC) → DC output, 10A rated; motor control (replaces optocoupler module) | ~₱164 ea = ~₱492 |
+||| 4 | **Solid State Relay taxnele 40A (DC-DC)** | SSR-40DD (3-32VDC input, 5-60VDC output); 3× PTC + 1× fan bus; direct-drive from Mega | ₱239.17 ea = ₱956.68 |
+||| 3 | **Solid State Relay taxnele 10A (DC-DC)** | SSR-10DD (3-32VDC input, 5-60VDC output); motor control (replaces optocoupler module) | ₱218.22 ea = ₱654.66 |
 | 9 | **DC 12V BLDC fan module w/ ESC** | 50mm ducted, 12V, ~3.2A each — 3 fans per station wired in parallel on one ESC | ~₱470 ea = ~₱4,230 |
 | 9 | **12V 100W PTC heater element (MXKJING T30)** | Self-regulating ceramic — 3 per station | ~₱484 ea = ~₱4,356 |
 || 4 | Heatsinks for SSR-40A | ~₱50 ea | ~₱200 |
@@ -212,10 +212,10 @@ Energy per drying cycle (3 umbrellas per cycle):
 | 9 | PTC ceramic heater MXKJING T30 | 12V 100W | ₱484 ea = ₱4,356 | Lazada (LazMall) | https://www.lazada.com.ph/products/pdp-i15593670246.html |
 | 9 | BLDC fan module 50mm 12V w/ ESC | 12V ~3.2A | ₱469 ea = ₱4,221 | Lazada | search "50mm BLDC ducted fan 12V ESC" |
 | 3 | Worm gear motor SGM-370 | 12V 6RPM 14 kg·cm | ₱500 ea = ₱1,500 | makerlab.ph | https://makerlab.ph/products/dc-worm-gear-motor-sgm-370-12v-16rpm |
-|| 4 | LCTC DC-DC SSR 40A | Input 3–32VDC, DC output, 40A, heatsink required | ~₱344 ea = ~₱1,376 | Lazada | https://www.lazada.com.ph/products/pdp-i5107319917-s30094632906.html |
-|| 4 | Heatsinks for SSR-40A | For ~25W dissipation per SSR | ~₱50 ea = ~₱200 | Lazada | search "SSR heatsink" |
-|| 3 | LCTC DC-DC SSR 10A | Input 3–32VDC, DC output, 10A | ~₱164 ea = ~₱492 | Lazada | same seller, select 10A variant |
-| 1 | LM2596S buck converter | 12V→5V | ₱49 | Makerlab PH | — |
+||| 4 | Solid State Relay taxnele 40A (DC-DC) | SSR-40DD (3-32VDC input, 5-60VDC output) | ₱239.17 ea = ₱956.68 | Lazada | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
+||| 4 | SSR Heatsink BLACK (Makerlab) | BLACK 10A to 40A (Size: 80x50x50mm) | ₱110 ea = ₱440 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/ssr-heatsink-black-10a-to-40a-size80x50x50mm-ssr-heatsink-m-shape-small-type-heat-radiator-for-10a-to100a-size125x50x70mm-i3585835660-s18544712824.html |
+||| 3 | Solid State Relay taxnele 10A (DC-DC) | SSR-10DD (3-32VDC input, 5-60VDC output) | ₱218.22 ea = ₱654.66 | Lazada | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
+|| 1 | LM2596S Buck Converter (w/ display) | 12V→5V with 7-segment voltmeter display | ₱155 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i127879071-s137114729.html |
 | 1 | Arduino Mega 2560 + USB | CH340G | ₱1,165 | Makerlab PH | — |
 | 1 | DHT22 module | humidity | ₱210 | Makerlab PH | — |
 | 1 | DS18B20 waterproof probe | temp | ₱105 | Lazada | — |
@@ -242,13 +242,13 @@ Energy per drying cycle (3 umbrellas per cycle):
 ## 10. Cost summary
 
 | Category | Estimate |
-||---|---|
-|| PTC heaters (9×₱484) | ≈ ₱4,356 |
-|| BLDC fans + ESCs (9×₱469) | ≈ ₱4,221 |
-|| Motors + shafts + bearings + couplings | ≈ ₱3,028 |
-|| LCTC DC-DC SSR 40A (4×₱344) + SSR 10A (3×₱164) + heatsinks | ≈ ₱2,068 |
-|| Control electronics (Mega, sensors, LCD, buck) | ≈ ₱1,589 |
-|| Battery (1× 200Ah) + charger | ≈ ₱10,900–11,600 |
-|| UI (LEDs, buzzer, button) | ≈ ₱109 |
-|| Wiring, connectors, consumables | ≈ ₱1,500–1,900 |
-|| **TOTAL** | **≈ ₱27,600–28,100** |
+|---|---|
+| PTC heaters (9×₱484) | ≈ ₱4,356 |
+| BLDC fans + ESCs (9×₱469) | ≈ ₱4,221 |
+| Motors + shafts + bearings + couplings | ≈ ₱2,728 |
+| taxnele SSR 40A (4×₱239) + SSR 10A (3×₱218) + SSR Heatsink BLACK | ≈ ₱2,051 |
+| Control electronics (Mega, sensors, LCD, buck) | ≈ ₱1,800 |
+| Battery (1× 200Ah) + charger | ≈ ₱10,900–11,600 |
+| UI (LEDs, buzzer, button) | ≈ ₱109 |
+| Wiring, connectors, consumables | ≈ ₱1,500–1,900 |
+| **TOTAL** | **≈ ₱28,900–29,100** |

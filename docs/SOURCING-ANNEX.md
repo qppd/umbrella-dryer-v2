@@ -74,10 +74,10 @@
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
-| 4 | **SSR-40DD DC-output solid-state relay (40A)** | ~₱200 ea = ~₱800 EST | Lazada | search "SSR-40DD 40A DC output" — VERIFY PRICE |
-| 4 | Heatsinks for SSR-40DD | ~₱50 ea = ~₱200 | Lazada | search "SSR heatsink" |
-| 1 | **4-CH optocoupler relay module (10A @ 30VDC)** | ~₱200 | Lazada | search "4 channel relay module 12V optocoupler" |
-| 1 | **Screw terminal 2-pin** | ₱10 | Lazada | — |
+||| 4 | **Solid State Relay taxnele 40A (DC-DC)** — SSR-40DD | ₱239.17 ea = ₱956.68 | Lazada (taxnele) | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
+||| 4 | **SSR Heatsink BLACK (Makerlab)** — 10A to 40A (80x50x50mm) | ₱110 ea = ₱440 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/ssr-heatsink-black-10a-to-40a-size80x50x50mm-ssr-heatsink-m-shape-small-type-heat-radiator-for-10a-to100a-size125x50x70mm-i3585835660-s18544712824.html |
+||| 3 | **Solid State Relay taxnele 10A (DC-DC)** — SSR-10DD | ₱218.22 ea = ₱654.66 | Lazada (taxnele) | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
+|| 1 | **LM2596S Buck Converter (w/ display)** — 12V→5V, 7-segment voltmeter | ₱155 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i127879071-s137114729.html |
 
 > **Important:** SSR-40DD must be **DC-output** type (input 3–32VDC, DC output). Do NOT buy the AC-output 'DA' type. The SSRs are driven directly from Mega pins (D4/D6/D8 for PTC, D13 for fan bus).
 
@@ -132,13 +132,13 @@
 | BLDC fans + ESCs (9×₱469) | ≈ ₱4,221 |
 | Motors + couplings (makerlab) | ≈ ₱1,749 |
 | Bearings + shafts (Lazada) | ≈ ₱1,062 |
-| Control electronics (Lazada) | ≈ ₱1,589 |
-| SSRs + opto module + heatsinks + terminals | ≈ ₱1,210 |
+| Control electronics (Lazada) | ≈ ₱1,800 |
+| SSRs (taxnele) + heatsinks + terminals | ≈ ₱2,051 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
 | Wiring + consumables (Lazada) | ≈ ₱1,346 |
 | Battery (1× 200Ah) + charger | ≈ ₱10,900–11,600 |
 | Hardware store consumables | ≈ ₱490 |
-| **GRAND TOTAL** | **≈ ₱27,000–28,000** |
+| **GRAND TOTAL** | **≈ ₱28,900–29,100** |
 
 ---
 
