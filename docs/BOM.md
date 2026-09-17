@@ -1,6 +1,6 @@
 # Umbrella Dryer V2 — Bill of Materials
 
-> **Design:** 12V DC-only system. Each umbrella station has 3× PTC heaters (100W each), 3× BLDC fans, and 1× worm gear motor. Battery-powered with **1× 200Ah LiFePO4**. **DC-output SSR-40DD** control PTC heaters (direct-drive from Mega), **optocoupler module** controls worm motors, **ESC PWM** controls BLDC fans.
+| Design: | 12V DC-only system. Each umbrella station has 3× PTC heaters (100W each), 3× AVC 12V 4.5A blowers (PWM-controlled directly from Mega), and 1× worm gear motor. Battery-powered with **1× 200Ah LiFePO4**. **DC-output SSR-40DD** control PTC heaters (direct-drive from Mega), **LCTC DC-DC SSR 10A** controls worm motors (replaces optocoupler module), **Mega PWM** controls AVC blowers.
 
 ---
 
@@ -38,27 +38,27 @@
 
 ### 3c. High-current switching (12V DC)
 
-| Channel | Pin | Relay type | Load | Current | Active level |
+| Channel | Pin | SSR type | Load | Current | Active level |
 |---|---|---|---|---|---|
 | PTC Station 1 | D4 | LCTC DC-DC SSR 40A (DC output) | 3× PTC heaters | ~25A | HIGH = ON |
-|| Motor Station 1 | D5 | LCTC DC-DC SSR 10A (DC output) | SGM-370 | ~0.8A | HIGH = ON |
-|| PTC Station 2 | D6 | LCTC DC-DC SSR 40A (DC output) | 3× PTC heaters | ~25A | HIGH = ON |
-|| Motor Station 2 | D7 | LCTC DC-DC SSR 10A (DC output) | SGM-370 | ~0.8A | HIGH = ON |
-|| PTC Station 3 | D8 | LCTC DC-DC SSR 40A (DC output) | 3× PTC heaters | ~25A | HIGH = ON |
-|| Motor Station 3 | D9 | LCTC DC-DC SSR 10A (DC output) | SGM-370 | ~0.8A | HIGH = ON |
-|| Fan bus | D13 | LCTC DC-DC SSR 40A (DC output) | 9× ESCs (all fans) | ~28.8A | HIGH = ON |
+| Motor Station 1 | D5 | LCTC DC-DC SSR 10A (DC output) | SGM-370 | ~0.8A | HIGH = ON |
+| PTC Station 2 | D6 | LCTC DC-DC SSR 40A (DC output) | 3× PTC heaters | ~25A | HIGH = ON |
+| Motor Station 2 | D7 | LCTC DC-DC SSR 10A (DC output) | SGM-370 | ~0.8A | HIGH = ON |
+| PTC Station 3 | D8 | LCTC DC-DC SSR 40A (DC output) | 3× PTC heaters | ~25A | HIGH = ON |
+| Motor Station 3 | D9 | LCTC DC-DC SSR 10A (DC output) | SGM-370 | ~0.8A | HIGH = ON |
+| Fan bus | D13 | LCTC DC-DC SSR 40A (DC output) | 9× AVC blowers | ~40.5A | HIGH = ON |
 
-> **SSR direct drive:** All LCTC DC-DC SSR inputs connect directly to Mega pins. SSR input draws ≈10–20 mA at 5V — fine for direct drive. No additional components needed. Each SSR requires a heatsink (40A version: ~25W dissipation at 25A). Motor SSRs (10A): minimal dissipation at 0.8A.
+> **SSR direct drive:** All LCTC DC-DC SSR inputs connect directly to Mega pins. SSR input draws ≈10–20 mA at 5V — fine for direct drive. No additional components needed. Each SSR requires a heatsink (40A version: ~25W dissipation at 25A; fan bus at 40.5A: ~40W dissipation). Motor SSRs (10A): minimal dissipation at 0.8A.
 
-### 3d. BLDC fan control — ESCs
+### 3d. Fan PWM control — AVC blowers
 
-| Channel | ESC Signal Pin | Function | ESC Input |
-|---|---|---|---|
-| ESC 1 | D10 | Station 1 BLDC fans (3 in parallel) | 12V from fan bus SSR |
-| ESC 2 | D11 | Station 2 BLDC fans (3 in parallel) | 12V from fan bus SSR |
-| ESC 3 | D12 | Station 3 BLDC fans (3 in parallel) | 12V from fan bus SSR |
+| Channel | Pin | Function | Load | Speed control |
+|---|---|---|---|---|
+| Fans Station 1 | D10 | PWM signal | 3× AVC blowers (parallel) | `analogWrite(D10, val)` 0–255 |
+| Fans Station 2 | D11 | PWM signal | 3× AVC blowers (parallel) | `analogWrite(D11, val)` 0–255 |
+| Fans Station 3 | D12 | PWM signal | 3× AVC blowers (parallel) | `analogWrite(D12, val)` 0–255 |
 
-> ESCs must be armed on startup (write 1000 µs for 2s, then throttle position). Use the Servo library for PWM generation.
+> AVC blowers accept PWM duty cycle directly from Mega pins (5V logic). No ESC needed. Full speed = analogWrite(D, 255). Each blower draws 4.5A at full speed.
 
 ### 3e. Safety (12V DC)
 
@@ -75,8 +75,8 @@
 | Qty | Part | Notes | Price |
 |---|---|---|---|
 ||| 4 | **Solid State Relay taxnele 40A (DC-DC)** | SSR-40DD (3-32VDC input, 5-60VDC output); 3× PTC + 1× fan bus; direct-drive from Mega | ₱239.17 ea = ₱956.68 |
-||| 3 | **Solid State Relay taxnele 10A (DC-DC)** | SSR-10DD (3-32VDC input, 5-60VDC output); motor control (replaces optocoupler module) | ₱218.22 ea = ₱654.66 |
-| 9 | **DC 12V BLDC fan module w/ ESC** | 50mm ducted, 12V, ~3.2A each — 3 fans per station wired in parallel on one ESC | ~₱470 ea = ~₱4,230 |
+|||| 3 | **Solid State Relay taxnele 10A (DC-DC)** | SSR-10DD (3-32VDC input, 5-60VDC output); motor control (replaces optocoupler module) | ₱218.22 ea = ₱654.66 |
+|| 9 | **AVC 12V DC blower fan** | Super High Speed Blower, 80×80×38mm, PWM control, ball bearing, 4.5A each | ₱330 ea = ₱2,970 |
 | 9 | **12V 100W PTC heater element (MXKJING T30)** | Self-regulating ceramic — 3 per station | ~₱484 ea = ~₱4,356 |
 || 4 | Heatsinks for SSR-40A | ~₱50 ea | ~₱200 |
 | 1 | 16×2 I2C LCD | UI display | ₱165 |
@@ -123,10 +123,10 @@ Mechanical: 3× 6mm × 300mm 304 SS shafts · 6× KP08 pillow block bearings · 
 | Subsystem | Voltage | Current (one station) | Protection |
 |---|---|---|---|
 | PTC heaters (3× 100W) | 12V | 25A | BMS 200A + PTC self-regulation |
-| BLDC fans (3× 3.2A) | 12V | 9.6A | BMS 200A |
+| BLDC fans (3× 4.5A) | 12V | 13.5A | BMS 200A |
 | Worm motor | 12V | 0.8A | BMS 200A |
 | Mega + sensors | 5V | 0.1A | BMS 200A |
-| **Total (one station)** | | **~36A** | **BMS 200A** |
+| **Total (one station)** | | **~39.3A** | **BMS 200A** |
 
 ### 7d. Battery runtime — 1× 200Ah LiFePO4
 
@@ -138,8 +138,8 @@ Load profile (staged, one station at a time):
 
 | Phase | Draw | Notes |
 |---|---|---|
-| PREHEAT / DRY (active station) | ~35.5A | 3 PTC (25A) + 3 fans full (9.6A) + motor (0.2A) + logic (0.4A) + idle ESCs (0.3A) |
-| COOL | ~10.3A | Fans only |
+| PREHEAT / DRY (active station) | ~38.8A | 3 PTC (25A) + 3 blowers (13.5A) + motor (0.8A) + logic (0.5A) |
+| COOL | ~13.5A | Blowes only |
 | Standby | ~0.5A | Sensors + LCD |
 
 Energy per drying cycle (3 umbrellas per cycle):
@@ -158,7 +158,7 @@ Energy per drying cycle (3 umbrellas per cycle):
 |---|---|
 | Quick cycles | ≈ **9.6 cycles (~29 umbrellas)** per charge |
 | Standard cycles | ≈ **4.4 cycles (~13 umbrellas)** per charge |
-| Continuous staged operation | ≈ **4.1 hours** (144 Ah ÷ 35.5A) |
+| Continuous staged operation | ≈ **3.7 hours** (144 Ah ÷ 38.8A) |
 | Standby | ≈ 12 days (144 Ah ÷ 0.5A) |
 
 **Capacity requirement vs daily scenarios:**
@@ -210,31 +210,32 @@ Energy per drying cycle (3 umbrellas per cycle):
 | Qty | Part | Spec | Price | Seller | URL / note |
 |---|---|---|---|---|---|
 | 9 | PTC ceramic heater MXKJING T30 | 12V 100W | ₱484 ea = ₱4,356 | Lazada (LazMall) | https://www.lazada.com.ph/products/pdp-i15593670246.html |
-| 9 | BLDC fan module 50mm 12V w/ ESC | 12V ~3.2A | ₱469 ea = ₱4,221 | Lazada | search "50mm BLDC ducted fan 12V ESC" |
+| 9 | **AVC 12V DC blower fan** | Super High Speed Blower, 80×80×38mm, PWM control, 4.5A | ₱330 ea = ₱2,970 | Lazada | https://www.lazada.com.ph/products/pdp-i2328323489.html |
 | 3 | Worm gear motor SGM-370 | 12V 6RPM 14 kg·cm | ₱500 ea = ₱1,500 | makerlab.ph | https://makerlab.ph/products/dc-worm-gear-motor-sgm-370-12v-16rpm |
-||| 4 | Solid State Relay taxnele 40A (DC-DC) | SSR-40DD (3-32VDC input, 5-60VDC output) | ₱239.17 ea = ₱956.68 | Lazada | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
-||| 4 | SSR Heatsink BLACK (Makerlab) | BLACK 10A to 40A (Size: 80x50x50mm) | ₱110 ea = ₱440 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/ssr-heatsink-black-10a-to-40a-size80x50x50mm-ssr-heatsink-m-shape-small-type-heat-radiator-for-10a-to100a-size125x50x70mm-i3585835660-s18544712824.html |
-||| 3 | Solid State Relay taxnele 10A (DC-DC) | SSR-10DD (3-32VDC input, 5-60VDC output) | ₱218.22 ea = ₱654.66 | Lazada | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
-|| 1 | LM2596S Buck Converter (w/ display) | 12V→5V with 7-segment voltmeter display | ₱155 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i127879071-s137114729.html |
-| 1 | Arduino Mega 2560 + USB | CH340G | ₱1,165 | Makerlab PH | — |
-| 1 | DHT22 module | humidity | ₱210 | Makerlab PH | — |
-| 1 | DS18B20 waterproof probe | temp | ₱105 | Lazada | — |
-| 1 | LCD 16×2 I2C | display | ₱165 | Lazada | — |
-| 3 | 304 SS shaft 6mm × 300mm | — | ~₱180 ea = ~₱540 | Lazada | — |
-| 6 | KP08 pillow block 6mm bore | — | ₱87 ea = ₱522 | Lazada | — |
-| 2 | Rigid coupling 6×8mm | — | ₱82.84 ea = ~₱166 | Lazada | — |
-| 1 | LED 5mm (R/Y/G) | status | ₱29 | Lazada | — |
-| 1 | Active buzzer 5V | alarm | ₱35 | Lazada | — |
-| 1 | Arcade LED push button 5V | start | ₱45 | Circuitrocks | — |
-| 1 | Silicone wire kit 6–18AWG | gauges | ₱218 | Lazada | — |
-| 1 | Dupont jumper kit 40-pin | logic | ₱45 | Circuitrocks | — |
-| 1 | Terminal block 15A barrier | Existing terminal block (unchanged) | ₱106 | Lazada | — |
-| 2 | 10-Terminal Bus Bar 150A (Copper) | Main 12V (+ & -) bus rails | ~₱350 ea = ₱700 | Lazada | https://www.lazada.com.ph/products/814-terminal-bus-bar-150a-high-current-dc-busbar-12-48v-copper-power-distribution-terminal-block-for-car-boat-i5119401028-s30216194181.html |
-| 1 | Heat-shrink tube kit | insulation | ₱111 | Lazada | — |
-| 1 | 1/4W resistor kit | pull-ups | ₱69 | Lazada | — |
-| 1 | Aluminum plate 6061 6mm | motor plate | ₱760 | Lazada | — |
-| 1 | LiFePO4 12.8V 200Ah w/ BMS 200A | battery | ~₱8,900 | Lazada (PowMr) | — |
-| 1 | LiFePO4 charger 14.6V 20A | recharge | ~₱2,000–2,700 | Lazada | — |
+| 4 | Solid State Relay taxnele 40A (DC-DC) | SSR-40DD (3-32VDC input, 5-60VDC output) | ₱239.17 ea = ₱956.68 | Lazada | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
+| 4 | SSR Heatsink BLACK (Makerlab) | BLACK 10A to 40A (Size: 80x50x50mm) | ₱110 ea = ₱440 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/ssr-heatsink-black-10a-to-40a-size80x50x50mm-ssr-heatsink-m-shape-small-type-heat-radiator-for-10a-to100a-size125x50x70mm-i3585835660-s18544712824.html |
+| 3 | Solid State Relay taxnele 10A (DC-DC) | SSR-10DD (3-32VDC input, 5-60VDC output) | ₱218.22 ea = ₱654.66 | Lazada | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
+| 1 | LM2596S Buck Converter (w/ display) | 12V→5V with 7-segment voltmeter display | ₱155 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i127879071-s137114729.html |
+| 1 | **Arduino Mega 2560 + Terminal Board** | CH340G + screw terminal board | ₱413 | Lazada | https://www.lazada.com.ph/products/mega-2560-16au-ch340g-based-on-arduino-arduino-mega-2560-terminal-board-i123143829-s20504057319.html |
+| 1 | **DHT22 sensor module** | humidity + temp, 3-pin | ₱220 | Lazada | https://www.lazada.com.ph/products/pdp-i132179919.html |
+| 1 | **DS18B20 temperature sensor module** | LEOOYI, 3-pin cable + pluggable terminal adapter | ₱141 | Lazada | https://www.lazada.com.ph/products/pdp-i4398946755-s24721782197.html |
+| 1 | LCD 16×2 I2C | display | ₱165 | Lazada | https://www.lazada.com.ph/products/pdp-i3934869498.html |
+| 3 | 304 SS shaft 6mm × 300mm | — | ~₱180 ea = ~₱540 | Lazada | https://www.lazada.com.ph/catalog/?q=304+stainless+steel+rod+6mm+300mm |
+| 6 | KP08 pillow block 6mm bore | — | ₱87 ea = ₱522 | Lazada | https://www.lazada.com.ph/catalog/?q=kp08+pillow+block+bearing+6mm |
+| 2 | Rigid coupling 6×8mm | — | ₱82.84 ea = ~₱166 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
+| 1 | LED 5mm (R/Y/G) | status | ₱29 | Lazada | https://www.lazada.com.ph/products/pdp-i2573601435.html |
+| 1 | Active buzzer 5V | alarm | ₱35 | Lazada | https://www.lazada.com.ph/products/pdp-i4472196293.html |
+| 1 | Arcade LED push button 5V | start | ₱45 | Circuitrocks | https://www.lazada.com.ph/products/i343850766.html |
+| 1 | Silicone wire kit 6–18AWG | gauges | ₱218 | Lazada | https://www.lazada.com.ph/products/pdp-i4880482146.html |
+| 1 | Dupont jumper kit 40-pin | logic | ₱45 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
+| 1 | Terminal block 15A barrier | Existing terminal block (unchanged) | ₱106 | Lazada | https://www.lazada.com.ph/products/pdp-i2818578034.html |
+| 2 | 10-Terminal Bus Bar 150A (Copper) | Main 12V (+ & -) bus rails | ~₱120 ea = ₱240 | Lazada | https://www.lazada.com.ph/products/814-terminal-bus-bar-150a-high-current-dc-busbar-12-48v-copper-power-distribution-terminal-block-for-car-boat-i5119401028-s30216194181.html |
+| 1 | Heat-shrink tube kit | insulation | ₱111 | Lazada | https://www.lazada.com.ph/products/pdp-i2569065087.html |
+| 1 | 1/4W resistor kit | pull-ups | ₱69 | Lazada | https://www.lazada.com.ph/products/pdp-i2501387387.html |
+| 1 | Nylon standoff kit | — | ₱97 | Lazada | https://www.lazada.com.ph/products/pdp-i2946710217.html |
+| 1 | Aluminum plate 6061 6mm | motor plate + mounts | ₱760 | Lazada | https://www.lazada.com.ph/products/pdp-i4449859085.html |
+| 1 | LiFePO4 12.8V 200Ah w/ BMS 200A | battery | ~₱8,900 | Lazada (PowMr) | https://h5.lazada.com.ph/products/powmr-12v-200ah-lifepo4-battery-lithium-battery-built-in-bms-6000-deep-cycles-rechargeable-solar-battery-i5047514166.html |
+| 1 | LiFePO4 charger 14.6V 20A | recharge | ~₱2,000–2,700 | Lazada | https://www.lazada.com.ph/tag/lifepo4-charger-20a/ |
 | 1 | Zip ties, screws, sealant, grommets | consumables | ~₱490 | hardware | — |
 
 ---
@@ -244,11 +245,11 @@ Energy per drying cycle (3 umbrellas per cycle):
 | Category | Estimate |
 |---|---|
 | PTC heaters (9×₱484) | ≈ ₱4,356 |
-| BLDC fans + ESCs (9×₱469) | ≈ ₱4,221 |
+| AVC blowers (9×₱330) | ≈ ₱2,970 |
 | Motors + shafts + bearings + couplings | ≈ ₱2,728 |
 | taxnele SSR 40A (4×₱239) + SSR 10A (3×₱218) + SSR Heatsink BLACK | ≈ ₱2,051 |
-| Control electronics (Mega, sensors, LCD, buck) | ≈ ₱1,800 |
+| Control electronics (Mega w/ terminal board ₱413, DHT22 ₱220, DS18B20 ₱141, LCD ₱165, LM2596S ₱155) | ≈ ₱1,094 |
 | Battery (1× 200Ah) + charger | ≈ ₱10,900–11,600 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
 | Wiring, connectors, consumables | ≈ ₱1,500–1,900 |
-| **TOTAL** | **≈ ₱28,900–29,100** |
+| **TOTAL** | **≈ ₱27,600–27,800** |

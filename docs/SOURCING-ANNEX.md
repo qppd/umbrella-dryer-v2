@@ -8,7 +8,7 @@
 
 1. **Battery first** — longest lead time (PowMr from Lazada)
 2. **MakeLAB.PH** — motor + couplings (local, fast shipping)
-3. **Lazada** — everything else (electronics, PTC heaters, BLDC fans, wiring)
+3. **Lazada** — everything else (electronics, PTC heaters, blowers, wiring)
 4. **Hardware store** — consumables (screws, zip ties, sealant)
 
 ---
@@ -25,15 +25,14 @@
 
 > **Important:** At checkout, select the **12V 100W** variant. Some listings offer 220V — do NOT pick that. LazMall seller with 95% rating.
 
-### 2b. Fans (BLDC ducted fan modules with ESC)
+### 2b. Fans (AVC blowers)
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
-| 9 | RC Waterproof Cooling Fan Motor ESC 50mm 12V (ducted, brushless, ESC included) | ₱469 ea = ₱4,221 | Lazada | Search "50mm BLDC ducted fan 12V ESC" → https://www.lazada.com.ph/catalog/?q=50mm+BLDC+ducted+fan+12V+ESC |
+| 9 | AVC Super High Speed Blower DC 12V 4.5A, 80×80×38mm | ₱330 ea = ₱2,970 | Lazada | https://www.lazada.com.ph/products/pdp-i2328323489.html |
 
-> **Pick variant:** 50mm, 12V, with ESC. The listing shows 25/30/35/40/45/50mm options — select **50mm**.
-
-> **Physical store fallback:** If online unavailable, check **e-Gizmo** (Manila) or **Rep Asia** for BLDC motor + ESC combos.
+> **Pick variant:** 12V 4.5A, 80mm. PWM-controlled directly from Mega. No ESC needed.
+> **Physical store fallback:** If online unavailable, check **e-Gizmo** (Manila) or **Rep Asia** for similar blower fans.
 
 ### 2c. Motors + drivetrain (makerlab.ph)
 
@@ -64,22 +63,22 @@
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
-| 1 | Arduino Mega 2560 + USB cable (CH340G) | ₱1,165 | Makerlab PH | https://www.lazada.com.ph/products/pdp-i5989151-s15092061710.html |
-| 1 | DHT22 sensor module (black) | ₱210 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i132179919-s144637867.html |
-| 1 | DS18B20 waterproof probe (temp) | ₱105 | Lazada | https://www.lazada.com.ph/products/pdp-i3864018549.html |
+| 1 | Arduino Mega 2560 + Terminal Board (CH340G) | ₱413 | Lazada | https://www.lazada.com.ph/products/mega-2560-16au-ch340g-based-on-arduino-arduino-mega-2560-terminal-board-i123143829-s20504057319.html |
+| 1 | DHT22 sensor module | ₱220 | Lazada | https://www.lazada.com.ph/products/pdp-i132179919.html |
+| 1 | DS18B20 temperature sensor module + terminal adapter + 3-pin cable (LEOOYI) | ₱141 | Lazada | https://www.lazada.com.ph/products/pdp-i4398946755-s24721782197.html |
 | 1 | LCD 16×2 I2C (black on white) | ₱165 | Lazada | https://www.lazada.com.ph/products/pdp-i3934869498.html |
-| 1 | LM2596S DC-DC buck converter 12V→5V | ₱49 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i6005010-s7605914.html |
+| 1 | LM2596S DC-DC buck converter with 7-segment display | ₱155 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i127879071-s137114729.html |
 
 ### 2g. SSRs, drivers, and modules (Lazada)
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
-||| 4 | **Solid State Relay taxnele 40A (DC-DC)** — SSR-40DD | ₱239.17 ea = ₱956.68 | Lazada (taxnele) | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
-||| 4 | **SSR Heatsink BLACK (Makerlab)** — 10A to 40A (80x50x50mm) | ₱110 ea = ₱440 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/ssr-heatsink-black-10a-to-40a-size80x50x50mm-ssr-heatsink-m-shape-small-type-heat-radiator-for-10a-to100a-size125x50x70mm-i3585835660-s18544712824.html |
-||| 3 | **Solid State Relay taxnele 10A (DC-DC)** — SSR-10DD | ₱218.22 ea = ₱654.66 | Lazada (taxnele) | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
-|| 1 | **LM2596S Buck Converter (w/ display)** — 12V→5V, 7-segment voltmeter | ₱155 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i127879071-s137114729.html |
+| 4 | **Solid State Relay taxnele 40A (DC-DC)** — SSR-40DD | ₱239.17 ea = ₱956.68 | Lazada (taxnele) | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
+| 3 | **Solid State Relay taxnele 10A (DC-DC)** — SSR-10DD | ₱218.22 ea = ₱654.66 | Lazada (taxnele) | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
+| 4 | **SSR Heatsink BLACK (Makerlab)** — 10A to 40A (80x50x50mm) | ₱110 ea = ₱440 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/ssr-heatsink-black-10a-to-40a-size80x50x50mm-ssr-heatsink-m-shape-small-type-heat-radiator-for-10a-to100a-size125x50x70mm-i3585835660-s18544712824.html |
 
 > **Important:** SSR-40DD must be **DC-output** type (input 3–32VDC, DC output). Do NOT buy the AC-output 'DA' type. The SSRs are driven directly from Mega pins (D4/D6/D8 for PTC, D13 for fan bus).
+> **Heatsink requirement:** 40A SSR at 25A draws ~25W dissipation. 40A SSR at fan bus (40.5A) draws ~40W — use larger heatsink or ensure good airflow.
 
 ### 2h. UI components (Lazada)
 
@@ -96,7 +95,7 @@
 | 1 | Silicone wire kit 6–18AWG | ₱218 | Lazada | https://www.lazada.com.ph/products/pdp-i4880482146.html |
 | 1 | Dupont jumper kit 40-pin | ₱45 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
 | 1 | Terminal block 15A barrier strip | ₱106 | Lazada | https://www.lazada.com.ph/products/pdp-i2818578034.html |
-| 2 | 10-Terminal Bus Bar 150A (Copper) | ~₱350 ea = ₱700 | Lazada | https://www.lazada.com.ph/products/814-terminal-bus-bar-150a-high-current-dc-busbar-12-48v-copper-power-distribution-terminal-block-for-car-boat-i5119401028-s30216194181.html |
+| 2 | 10-Terminal Bus Bar 150A (Copper) | ~₱120 ea = ₱240 | Lazada | https://www.lazada.com.ph/products/814-terminal-bus-bar-150a-high-current-dc-busbar-12-48v-copper-power-distribution-terminal-block-for-car-boat-i5119401028-s30216194181.html |
 | 1 | Heat-shrink tube kit | ₱111 | Lazada | https://www.lazada.com.ph/products/pdp-i2569065087.html |
 | 1 | 1/4W resistor kit | ₱69 | Lazada | https://www.lazada.com.ph/products/pdp-i2501387387.html |
 | 1 | Nylon standoff kit | ₱97 | Lazada | https://www.lazada.com.ph/products/pdp-i2946710217.html |
@@ -129,16 +128,16 @@
 | Category | Total |
 |---|---|
 | PTC heaters (9×₱484) | ≈ ₱4,356 |
-| BLDC fans + ESCs (9×₱469) | ≈ ₱4,221 |
+| AVC blowers (9×₱330) | ≈ ₱2,970 |
 | Motors + couplings (makerlab) | ≈ ₱1,749 |
 | Bearings + shafts (Lazada) | ≈ ₱1,062 |
-| Control electronics (Lazada) | ≈ ₱1,800 |
+| Control electronics (Lazada) | ≈ ₱1,984 |
 | SSRs (taxnele) + heatsinks + terminals | ≈ ₱2,051 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
-| Wiring + consumables (Lazada) | ≈ ₱1,346 |
+| Wiring + consumables (Lazada) | ≈ ₱1,476 |
 | Battery (1× 200Ah) + charger | ≈ ₱10,900–11,600 |
 | Hardware store consumables | ≈ ₱490 |
-| **GRAND TOTAL** | **≈ ₱28,900–29,100** |
+| **GRAND TOTAL** | **≈ ₱27,600–27,800** |
 
 ---
 
@@ -146,8 +145,7 @@
 
 | Item | Physical store | Location |
 |---|---|---|
-| BLDC fan + ESC | e-Gizmo Mechatronics | Tomas Morato, QC |
-| BLDC fan + ESC | Rep Asia | Quezon Ave, QC |
+| AVC blower fans | e-Gizmo Mechatronics | Tomas Morato, QC |
 | KP08 pillow blocks | Kuan Kee Hardware | Manila |
 | Steel shafts | Manila Trading (steel) | Various |
 | Arduino + sensors | e-Gizmo / Circuitrocks | QC / Online |
@@ -160,17 +158,19 @@
 | Item | Pick this | NOT this |
 |---|---|---|
 | PTC heater | 12V 100W MXKJING T30 | 220V (wrong!) |
-| BLDC fan | 50mm with ESC | Bare motor only |
+| Blower fan | AVC 12V 4.5A, 80mm, PWM | BLDC with ESC (different control) |
 | Pillow block | KP08, 6mm bore | KP08, 8mm bore |
 | Shaft | 6mm × 300mm SS | 8mm (wrong) |
 | Coupling | 6×8mm rigid | Other sizes |
 | PTC relay | **SSR-40DD DC-output 40A** | 40A automotive relay (has moving parts, needs NPN driver) |
 | PTC relay | **DC-output** (3–32VDC input, DC output) | AC-output (DA type) |
-| Motor relay module | **4-CH optocoupler 10A** | 40A auto (overkill for 0.8A motor) |
+| Motor relay | **SSR-10DD DC-output 10A** | 40A auto (overkill for 0.8A motor) |
 | Main protection | **No fuses** — BMS + firmware cutoff only | Any fuses (removed per no-fuse design) |
 | Battery | LiFePO4 12.8V 200Ah | Lead-acid (too heavy) |
 | Charger | LiFePO4 14.6V 20A | Lead-acid charger (wrong!) |
-| DHT22 | Black module | Blue (less accurate) |
+| DHT22 | Module (black) | Blue (less accurate) |
+| DS18B20 | Module + terminal adapter + 3-pin cable | Waterproof probe (harder to wire) |
+| Mega | With terminal board | Bare board (more wiring work) |
 
 ---
 
@@ -183,4 +183,6 @@ The no-fuse SSR build removes all fuses (50A ANL, 30A blade, 3A blade, 130°C th
 - Over-temperature: DS18B20 firmware cutoff at 65°C + PTC self-regulation
 - Boot-safe: SSRs are active-HIGH (floating pin = OFF)
 
-**SSR-40DD sourcing note:** These are DC-output solid-state relays with 40A rating. They require heatsinks due to ~1W/A dissipation (~25W per PTC SSR at 25A). The price estimate (~₱200 each) should be verified on Lazada — prices may vary.
+**SSR-40DD sourcing note:** These are DC-output solid-state relays with 40A rating. They require heatsinks due to ~1W/A dissipation (~25W per PTC SSR at 25A, ~40W per fan bus SSR at 40.5A). The price estimate (~₱200 each) should be verified on Lazada — prices may vary.
+
+**Fan bus SSR rating note:** The fan bus SSR-40DD handles 40.5A (9 × 4.5A). This is at the upper limit of the 40A rating. Ensure the heatsink is properly mounted with thermal paste, and consider that under sustained full load the SSR may approach its maximum dissipation. The SSR-40DD has a 40A rating at 25°C ambient — derating may be needed at higher temperatures.

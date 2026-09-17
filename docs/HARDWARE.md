@@ -122,19 +122,18 @@ graph TB
 | Serial | USB + Serial0 (pins 0/1), 115200 debug | Keep 0/1 free during development |
 | I2C | Hardware pins **20 (SDA) / 21 (SCL)** | NOT A4/A5 — those are ADC on the Mega |
 
-### BLDC ducted fan modules — 9× 50 mm (3 per station)
+### AVC DC blower fans — 9× 80mm (3 per station)
 
 | Spec | Value | Note |
 |---|---|---|
-| Type | 50 mm ducted fan with integrated ESC | One wire harness: red = 12V, black = GND, white = PWM |
+| Type | AVC Super High Speed Blower DC, 12V, 4.5A | 80×80×38mm, 5 blades, ball bearing, PWM control |
 | Rated voltage | 12V DC | Direct from the 12V fan power bus |
-| Current draw | ~3.2A each @ full speed | ~0.6A idle/low-speed |
-| PWM control | 1000–2000 µs pulse, 50 Hz | `Servo.writeMicroseconds()` via `Servo.h` |
-| Speed range | 1000 µs = stop → 2000 µs = full RPM | Use 1100–1900 µs for safe operating window |
-| Role | Forced convection — pushes heated air across the wet canopy | 3 fans per station for even airflow coverage |
+| Current draw | 4.5A each @ full speed | 3 per station = 13.5A per station |
+| PWM control | `analogWrite()` 0–255 from Mega | 5V logic compatible; no ESC needed |
+| Control pins | D10 (station 1), D11 (station 2), D12 (station 3) | 3 leads per pin (parallel signal wires) |
+| Role | Forced convection — pushes heated air across the wet canopy | 3 blowers per station for even airflow coverage |
 
-> **ESC arming:** Write `esc.writeMicroseconds(1000)` in `setup()` with a 2 s delay before
-> allowing speed changes. Fan bus SSR (D13) must be ON during arming to power the ESCs.
+> **PWM control:** Use `analogWrite(pin, value)` where `value` is 0–255. No Servo library needed. The fan bus SSR (D13) must be ON for the blowers to receive power. Full speed = `analogWrite(D, 255)`.
 
 ### PTC ceramic heaters — 9× 12V 100W (3 per station)
 
@@ -170,11 +169,9 @@ graph TB
 || Station 1 PTC | LCTC DC-DC SSR 40A (DC output) | 40A, input 3–32VDC | D4 direct | 3× PTC heaters | ~25A |
 || Station 2 PTC | LCTC DC-DC SSR 40A (DC output) | 40A, input 3–32VDC | D6 direct | 3× PTC heaters | ~25A |
 || Station 3 PTC | LCTC DC-DC SSR 40A (DC output) | 40A, input 3–32VDC | D8 direct | 3× PTC heaters | ~25A |
-|| Fan bus | LCTC DC-DC SSR 40A (DC output) | 40A, input 3–32VDC | D13 direct | 9× ESCs | ~28.8A |
+|| Fan bus | LCTC DC-DC SSR 40A (DC output) | 40A, input 3–32VDC | D13 direct | 9× AVC blowers | ~40.5A |
 || Motor 1 | LCTC DC-DC SSR 10A (DC output) | 10A @ 30VDC | D5 HIGH = ON | SGM-370 #1 | ~0.8A |
 || Motor 2 | LCTC DC-DC SSR 10A (DC output) | 10A @ 30VDC | D7 HIGH = ON | SGM-370 #2 | ~0.8A |
-|| Motor 3 | LCTC DC-DC SSR 10A (DC output) | 10A @ 30VDC | D9 HIGH = ON | SGM-370 #3 | ~0.8A |DC output) | 10A @ 30VDC | D7 HIGH = ON | SGM-370 #2 | ~0.8A |
-|| Motor 3 | LCTC DC-DC SSR 10A (DC output) | 10A @ 30VDC | D9 HIGH = ON | SGM-370 #3 | ~0.8A |C SSR 10A (DC output) | 10A @ 30VDC | D7 HIGH = ON | SGM-370 #2 | ~0.8A |
 || Motor 3 | LCTC DC-DC SSR 10A (DC output) | 10A @ 30VDC | D9 HIGH = ON | SGM-370 #3 | ~0.8A |
 **Why LCTC DC-DC SSR for PTC:** 3× 100W PTC = 25A — over the 10A rating of PCB optocoupler modules. LCTC DC-DC SSR 40A handles DC output at 40A with no mechanical contacts. Driven directly from Mega digital pins (3–32VDC input); no NPN transistors, no base resistors, no flyback diodes required. Heatsink required (≈1 W/A → ~25 W at 25A). Motor SSRs (10A): minimal dissipation at 0.8A.
 
@@ -216,21 +213,21 @@ graph TB
 | Load | Per unit | Qty | Total | Protection |
 |---|---|---|---|---|
 | PTC heater (12V 100W) | 8.3A | 9 | 74.7A (all on) | SSR-40DD per station |
-| BLDC fan + ESC (50 mm) | 3.2A | 9 | 28.8A (all on) | SSR-40DD fan bus |
+|| AVC blower (12V 4.5A) | 4.5A | 9 | 40.5A (all on) | SSR-40DD fan bus |
 | SGM-370 motor | 0.2A / 0.8A stall | 3 | 0.6A / 2.4A | Opto module ch |
 | Arduino Mega + sensors | 0.1A | 1 | 0.1A | Buck converter |
 | **Worst-case total** | | | **~104A** | **BMS 200A** |
 
-> **Staged operation is mandatory.** One station full load = ~36A (3 PTC + 3 fans + motor).
+> **Staged operation is mandatory.** One station full load = ~38.8A (3 PTC + 3 blowers + motor).
 > The firmware rotates stations every 30 s so only one is active at a time. Two stations
-> simultaneously = ~72A — within the BMS 200A rating but staged operation preserves battery
+> simultaneously = ~77.6A — within the BMS 200A rating but staged operation preserves battery
 > current budget and follows the study's energy-efficient control strategy. Firmware enforces this limit.
 
 **Runtime estimates (1× 200 Ah battery, 144 Ah usable @ 80% DoD × 90% EoL):**
 
 | Mode | Draw | Estimated runtime |
 |---|---|---|
-| Single station (staged, 1 at a time) | ~35.5A | ~4.1 hours |
+| Single station (staged, 1 at a time) | ~38.8A | ~3.7 hours |
 | Quick drying cycle (3 umbrellas) | 27 min | ≈ 9.6 cycles per charge |
 | Standard drying cycle (fully soaked) | 57 min | ≈ 4.4 cycles per charge |
 | Standby (sensors + idle) | ~0.5A | ≈ 12 days |

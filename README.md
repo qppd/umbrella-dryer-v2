@@ -17,9 +17,9 @@ Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air 
 | Subsystem | Component |
 |---|---|
 | Controller | Arduino Mega 2560 |
-| Heat | **9× PTC ceramic heaters 12V 100W** (3 per station), **LCTC DC-DC SSR 40A switched** |
-| Rotation | **3× SGM-370 worm gear motors** 12V (14 kg·cm each), LCTC DC-DC SSR 10A switched (6 RPM) |
-| Power | **1× LiFePO4 12.8V 200Ah (BMS 200A)** → 12V bus (fuseless — BMS + firmware cutoff + PTC self-regulation) |
+|| Heat | **9× PTC ceramic heaters 12V 100W** (3 per station), **LCTC DC-DC SSR 40A switched** |
+|| Rotation | **3× SGM-370 worm gear motors** 12V (14 kg·cm each), LCTC DC-DC SSR 10A switched |
+|| Fans | **9× AVC 12V 4.5A blowers** (3 per station), PWM via Mega D10/D11/D12 |
 | Sensors | DHT22 (humidity) · DS18B20 (heater-zone temp) |
 | Thermal safety | PTC self-regulation · firmware 65°C cutoff · BMS |
 | UI | 16×2 LCD (I2C, pins 20/21), 3 status LEDs, buzzer, illuminated arcade start button |
@@ -52,7 +52,7 @@ Reference material: `docs/SYSTEM-ARCHITECTURE.md`, `docs/FLOWCHART.md`, `docs/ST
 
 1. **12V DC only** — no mains wiring, no RCD, no changeover switch. Safer, simpler, cheaper.
 2. **PTC self-regulating** — no SSR needed; PTC heaters auto-limit current as temperature rises.
-3. **BLDC fans with ESC** — active air circulation for faster drying; PWM speed control via Arduino.
+2. **AVC blowers with PWM** — active air circulation for faster drying; PWM speed control via Mega `analogWrite()` (no ESC needed).
 4. **Staged operation** — one station at a time keeps total current within the 50A main fuse.
 5. **SGM-370 worm gear** — self-locking, ≥4.6× torque margin, 6 RPM gentle speed.
 6. **40A automotive relays for PTC** — PTC draw (25A) exceeds 10A PCB relay ratings; automotive-grade with NPN drivers.

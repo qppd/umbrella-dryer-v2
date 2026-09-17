@@ -1,47 +1,50 @@
-# Firmware Guide — 12V DC + BLDC Fans
+# Firmware Guide — 12V DC + AVC Blower Fans
 
-> Complete firmware reference for the Umbrella Dryer V2 running on a **12V DC-only** system. BLDC fans are controlled via ESC PWM signals. PTC heaters and worm motors are relay-switched.
+> Complete firmware reference for the Umbrella Dryer V2 running on a **12V DC-only** system. AVC blowers are controlled via direct PWM from Mega pins (D10/D11/D12). PTC heaters and worm motors are switched by SSRs (SSR-40DD for PTC, SSR-10A for motors). No ESCs, no Servo library.
 
 ---
 
 ## 1. System Logic and State Machine
 
 ### 1a. Operational Sequence
-1. **Boot** → Initialized. Arms 3 ESCs (BLDC fan controllers) via low-throttle (1000 µs) PWM signals on D10/D11/D12. Master fan bus relay (D13) is closed (ON) momentarily during this arming sequence, then de-energized to prevent fan creep.
+
+1. **Boot** → Initialized. All SSR outputs LOW (OFF). Fan bus SSR (D13) is OFF. Blowes remain off until cycle starts.
 2. **Idle** → Reads DHT22 (humidity) + DS18B20 (temperature), displays on LCD. Button waits for input. Status LED is **GREEN**.
 3. **Button press** → Starts a 4-phase drying cycle:
-   - **Phase 1 — Preheat** (Chamber Temp < 45°C): Master fan bus relay (D13) ON. ESCs throttle fans to FULL (2000 µs or 180 on servo write). PTC heater relays D4, D6, D8 are energized (ON) sequentially to warm up the chamber. Motors remain OFF. Status LED is **RED** (heating active).
-   - **Phase 2 — Dry** (Chamber Temp ≥ 45°C): Chamber temperature has reached target. Station worm gear motors D5, D7, D9 are switched ON to spin the umbrellas at 6 RPM. PTC heaters and BLDC fans continue running. Timer starts counting down (default 15 minutes). Status LED is **YELLOW** (drying/spinning).
-   - **Phase 3 — Cool** (Timer Done): PTC heaters switched OFF. Motors switched OFF (umbrellas stop spinning). Fans remain running at full speed for 2 minutes to purge hot air and cool down the components. Status LED is **YELLOW**.
-   - **Phase 4 — Done**: All loads de-energized. Master fan bus relay OFF. Buzzer beeps 3 times. LCD shows "COMPLETE". Status LED is **GREEN**.
-4. **Safety cutoff (any active phase)**: If DS18B20 reads >65°C, all relays and ESC signals are immediately killed (latched OFF). LCD displays "THERMAL CUTOFF!" and the RED LED blinks.
+   - **Phase 1 — Preheat** (Chamber Temp < 45°C): Master fan bus SSR (D13) ON. Blowes throttle to FULL (`analogWrite(D, 255)`). PTC heater SSRs D4, D6, D8 are energized (ON) sequentially to warm up the chamber. Motors remain OFF. Status LED is **RED** (heating active).
+   - **Phase 2 — Dry** (Chamber Temp ≥ 45°C): Chamber temperature has reached target. Station worm gear motor SSRs D5, D7, D9 are switched ON to spin the umbrellas at 6 RPM. PTC heaters and blowes continue running. Timer starts counting down (default 15 minutes). Status LED is **YELLOW** (drying/spinning).
+   - **Phase 3 — Cool** (Timer Done): PTC heaters switched OFF. Motors switched OFF (umbrellas stop spinning). Blowes remain running at full speed for 2 minutes to purge hot air and cool down the components. Status LED is **YELLOW**.
+   - **Phase 4 — Done**: All loads de-energized. Master fan bus SSR OFF. Buzzer beeps 3 times. LCD shows "COMPLETE". Status LED is **GREEN**.
+4. **Safety cutoff (any active phase)**: If DS18B20 reads >65°C, all SSRs and PWM signals are immediately killed (latched OFF). LCD displays "THERMAL CUTOFF!" and the RED LED blinks.
 5. **Button repress (any active phase)**: Functions as an Emergency Stop. Immediately cuts all loads and returns the system to IDLE.
 
 ---
 
 ## 2. Pin Map — Arduino Mega 2560
 
-|| Pin | Net | Mode | Default | Active Level | Notes |
-|---|---|---|---|---|---|
-|| **D2** | DHT22_DATA | Input | — | — | Chamber humidity & ambient temp; 10kΩ pull-up to 5V |
-|| **D3** | DS18B20_DATA | Input | — | — | Heater-zone temperature probe; 4.7kΩ pull-up to 5V |
-|| **D4** | SSR_PTC_1 | Output | LOW | HIGH (ON) | Station 1 PTC heater (LCTC DC-DC SSR 40A) |
-|| **D5** | SSR_MOTOR_1 | Output | LOW | HIGH (ON) | Station 1 worm motor (LCTC DC-DC SSR 10A) |
-|| **D6** | SSR_PTC_2 | Output | LOW | HIGH (ON) | Station 2 PTC heater (LCTC DC-DC SSR 40A) |
-|| **D7** | SSR_MOTOR_2 | Output | LOW | HIGH (ON) | Station 2 worm motor (LCTC DC-DC SSR 10A) |
-|| **D8** | SSR_PTC_3 | Output | LOW | HIGH (ON) | Station 3 PTC heater (LCTC DC-DC SSR 40A) |
-|| **D9** | SSR_MOTOR_3 | Output | LOW | HIGH (ON) | Station 3 worm motor (LCTC DC-DC SSR 10A) |
-|| **D10** | ESC_PWM_1 | Output | PWM | 1000 µs | Station 1 BLDC fan ESC speed control |
-|| **D11** | ESC_PWM_2 | Output | PWM | 1000 µs | Station 2 BLDC fan ESC speed control |
-|| **D12** | ESC_PWM_3 | Output | PWM | 1000 µs | Station 3 BLDC fan ESC speed control |
-|| **D13** | SSR_FAN_BUS | Output | LOW | HIGH (ON) | Master Fan Bus (LCTC DC-DC SSR 40A) |
-|| **D14** | BTN_START | Input | HIGH | LOW (ON) | Arcade start button (internal pull-up enabled) |
-|| **D15** | LED_RED | Output | LOW | HIGH (ON) | Status LED: active heating |
-|| **D16** | LED_YELLOW | Output | LOW | HIGH (ON) | Status LED: drying and rotating / cooling |
-|| **D17** | LED_GREEN | Output | HIGH | HIGH (ON) | Status LED: system ready or cycle complete |
-|| **D18** | BUZZER | Output | LOW | HIGH (ON) | Active 5V buzzer |
-|| **D20** | I2C_SDA | I2C | — | — | LCD SDA pin (hardware I2C) |
-|| **D21** | I2C_SCL | I2C | — | — | LCD SCL pin (hardware I2C) |
+| | Pin | Net | Mode | Default | Active Level | Notes |
+|---|---|---|---|---|---|---|
+| | **D2** | DHT22_DATA | Input | — | — | Chamber humidity & ambient temp; 10kΩ pull-up to 5V |
+| | **D3** | DS18B20_DATA | Input | — | — | Heater-zone temperature probe; 4.7kΩ pull-up to 5V |
+| | **D4** | SSR_PTC_1 | Output | LOW | HIGH (ON) | Station 1 PTC heater (LCTC DC-DC SSR 40A) |
+| | **D5** | SSR_MOTOR_1 | Output | LOW | HIGH (ON) | Station 1 worm motor (LCTC DC-DC SSR 10A) |
+| | **D6** | SSR_PTC_2 | Output | LOW | HIGH (ON) | Station 2 PTC heater (LCTC DC-DC SSR 40A) |
+| | **D7** | SSR_MOTOR_2 | Output | LOW | HIGH (ON) | Station 2 worm motor (LCTC DC-DC SSR 10A) |
+| | **D8** | SSR_PTC_3 | Output | LOW | HIGH (ON) | Station 3 PTC heater (LCTC DC-DC SSR 40A) |
+| | **D9** | SSR_MOTOR_3 | Output | LOW | HIGH (ON) | Station 3 worm motor (LCTC DC-DC SSR 10A) |
+| | **D10** | PWM_FAN_1 | Output (PWM) | 0 | — | Station 1 blower PWM (`analogWrite`) |
+| | **D11** | PWM_FAN_2 | Output (PWM) | 0 | — | Station 2 blower PWM (`analogWrite`) |
+| | **D12** | PWM_FAN_3 | Output (PWM) | 0 | — | Station 3 blower PWM (`analogWrite`) |
+| | **D13** | SSR_FAN_BUS | Output | LOW | HIGH (ON) | Master Fan Bus (LCTC DC-DC SSR 40A) |
+| | **D14** | BTN_START | Input | HIGH | LOW (ON) | Arcade start button (internal pull-up enabled) |
+| | **D15** | LED_RED | Output | LOW | HIGH (ON) | Status LED: active heating |
+| | **D16** | LED_YELLOW | Output | LOW | HIGH (ON) | Status LED: drying and rotating / cooling |
+| | **D17** | LED_GREEN | Output | HIGH | HIGH (ON) | Status LED: system ready or cycle complete |
+| | **D18** | BUZZER | Output | LOW | HIGH (ON) | Active 5V buzzer |
+| | **D20** | I2C_SDA | I2C | — | — | LCD SDA pin (hardware I2C) |
+| | **D21** | I2C_SCL | I2C | — | — | LCD SCL pin (hardware I2C) |
+
+> All SSRs are active-HIGH. Floating pins at boot default LOW = SSR OFF. `allOff()` in `setup()` enforces safe state.
 
 ---
 
@@ -53,8 +56,7 @@
 | **Preheat Threshold** | 45.0°C | Chamber air temp target required to enable safe centrifugal drying |
 | **Thermal Cutoff** | 65.0°C | Absolute maximum chamber ceiling; triggers immediate system lock |
 | **Dry Phase Timer** | 15 minutes | Standard cycle length; sufficient for complete moisture removal |
-| **Cool Phase Timer** | 2 minutes | Fan-only overrun to dissipate residual heater block temperature |
-| **ESC Arm Delay** | 2000 ms | Mandatory delay at boot sending 1000 µs throttle to initialize ESCs |
+| **Cool Phase Timer** | 2 minutes | Blower-only overrun to dissipate residual heater block temperature |
 | **Debounce Delay** | 300 ms | Ignores button contact bounce and microphonics |
 
 ---
@@ -67,13 +69,12 @@ Copy and paste the following complete, verified sketch into the Arduino IDE.
 // ============================================================================
 // Umbrella Dryer V2 — 12V DC-Only System Firmware
 // Target Board: Arduino Mega 2560
-// Dependencies: DHT, OneWire, DallasTemperature, Servo, LiquidCrystal_I2C
+// Dependencies: DHT, OneWire, DallasTemperature, LiquidCrystal_I2C
 // ============================================================================
 
 #include <DHT.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include <Servo.h>
 #include <LiquidCrystal_I2C.h>
 
 // ---- Pin Definitions ----
@@ -88,9 +89,9 @@ Copy and paste the following complete, verified sketch into the Arduino IDE.
 #define PIN_SSR_PTC_3   8   // LCTC DC-DC SSR 40A (Station 3 Heaters)
 #define PIN_SSR_MOTOR_3 9   // LCTC DC-DC SSR 10A (Station 3 Motor)
 
-#define PIN_ESC_PWM_1     10  // ESC PWM signal Station 1
-#define PIN_ESC_PWM_2     11  // ESC PWM signal Station 2
-#define PIN_ESC_PWM_3     12  // ESC PWM signal Station 3
+#define PIN_PWM_FAN_1     10  // Station 1 AVC blower PWM
+#define PIN_PWM_FAN_2     11  // Station 2 AVC blower PWM
+#define PIN_PWM_FAN_3     12  // Station 3 AVC blower PWM
 #define PIN_SSR_FAN_BUS   13  // LCTC DC-DC SSR 40A (Master Fan Bus)
 
 // UI and Peripherals
@@ -106,39 +107,32 @@ OneWire oneWire(PIN_DS18B20);
 DallasTemperature ds18b20(&oneWire);
 LiquidCrystal_I2C lcd(0x27, 16, 2);  // Alternate address: 0x3F
 
-// ---- ESC PWM Objects ----
-Servo esc1;
-Servo esc2;
-Servo esc3;
-
 // ---- Configuration and Constants ----
 const float PREHEAT_TEMP   = 45.0;                      // °C - dry trigger
 const float CUTOFF_TEMP    = 65.0;                      // °C - safety threshold
 const unsigned long DRY_TIME_MS  = 15UL * 60UL * 1000UL; // 15-minute drying timer
 const unsigned long COOL_TIME_MS = 2UL * 60UL * 1000UL;  // 2-minute cooling run
-const unsigned long ESC_ARM_MS   = 2000;                // 2-second arm delay
-const int ESC_OFF          = 0;                         // Stopped throttle (0 degrees)
-const int ESC_FULL         = 180;                       // Full speed throttle (180 degrees)
+const int PWM_FULL         = 255;                       // Full blower speed
+const int PWM_OFF          = 0;                         // Blower off
 
-// ---- Staged operation (one station at a time — keeps draw ~36A under the 50A main fuse) ----
-const uint8_t PIN_PTC[3]   = { PIN_RELAY_PTC_1,  PIN_RELAY_PTC_2,  PIN_RELAY_PTC_3  };
-const uint8_t PIN_MOT[3]   = { PIN_RELAY_MOTOR_1, PIN_RELAY_MOTOR_2, PIN_RELAY_MOTOR_3 };
-const uint8_t PIN_ESCS[3]  = { PIN_ESC_PWM_1,    PIN_ESC_PWM_2,    PIN_ESC_PWM_3    };
+// ---- Staged operation (one station at a time — keeps draw ~39A under BMS 200A) ----
+const uint8_t PIN_PTC[3]   = { PIN_SSR_PTC_1,  PIN_SSR_PTC_2,  PIN_SSR_PTC_3  };
+const uint8_t PIN_MOT[3]   = { PIN_SSR_MOTOR_1, PIN_SSR_MOTOR_2, PIN_SSR_MOTOR_3 };
+const uint8_t PIN_PWM[3]   = { PIN_PWM_FAN_1,  PIN_PWM_FAN_2,  PIN_PWM_FAN_3  };
 const unsigned long STAGE_MS = 30000;   // 30 s per station before rotating
-Servo* const ESCS[3] = { &esc1, &esc2, &esc3 };
 uint8_t activeStation = 0;
 unsigned long stageStart = 0;
 
-// Energize ONLY the active station: PTC always, motor only in DRY
+// Energize ONLY the active station: PTC always, motor only in DRY, PWM fans always
 void applyStage(bool dryMotors) {
   for (uint8_t i = 0; i < 3; i++) {
-    autoRelayOff(PIN_PTC[i]);
-    pcbRelayOff(PIN_MOT[i]);
-    ESCS[i]->write(ESC_OFF);
+    digitalWrite(PIN_PTC[i], LOW);
+    digitalWrite(PIN_MOT[i], LOW);
+    analogWrite(PIN_PWM[i], PWM_OFF);
   }
-  autoRelayOn(PIN_PTC[activeStation]);
-  ESCS[activeStation]->write(ESC_FULL);
-  if (dryMotors) pcbRelayOn(PIN_MOT[activeStation]);
+  digitalWrite(PIN_PTC[activeStation], HIGH);
+  analogWrite(PIN_PWM[activeStation], PWM_FULL);
+  if (dryMotors) digitalWrite(PIN_MOT[activeStation], HIGH);
 }
 
 // Rotate to the next station every STAGE_MS
@@ -161,80 +155,39 @@ float humidity            = 0;
 float temperature         = 0;
 bool buttonPrevState      = HIGH;
 
-// ---- Actuation Helpers ----
-void pcbRelayOn(int pin)  { digitalWrite(pin, LOW);  } // Active-LOW
-void pcbRelayOff(int pin) { digitalWrite(pin, HIGH); } // Active-LOW
-
-void autoRelayOn(int pin)  { digitalWrite(pin, HIGH); } // Active-HIGH via 2N2222
-void autoRelayOff(int pin) { digitalWrite(pin, LOW);  } // Active-HIGH via 2N2222
-
 // ---- Absolute System Safety Shutdown ----
 void allOff() {
-  // Turn off high-power heater elements (Active-HIGH relays)
-  autoRelayOff(PIN_RELAY_PTC_1);
-  autoRelayOff(PIN_RELAY_PTC_2);
-  autoRelayOff(PIN_RELAY_PTC_3);
-
-  // Turn off motors (Active-LOW relays)
-  pcbRelayOff(PIN_RELAY_MOTOR_1);
-  pcbRelayOff(PIN_RELAY_MOTOR_2);
-  pcbRelayOff(PIN_RELAY_MOTOR_3);
-
-  // Stop ESC signals and isolate power rail
-  esc1.write(ESC_OFF);
-  esc2.write(ESC_OFF);
-  esc3.write(ESC_OFF);
-  delay(10);
-  autoRelayOff(PIN_RELAY_FAN_BUS);
-
-  // Manage UI indicators
+  digitalWrite(PIN_SSR_PTC_1, LOW);
+  digitalWrite(PIN_SSR_PTC_2, LOW);
+  digitalWrite(PIN_SSR_PTC_3, LOW);
+  digitalWrite(PIN_SSR_MOTOR_1, LOW);
+  digitalWrite(PIN_SSR_MOTOR_2, LOW);
+  digitalWrite(PIN_SSR_MOTOR_3, LOW);
+  analogWrite(PIN_PWM_FAN_1, PWM_OFF);
+  analogWrite(PIN_PWM_FAN_2, PWM_OFF);
+  analogWrite(PIN_PWM_FAN_3, PWM_OFF);
+  digitalWrite(PIN_SSR_FAN_BUS, LOW);
   digitalWrite(PIN_LED_RED, LOW);
   digitalWrite(PIN_LED_YELLOW, LOW);
   digitalWrite(PIN_LED_GREEN, LOW);
   digitalWrite(PIN_BUZZER, LOW);
 }
 
-// ---- ESC Initialization (Arming Sequence) ----
-void armESCs() {
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Arming ESCs...");
-  
-  // Power up the fan bus rail to allow ESCs to sense incoming power during pulse
-  autoRelayOn(PIN_RELAY_FAN_BUS);
-  delay(100);
-  
-  esc1.attach(PIN_ESC_PWM_1);
-  esc2.attach(PIN_ESC_PWM_2);
-  esc3.attach(PIN_ESC_PWM_3);
-  
-  // Send minimum throttle pulse to initialize ESC controller ICs
-  esc1.write(ESC_OFF);
-  esc2.write(ESC_OFF);
-  esc3.write(ESC_OFF);
-  
-  delay(ESC_ARM_MS);
-  
-  // Kill power to bus to prevent any fan creep before active start
-  autoRelayOff(PIN_RELAY_FAN_BUS);
-  lcd.clear();
-}
-
-// ---- Fan Speed Control ----
+// ---- Fan Control ----
 void fansOn() {
-  autoRelayOn(PIN_RELAY_FAN_BUS);
-  delay(100); // Allow automotive relay contact debounce and rail stabilization
-  esc1.write(ESC_FULL);
-  esc2.write(ESC_FULL);
-  esc3.write(ESC_FULL);
+  digitalWrite(PIN_SSR_FAN_BUS, HIGH);
+  delay(100);
+  analogWrite(PIN_PWM_FAN_1, PWM_FULL);
+  analogWrite(PIN_PWM_FAN_2, PWM_FULL);
+  analogWrite(PIN_PWM_FAN_3, PWM_FULL);
 }
 
 void fansOff() {
-  esc1.write(ESC_OFF);
-  esc2.write(ESC_OFF);
-  esc3.write(ESC_OFF);
+  analogWrite(PIN_PWM_FAN_1, PWM_OFF);
+  analogWrite(PIN_PWM_FAN_2, PWM_OFF);
+  analogWrite(PIN_PWM_FAN_3, PWM_OFF);
   delay(50);
-  autoRelayOff(PIN_RELAY_FAN_BUS);
+  digitalWrite(PIN_SSR_FAN_BUS, LOW);
 }
 
 // ---- Sensor Data Acquisition ----
@@ -283,13 +236,16 @@ void setup() {
   Serial.println("Umbrella Dryer V2 — 12V DC System Boot Initializing");
 
   // Actuator Output Setup & Hard Pull-Offs
-  pinMode(PIN_RELAY_PTC_1, OUTPUT);
-  pinMode(PIN_RELAY_PTC_2, OUTPUT);
-  pinMode(PIN_RELAY_PTC_3, OUTPUT);
-  pinMode(PIN_RELAY_MOTOR_1, OUTPUT);
-  pinMode(PIN_RELAY_MOTOR_2, OUTPUT);
-  pinMode(PIN_RELAY_MOTOR_3, OUTPUT);
-  pinMode(PIN_RELAY_FAN_BUS, OUTPUT);
+  pinMode(PIN_SSR_PTC_1, OUTPUT);
+  pinMode(PIN_SSR_PTC_2, OUTPUT);
+  pinMode(PIN_SSR_PTC_3, OUTPUT);
+  pinMode(PIN_SSR_MOTOR_1, OUTPUT);
+  pinMode(PIN_SSR_MOTOR_2, OUTPUT);
+  pinMode(PIN_SSR_MOTOR_3, OUTPUT);
+  pinMode(PIN_PWM_FAN_1, OUTPUT);
+  pinMode(PIN_PWM_FAN_2, OUTPUT);
+  pinMode(PIN_PWM_FAN_3, OUTPUT);
+  pinMode(PIN_SSR_FAN_BUS, OUTPUT);
 
   pinMode(PIN_LED_RED, OUTPUT);
   pinMode(PIN_LED_YELLOW, OUTPUT);
@@ -313,9 +269,6 @@ void setup() {
   lcd.setCursor(0, 1);
   lcd.print("V2 DC SYSTEM");
   delay(1500);
-
-  // Core ESC Calibration & Arming
-  armESCs();
 
   // Settle on READY State
   digitalWrite(PIN_LED_GREEN, HIGH);
@@ -528,21 +481,21 @@ void loop() {
 | **2** | LM2596S OUT− | 20 AWG | Black | Arduino Mega `GND` Pin | Common negative logic ground link |
 | **3** | Mega Pin D2 | 22 AWG | Yellow | DHT22 DATA | Ambient chamber relative humidity input (10kΩ pull-up to 5V) |
 | **4** | Mega Pin D3 | 22 AWG | Blue | DS18B20 DATA | Heater surface temperature reading (4.7kΩ pull-up to 5V) |
-| **5** | Mega Pin D4 | 22 AWG | Red | Relay 1 Trigger (PTC 1) | Transistor base 1kΩ resistor (HIGH = closes 40A PTC 1 circuit) |
-| **6** | Mega Pin D5 | 22 AWG | Orange | Relay 2 Trigger (M1) | PCB Relay opto-coupler channel 1 (LOW = turns on Worm Motor 1) |
-| **7** | Mega Pin D6 | 22 AWG | Red | Relay 3 Trigger (PTC 2) | Transistor base 1kΩ resistor (HIGH = closes 40A PTC 2 circuit) |
-| **8** | Mega Pin D7 | 22 AWG | Orange | Relay 4 Trigger (M2) | PCB Relay opto-coupler channel 2 (LOW = turns on Worm Motor 2) |
-| **9** | Mega Pin D8 | 22 AWG | Red | Relay 5 Trigger (PTC 3) | Transistor base 1kΩ resistor (HIGH = closes 40A PTC 3 circuit) |
-| **10** | Mega Pin D9 | 22 AWG | Orange | Relay 6 Trigger (M3) | PCB Relay opto-coupler channel 3 (LOW = turns on Worm Motor 3) |
-| **11** | Mega Pin D10 | 22 AWG | White | ESC 1 Signal | PWM control line for Station 1 BLDC ducted fans |
-| **12** | Mega Pin D11 | 22 AWG | White | ESC 2 Signal | PWM control line for Station 2 BLDC ducted fans |
-| **13** | Mega Pin D12 | 22 AWG | White | ESC 3 Signal | PWM control line for Station 3 BLDC ducted fans |
-| **14** | Mega Pin D13 | 22 AWG | Purple | Relay 7 Trigger (Fan Bus) | Transistor base 1kΩ resistor (HIGH = closes master 40A Fan Bus) |
+| **5** | Mega Pin D4 | 22 AWG | Red | SSR PTC 1 Trigger | LCTC DC-DC SSR 40A (HIGH = closes Station 1 PTC circuit) |
+| **6** | Mega Pin D5 | 22 AWG | Orange | SSR Motor 1 Trigger | LCTC DC-DC SSR 10A (HIGH = turns on Worm Motor 1) |
+| **7** | Mega Pin D6 | 22 AWG | Red | SSR PTC 2 Trigger | LCTC DC-DC SSR 40A (HIGH = closes Station 2 PTC circuit) |
+| **8** | Mega Pin D7 | 22 AWG | Orange | SSR Motor 2 Trigger | LCTC DC-DC SSR 10A (HIGH = turns on Worm Motor 2) |
+| **9** | Mega Pin D8 | 22 AWG | Red | SSR PTC 3 Trigger | LCTC DC-DC SSR 40A (HIGH = closes Station 3 PTC circuit) |
+| **10** | Mega Pin D9 | 22 AWG | Orange | SSR Motor 3 Trigger | LCTC DC-DC SSR 10A (HIGH = turns on Worm Motor 3) |
+| **11** | Mega Pin D10 | 22 AWG | White | PWM Blower Station 1 | `analogWrite(D10, val)` — 0–255 duty cycle control |
+| **12** | Mega Pin D11 | 22 AWG | White | PWM Blower Station 2 | `analogWrite(D11, val)` — 0–255 duty cycle control |
+| **13** | Mega Pin D12 | 22 AWG | White | PWM Blower Station 3 | `analogWrite(D12, val)` — 0–255 duty cycle control |
+| **14** | Mega Pin D13 | 22 AWG | Purple | SSR Fan Bus Trigger | LCTC DC-DC SSR 40A (HIGH = closes master Fan Bus) |
 | **15** | Mega Pin D14 | 22 AWG | Green | Arcade Button NO | Active-LOW trigger logic; button NC is unmapped |
 | **16** | Mega Pin D15 | 22 AWG | Red | Status LED (Red) | Connected via series 220Ω current-limiting resistor |
 | **17** | Mega Pin D16 | 22 AWG | Yellow | Status LED (Yellow) | Connected via series 220Ω current-limiting resistor |
 | **18** | Mega Pin D17 | 22 AWG | Green | Status LED (Green) | Connected via series 220Ω current-limiting resistor |
-| **19** | Mega Pin D18 | 22 AWG | White | Active Buzzer + | Emits cycles alerts (Audible notification) |
+| **19** | Mega Pin D18 | 22 AWG | White | Active Buzzer + | Emits cycle alerts (Audible notification) |
 | **20** | Mega Pin D20 | 22 AWG | Green | LCD I2C SDA | Hardware SDA interface (pull-ups usually integrated on I2C board) |
 | **21** | Mega Pin D21 | 22 AWG | Yellow | LCD I2C SCL | Hardware SCL interface (pull-ups usually integrated on I2C board) |
 
@@ -555,81 +508,46 @@ void loop() {
 3. **OneWire** by Paul Stoffregen (ver 2.3.x+)
 4. **DallasTemperature** by Miles Burton (ver 3.9.x+)
 5. **LiquidCrystal I2C** by Frank de Brabander (ver 1.1.2+)
-6. **Servo** (Standard library built directly into the Arduino IDE environment)
+
+> **No Servo library needed** — blowers use `analogWrite()` directly.
 
 ---
 
-## 7. ESC calibration (first-time setup)
-
-If BLDC fans don't respond to throttle commands:
-
-1. **Power on** with ESC signal wire disconnected from Mega.
-2. **Connect ESC signal** to a known PWM source (or Mega running calibration sketch).
-3. **Send MAX throttle** (`write(180)`) for 3 seconds — ESC beeps to confirm max.
-4. **Send MIN throttle** (`write(0)`) for 3 seconds — ESC beeps to confirm min.
-5. ESC is now calibrated. Power cycle and test.
-
-Some ESCs auto-calibrate on first power-up if they detect a valid signal range.
-
----
-
-## 8. Debugging tips
+## 7. Debugging tips
 
 | Symptom | Check |
 |---|---|
-| ESC doesn't arm | Verify D10/D11/D12 wired correctly; check `esc.attach()` called; fan bus relay (D13) must be ON during arming — it powers the ESCs |
-| Fans spin then stop | ESC lost signal — check jumper continuity; keep `esc.write()` values refreshed |
+| No blower response | Verify D10/D11/D12 wired correctly; `analogWrite(D, 255)` sends full PWM; fan bus SSR (D13) must be ON for 12V power |
+| Blowers don't spin | Check 12V from fan bus SSR to blower VIN; check PWM signal from Mega with multimeter or oscilloscope |
 | No humidity reading | DHT22 VCC→5V, GND→GND, DATA→D2 with 10kΩ pull-up; use the DHT22 **module**, not a bare sensor |
 | No temperature reading | DS18B20 red→5V, black→GND, yellow→D3 with 4.7kΩ pull-up; run a OneWire scanner sketch |
 | LCD blank / garbage | Try address 0x3F; call `lcd.init()`; on the **Mega, I2C is pins 20/21 — NOT A4/A5** |
-| Heater relay doesn't click | D4/D6/D8 → 1kΩ → 2N2222 base; collector → coil 85; coil 86 → +12V; emitter → GND; 10kΩ base→GND pull-down |
-| Motor relay doesn't click | D5/D7/D9 → module IN1/IN2/IN3; module VCC → 5V buck rail (NOT Mega pin); active-LOW: LOW = ON |
-| Relay clicks but load stays off | Check COM/NO high-current side: fused 12V → COM, load → NO; verify branch fuse is intact |
+| Heater SSR doesn't trigger | D4/D6/D8 → SSR IN+; SSR IN− → GND; COM → +12V, NO → heaters |
+| Motor SSR doesn't trigger | D5/D7/D9 → SSR-10A IN+; SSR IN− → GND; COM → +12V, NO → motor |
+| Relay clicks but load stays off | Check COM/NO high-current side: 12V → COM, load → NO |
 | Button not responding | D14 → button pin 1, pin 2 → GND; INPUT_PULLUP; LOW = pressed |
 | Thermal cutoff triggers immediately | DS18B20 may be heated by direct contact — mount probe in the air stream, not touching heater body |
 | Buck output not 5V | Adjust potentiometer with multimeter BEFORE connecting to Mega; must be 5.0V ± 0.1V |
 | Motors spin wrong direction | Swap the two motor leads (DC motor direction = polarity) |
-| Main fuse blows during cycle | Firmware staged operation broken? Check that only ONE station's heaters are ever ON (see §9) |
 
 ---
 
-## 9. Staged operation (IMPORTANT — fuse budget)
+## 8. Staged operation (IMPORTANT — current budget)
 
-One station's full load = 3 PTC (25A) + 3 fans (9.7A) + motor (0.8A) ≈ **36A**.
-The 50A main fuse supports **one station at a time**, plus the fan bus.
+One station's full load = 3 PTC (25A) + 3 blowers (13.5A) + motor (0.8A) ≈ **39.3A**.
+Staged operation keeps worst-case draw ≈ **38.8A** by running only one station at a time.
 
-The stock sketch runs all 3 stations' heaters simultaneously in PREHEAT (~75A +
-fans ≈ 105A — the main fuse WILL blow). Two options:
-
-1. **Stock behavior is for bench testing only** (no heaters connected, TESTING L1/L2).
-2. **For real cycles**, enable staged mode by defining `STAGED` at the top of the
-   sketch — heaters round-robin 30 s per station; only the active station's
-   motor + ESC throttle run. Staged mode keeps worst-case draw ≈ 36A.
-
-```cpp
-// Add at top of sketch:
-#define STAGED 1   // 1 = one station at a time (deploy), comment out for bench tests
-
-#ifdef STAGED
-uint8_t activeStation = 0;  // 0..2 round-robin during PREHEAT/DRY
-#endif
-```
-
-In staged mode, PREHEAT and DRY energize only `PIN_RELAY_PTC_1 + activeStation`
-and throttle only that station's ESC; rotate `activeStation` every 30 s.
+The firmware **always** operates in staged mode — heaters round-robin 30 s per station; only the active station's motor and blower PWM run. All other stations' PTC and PWM are OFF.
 
 ---
 
-## 10. Safety notes
+## 9. Safety notes
 
 - The system runs on **12V DC only** — no mains voltage anywhere.
 - Battery BMS protects against over-discharge, over-charge, and short circuit.
 - DS18B20 thermal cutoff at 65°C is the primary software safety.
-- 130°C one-shot thermal fuse **per heater** (9×) is the hardware backup.
 - PTC heaters are self-regulating — they auto-limit current as temperature rises.
-- Per-branch fuses (30A PTC ×3, 30A fan bus, 3A motor ×3, 3A logic) isolate faults.
-- Relay pins boot in their OFF state: NPN stages have 10kΩ base pull-downs
-  (active-HIGH pins default LOW), and the opto module has onboard pull-ups
-  (active-LOW pins default HIGH). `setup()` calls `allOff()` first regardless.
-- Mega is powered ONLY from the calibrated buck via the 5V pin — never the
-  barrel jack, never raw 12V.
+- Over-temperature protection relies on PTC self-regulation and DS18B20 firmware 65°C cutoff. No thermal fuses.
+- Over-current protection relies on BMS 200A cutoff and PTC self-regulation. No hardware fuses.
+- SSR pins boot in their OFF state (floating/LOW = OFF). `setup()` calls `allOff()` first regardless.
+- Mega is powered ONLY from the calibrated buck via the 5V pin — never the barrel jack, never raw 12V.
