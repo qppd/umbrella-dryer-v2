@@ -38,12 +38,11 @@ graph TB
         PTC1A["PTC Heater 1"]
         PTC1B["PTC Heater 2"]
         PTC1C["PTC Heater 3"]
-        RELAY_M1["Opto relay ch1<br/>(D5 active-LOW)"]
+        SSR_M1["SSR-10A<br/>(D5 HIGH=ON)"]
         MTR1["SGM-370 Motor"]
-        ESC1["ESC #1<br/>(D10 PWM)"]
-        FAN1A["BLDC Fan 1"]
-        FAN1B["BLDC Fan 2"]
-        FAN1C["BLDC Fan 3"]
+        FAN1A["AVC Blower 1"]
+        FAN1B["AVC Blower 2"]
+        FAN1C["AVC Blower 3"]
     end
 
     subgraph Station2["Station 2"]
@@ -51,12 +50,11 @@ graph TB
         PTC2A["PTC Heater 4"]
         PTC2B["PTC Heater 5"]
         PTC2C["PTC Heater 6"]
-        RELAY_M2["Opto relay ch2<br/>(D7 active-LOW)"]
+        SSR_M2["SSR-10A<br/>(D7 HIGH=ON)"]
         MTR2["SGM-370 Motor"]
-        ESC2["ESC #2<br/>(D11 PWM)"]
-        FAN2A["BLDC Fan 4"]
-        FAN2B["BLDC Fan 5"]
-        FAN2C["BLDC Fan 6"]
+        FAN2A["AVC Blower 4"]
+        FAN2B["AVC Blower 5"]
+        FAN2C["AVC Blower 6"]
     end
 
     subgraph Station3["Station 3"]
@@ -64,15 +62,14 @@ graph TB
         PTC3A["PTC Heater 7"]
         PTC3B["PTC Heater 8"]
         PTC3C["PTC Heater 9"]
-        RELAY_M3["Opto relay ch3<br/>(D9 active-LOW)"]
+        SSR_M3["SSR-10A<br/>(D9 HIGH=ON)"]
         MTR3["SGM-370 Motor"]
-        ESC3["ESC #3<br/>(D12 PWM)"]
-        FAN3A["BLDC Fan 7"]
-        FAN3B["BLDC Fan 8"]
-        FAN3C["BLDC Fan 9"]
+        FAN3A["AVC Blower 7"]
+        FAN3B["AVC Blower 8"]
+        FAN3C["AVC Blower 9"]
     end
 
-    subgraph FanBus["BLDC Fan Power Bus"]
+    subgraph FanBus["AVC BLOWER POWER BUS"]
         FAN_SSR["SSR-40DD<br/>(D13 direct)"]
     end
 
@@ -96,14 +93,8 @@ graph TB
     RELAY_M2 --> MTR2
     RELAY_M3 --> MTR3
 
-    FAN_SSR --> ESC1 & ESC2 & ESC3
-    ESC1 --> FAN1A & FAN1B & FAN1C
-    ESC2 --> FAN2A & FAN2B & FAN2C
-    ESC3 --> FAN3A & FAN3B & FAN3C
-
-    MEGA -->|"D10 PWM"| ESC1
-    MEGA -->|"D11 PWM"| ESC2
-    MEGA -->|"D12 PWM"| ESC3
+    FAN_SSR --> FAN1A & FAN1B & FAN1C
+    MEGA -. "D10/D11/D12 PWM" .-> FAN1A & FAN2A & FAN3A
 ```
 
 ---
@@ -117,7 +108,7 @@ graph TB
 | MCU | ATmega2560, AVR 8-bit @ 16 MHz | Bare-metal firmware, no OS |
 | Digital I/O | 54 (15 PWM) | 18 used — headroom remains |
 | Flash / SRAM / EEPROM | 256 KB / 8 KB / 4 KB | Use `F()` macro for string literals |
-| Logic level | 5V | SSR inputs, ESC PWM compatible |
+| Logic level | 5V | SSR inputs, PWM fan control compatible |
 | Power input | **5V pin from buck** | Never 12V on the barrel jack |
 | Serial | USB + Serial0 (pins 0/1), 115200 debug | Keep 0/1 free during development |
 | I2C | Hardware pins **20 (SDA) / 21 (SCL)** | NOT A4/A5 — those are ADC on the Mega |
@@ -185,14 +176,14 @@ graph TB
 | **D2** | **DHT22 data** | Input | — | 10 kΩ pull-up to 5V |
 | **D3** | **DS18B20 data** | Input | — | 4.7 kΩ pull-up to 5V (1-Wire) |
 | **D4** | **PTC SSR — Station 1** | Output | HIGH = ON | SSR-40DD direct drive |
-| **D5** | **Motor relay — Station 1** | Output | LOW = ON | Optocoupler module ch1 |
+| **D5** | **Motor SSR — Station 1** | Output | HIGH = ON | SSR-10DD direct drive |
 | **D6** | **PTC SSR — Station 2** | Output | HIGH = ON | SSR-40DD direct drive |
-| **D7** | **Motor relay — Station 2** | Output | LOW = ON | Optocoupler module ch2 |
+| **D7** | **Motor SSR — Station 2** | Output | HIGH = ON | SSR-10DD direct drive |
 | **D8** | **PTC SSR — Station 3** | Output | HIGH = ON | SSR-40DD direct drive |
-| **D9** | **Motor relay — Station 3** | Output | LOW = ON | Optocoupler module ch3 |
-| **D10** | **ESC PWM — Station 1** | Output (PWM) | — | `Servo` library, 50 Hz, 1000–2000 µs |
-| **D11** | **ESC PWM — Station 2** | Output (PWM) | — | `Servo` library, 50 Hz |
-| **D12** | **ESC PWM — Station 3** | Output (PWM) | — | `Servo` library, 50 Hz |
+| **D9** | **Motor SSR — Station 3** | Output | HIGH = ON | SSR-10DD direct drive |
+| **D10** | **PWM Fan — Station 1** | Output (PWM) | — | `analogWrite(D10, val)` 0–255 |
+| **D11** | **PWM Fan — Station 2** | Output (PWM) | — | `analogWrite(D11, val)` 0–255 |
+| **D12** | **PWM Fan — Station 3** | Output (PWM) | — | `analogWrite(D12, val)` 0–255 |
 | **D13** | **Fan bus SSR** | Output | HIGH = ON | SSR-40DD direct drive |
 | **D14** | **Start button** | Input | LOW = pressed | INPUT_PULLUP |
 | **D15** | **Red LED** | Output | HIGH = ON | 220 Ω series |
@@ -203,7 +194,7 @@ graph TB
 | **21 (SCL)** | **LCD I2C SCL** | I2C | — | Mega hardware I2C |
 
 > SSR pins (D4/D6/D8/D13) are active-HIGH: no input current at boot keeps them OFF.
-> Opto module pins (D5/D7/D9) are active-LOW with onboard pull-ups, also OFF at boot.
+> Motor SSR pins (D5/D7/D9) are also active-HIGH with SSR-10DD, floating pin = OFF at boot.
 > The `allOff()` function in `setup()` enforces a safe state regardless.
 
 ---
@@ -214,7 +205,7 @@ graph TB
 |---|---|---|---|---|
 | PTC heater (12V 100W) | 8.3A | 9 | 74.7A (all on) | SSR-40DD per station |
 || AVC blower (12V 4.5A) | 4.5A | 9 | 40.5A (all on) | SSR-40DD fan bus |
-| SGM-370 motor | 0.2A / 0.8A stall | 3 | 0.6A / 2.4A | Opto module ch |
+| SGM-370 motor | 0.2A / 0.8A stall | 3 | 0.6A / 2.4A | SSR-10DD |
 | Arduino Mega + sensors | 0.1A | 1 | 0.1A | Buck converter |
 | **Worst-case total** | | | **~104A** | **BMS 200A** |
 
@@ -244,7 +235,7 @@ graph TB
 | Chamber internal W × D × H | **2200 × 800 × 1300 mm** |
 | Station layout | Single row of 3 stations on the long axis, pitch **700 mm** |
 | Clearance | 75 mm each side; 50 mm between adjacent canopies (passes ≥50 mm rule) |
-| Services | 9× PTC heaters + 9× BLDC fans + 12V power bus + DHT22 + DS18B20 |
+| Services | 9× PTC heaters + 9× AVC blowers + 12V power bus + DHT22 + DS18B20 |
 
 ---
 
@@ -284,7 +275,7 @@ graph TB
 |---|---|
 | 220V mains + changeover switch | No mains voltage in the system |
 | RCD/GFCI | Not needed — 12V DC SELV cannot cause electric shock |
-| SSR-40DA solid-state relays | Replaced by SSR-40DD DC-output SSRs for PTC + opto module for motors |
+| SSR-40DA solid-state relays | Replaced by SSR-40DD DC-output SSRs for PTC + SSR-10DD for motors |
 | 3000W pure sine inverter | All loads run natively on 12V DC |
 | 14.6V lead-acid charger | LiFePO4 charger only |
 | Mains rocker switches | Not needed — firmware control |
@@ -312,6 +303,6 @@ graph TB
 | Rev 4 | 3 independent stations (3× motors, shafts, KP08 sets); 25A main fuse |
 | Rev 5 | Mains heat: 2× 1500W PTC heater-fans via 2× SSR-40DA; RCD added |
 | Rev 6 | Dual source: wall outlet OR 3000W inverter via changeover; 2× 200Ah LiFePO4 |
-| Rev 7 | Complete 12V DC redesign: 9× PTC + 9× BLDC + 3× SGM-370; no mains, no inverter |
+| Rev 7 | Complete 12V DC redesign: 9× PTC + 9× AVC blower + 3× SGM-370; no mains, no inverter |
 | Rev 8 | Fuse plan fixed (50A main, 30A PTC/fan, per-heater 130°C thermal fuse); PTC relays upgraded to 40A automotive; pin map reconciled; LCD I2C corrected to pins 20/21; staged operation mandatory |
 | **Rev 9** | **No-fuse SSR build: all fuses, disconnect switch, NPN driver stages, and thermal fuses removed; 40A automotive relays replaced by SSR-40DD DC-output SSRs driven directly from Mega pins; protection = BMS 200A + PTC self-regulation + DS18B20 firmware cutoff** |
