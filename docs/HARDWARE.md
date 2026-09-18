@@ -39,7 +39,7 @@ graph TB
         PTC1B["PTC Heater 2"]
         PTC1C["PTC Heater 3"]
         SSR_M1["SSR-10A<br/>(D5 HIGH=ON)"]
-        MTR1["SGM-370 Motor"]
+        MTR1["SGM-370 Motor<br/>+ drivetrain"]
         FAN1A["AVC Blower 1"]
         FAN1B["AVC Blower 2"]
         FAN1C["AVC Blower 3"]
@@ -79,7 +79,7 @@ graph TB
 
     BAT --> BUS["12V Bus"]
     BUS --> SSR_H1 & SSR_H2 & SSR_H3 & FAN_SSR
-    BUS --> RELAY_M1 & RELAY_M2 & RELAY_M3
+    BUS --> SSR_M1 & SSR_M2 & SSR_M3
     BUS --> BUCK --> MEGA
     MEGA --> DHT & DS & LCD & BTN & BUZ & LED
 
@@ -89,9 +89,9 @@ graph TB
     SSR_H2 --> PTC2A & PTC2B & PTC2C
     SSR_H3 --> PTC3A & PTC3B & PTC3C
 
-    RELAY_M1 --> MTR1
-    RELAY_M2 --> MTR2
-    RELAY_M3 --> MTR3
+    SSR_M1 --> MTR1
+    SSR_M2 --> MTR2
+    SSR_M3 --> MTR3
 
     FAN_SSR --> FAN1A & FAN1B & FAN1C
     MEGA -. "D10/D11/D12 PWM" .-> FAN1A & FAN2A & FAN3A
@@ -152,18 +152,18 @@ graph TB
 | Battery | 1× LiFePO4 12.8V 200Ah battery | 200Ah total, 2,560 Wh |
 | BMS | Built-in (200A) | Over-charge, over-discharge, over-current, short-circuit |
 | Wire gauge | 8 AWG battery→bus · 10 AWG heater/fan branches · 18 AWG motor · 20 AWG logic | All stranded copper |
-| Connectors | XT60 for battery-to-bus | — |
+| Connectors | Screw terminals (battery → 2-pin terminal → bus bars) | No XT60 — 8 AWG exceeds typical XT60 sizing in this layout |
 
 ### SSR architecture
 
 | SSR | Type | Rating | Driven by | Switches | Current |
-|| Station 1 PTC | LCTC DC-DC SSR 40A (DC output) | 40A, input 3–32VDC | D4 direct | 3× PTC heaters | ~25A |
-|| Station 2 PTC | LCTC DC-DC SSR 40A (DC output) | 40A, input 3–32VDC | D6 direct | 3× PTC heaters | ~25A |
-|| Station 3 PTC | LCTC DC-DC SSR 40A (DC output) | 40A, input 3–32VDC | D8 direct | 3× PTC heaters | ~25A |
-|| Fan bus | LCTC DC-DC SSR 40A (DC output) | 40A, input 3–32VDC | D13 direct | 9× AVC blowers | ~40.5A |
-|| Motor 1 | LCTC DC-DC SSR 10A (DC output) | 10A @ 30VDC | D5 HIGH = ON | SGM-370 #1 | ~0.8A |
-|| Motor 2 | LCTC DC-DC SSR 10A (DC output) | 10A @ 30VDC | D7 HIGH = ON | SGM-370 #2 | ~0.8A |
-|| Motor 3 | LCTC DC-DC SSR 10A (DC output) | 10A @ 30VDC | D9 HIGH = ON | SGM-370 #3 | ~0.8A |
+| Station 1 PTC | LCTC DC-DC SSR 40A (DC output) | 40A, input 3–32VDC | D4 direct | 3× PTC heaters | ~25A |
+| Station 2 PTC | LCTC DC-DC SSR 40A (DC output) | 40A, input 3–32VDC | D6 direct | 3× PTC heaters | ~25A |
+| Station 3 PTC | LCTC DC-DC SSR 40A (DC output) | 40A, input 3–32VDC | D8 direct | 3× PTC heaters | ~25A |
+| Fan bus | LCTC DC-DC SSR 40A (DC output) | 40A, input 3–32VDC | D13 direct | 9× AVC blowers | ~40.5A |
+| Motor 1 | LCTC DC-DC SSR 10A (DC output) | 10A @ 30VDC | D5 HIGH = ON | SGM-370 #1 | ~0.8A |
+| Motor 2 | LCTC DC-DC SSR 10A (DC output) | 10A @ 30VDC | D7 HIGH = ON | SGM-370 #2 | ~0.8A |
+| Motor 3 | LCTC DC-DC SSR 10A (DC output) | 10A @ 30VDC | D9 HIGH = ON | SGM-370 #3 | ~0.8A |
 **Why LCTC DC-DC SSR for PTC:** 3× 100W PTC = 25A — over the 10A rating of PCB optocoupler modules. LCTC DC-DC SSR 40A handles DC output at 40A with no mechanical contacts. Driven directly from Mega digital pins (3–32VDC input); no NPN transistors, no base resistors, no flyback diodes required. Heatsink required (≈1 W/A → ~25 W at 25A). Motor SSRs (10A): minimal dissipation at 0.8A.
 
 ---
@@ -204,21 +204,21 @@ graph TB
 | Load | Per unit | Qty | Total | Protection |
 |---|---|---|---|---|
 | PTC heater (12V 100W) | 8.3A | 9 | 74.7A (all on) | SSR-40DD per station |
-|| AVC blower (12V 4.5A) | 4.5A | 9 | 40.5A (all on) | SSR-40DD fan bus |
+| AVC blower (12V 4.5A) | 4.5A | 9 | 40.5A (all on) | SSR-40DD fan bus |
 | SGM-370 motor | 0.2A / 0.8A stall | 3 | 0.6A / 2.4A | SSR-10DD |
 | Arduino Mega + sensors | 0.1A | 1 | 0.1A | Buck converter |
 | **Worst-case total** | | | **~104A** | **BMS 200A** |
 
-> **Staged operation is mandatory.** One station full load = ~38.8A (3 PTC + 3 blowers + motor).
+> **Staged operation is mandatory.** One station full load = ~39.3A (3 PTC + 3 blowers + motor + logic).
 > The firmware rotates stations every 30 s so only one is active at a time. Two stations
-> simultaneously = ~77.6A — within the BMS 200A rating but staged operation preserves battery
+> simultaneously = ~78.6A — within the BMS 200A rating but staged operation preserves battery
 > current budget and follows the study's energy-efficient control strategy. Firmware enforces this limit.
 
 **Runtime estimates (1× 200 Ah battery, 144 Ah usable @ 80% DoD × 90% EoL):**
 
 | Mode | Draw | Estimated runtime |
 |---|---|---|
-| Single station (staged, 1 at a time) | ~38.8A | ~3.7 hours |
+| Single station (staged, 1 at a time) | ~39.3A | ~3.7 hours |
 | Quick drying cycle (3 umbrellas) | 27 min | ≈ 9.6 cycles per charge |
 | Standard drying cycle (fully soaked) | 57 min | ≈ 4.4 cycles per charge |
 | Standby (sensors + idle) | ~0.5A | ≈ 12 days |
@@ -245,7 +245,7 @@ graph TB
 |---|---|
 | Wire gauge | 8 AWG battery main · 10 AWG heater/fan branches · 18 AWG motor · 20 AWG logic · 22 AWG signals |
 | Grounding | Single-point: all returns → battery − rail; chassis bonded at one bolt |
-| Connectors | XT60 for battery-to-bus · JST-XH for sensor harnesses |
+| Connectors | Screw terminals (battery → 2-pin terminal → bus bars) · JST-XH for sensor harnesses |
 | Pass-throughs | Rubber grommets at every chamber wall penetration |
 
 ---
@@ -267,7 +267,7 @@ graph TB
 > and thermal fuses. Over-current protection is provided solely by the BMS (200A) and PTC
 > self-regulation. Over-temperature protection is provided solely by PTC self-regulation and
 > the DS18B20 firmware cutoff. The staged-operation firmware prevents sustained high-current
-> draw by limiting the system to one station at a time (~36A vs 200A BMS capacity).
+> draw by limiting the system to one station at a time (~39A vs 200A BMS capacity).
 
 ### What was removed from previous revisions
 

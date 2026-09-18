@@ -51,7 +51,7 @@ Drivetrain chain per station: **SGM-370 DC worm gear motor → rigid coupling 6�
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
 | 3 | SGM-370 DC Worm Gear Motor 12V 6RPM (6mm output shaft) | ₱500 ea = ₱1,500 | makerlab.ph | https://makerlab.ph/products/dc-worm-gear-motor-sgm-370-12v-16rpm |
-| 3 | Rigid shaft coupling 6×8mm (motor output shaft → shaft) | ₱82.84 ea = ~₱166 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
+| 3 | Rigid shaft coupling 6×8mm (motor output shaft → shaft) | ₱82.84 pack of 3 = ₱249 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
 | 3 | 304 SS shaft 6mm × 300mm (shaft — passes through the pillow block middle) | ~₱180 ea = ~₱540 | Lazada | https://www.lazada.com.ph/catalog/?q=304+stainless+steel+rod+6mm+300mm |
 | 3 | UCP06 pillow block bearing (6mm bore) | ₱87 ea = ₱522 | Lazada | https://www.lazada.com.ph/catalog/?q=ucp06+pillow+block+bearing+6mm |
 | 3 | PETIYOUZA Rigid Flange Coupling (6mm bore) | ~₱107 ea = ~₱321 | Lazada | https://www.lazada.com.ph/products/petiyouza-coupler-hardware-power-transmission-parts-r11-rigid-flange-coupling-iron-motor-guide-shaft-diy-metal-coupling-i4018785636-s21726441085.html |
@@ -94,10 +94,10 @@ Drivetrain chain per station: **SGM-370 DC worm gear motor → rigid coupling 6�
 | 1 | Silicone wire kit 6–18AWG | ₱218 | Lazada | https://www.lazada.com.ph/products/pdp-i4880482146.html |
 | 2 | **Model 1007 Tinned Copper Wire Kit** (COLOR 01 + COLOR 02) | 18/20/22/24 AWG wire, 5-color spool | ₱385 ea = ₱770 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/model-1007-18awg-20awg-22-awg-24awg-tinned-copper-wire-5-color-spool-i3154761672-s17328234744.html |
 | 1 | Terminal block 15A barrier (6-pole) | 5V rail distribution | ₱132 | Lazada | https://www.lazada.com.ph/products/terminal-block-15a-25a-45a-60a-80a-100a-600v-barrier-3-poles-to-12-poles-vat-included-prices-i2818578034.html |
-|| 2 | 10-Terminal Bus Bar 150A (Copper) | ~₱120 ea = ₱240 | Lazada | https://www.lazada.com.ph/products/814-terminal-bus-bar-150a-high-current-dc-busbar-12-48v-copper-power-distribution-terminal-block-for-car-boat-i5119401028-s30216194181.html |
-|| 1 | Heat-shrink tube kit | ₱111 | Lazada | https://www.lazada.com.ph/products/pdp-i2569065087.html |
-|| 1 | **1/4W 1% Metal Film Resistor Kit** 600pcs | 47Ω/220Ω/1K/10K/47K/68K/100K/220K/1M — pull-ups | ₱220 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/14w-resistance-1-metal-film-resistor-assorted-kit-each-20-total-600pcs-47-ohms-220-1k-10k-47k-68k-100k-220k-1m-i118492390-s122930341.html |
-|| 1 | **Nylon Standoff Kit M3/M2.5** | M3x6+6mm×30 + M3x10+6mm×20 + M2.5x6+6mm×20 — Mega/LCD/SSR mounts | ₱97 | Lazada | https://www.lazada.com.ph/products/pdp-i2946710217.html |
+| 2 | 10-Terminal Bus Bar 150A (Copper) | ~₱120 ea = ₱240 | Lazada | https://www.lazada.com.ph/products/814-terminal-bus-bar-150a-high-current-dc-busbar-12-48v-copper-power-distribution-terminal-block-for-car-boat-i5119401028-s30216194181.html |
+| 1 | Heat-shrink tube kit | ₱111 | Lazada | https://www.lazada.com.ph/products/pdp-i2569065087.html |
+| 1 | **1/4W 1% Metal Film Resistor Kit** 600pcs | 47Ω/220Ω/1K/10K/47K/68K/100K/220K/1M — pull-ups | ₱220 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/14w-resistance-1-metal-film-resistor-assorted-kit-each-20-total-600pcs-47-ohms-220-1k-10k-47k-68k-100k-220k-1m-i118492390-s122930341.html |
+| 1 | **Nylon Standoff Kit M3/M2.5** | M3x6+6mm×30 + M3x10+6mm×20 + M2.5x6+6mm×20 — Mega/LCD/SSR mounts | ₱97 | Lazada | https://www.lazada.com.ph/products/pdp-i2946710217.html |
 | 1 | Aluminum plate 6061 6mm (motor plate + mounts) | ₱760 | Lazada | https://www.lazada.com.ph/products/pdp-i4449859085.html |
 
 ### 2j. Battery + charger (Lazada)
@@ -130,15 +130,16 @@ Drivetrain chain per station: **SGM-370 DC worm gear motor → rigid coupling 6�
 |---|---|
 | PTC heaters (9×₱484) | ≈ ₱4,356 |
 | AVC blowers (9×₱330) | ≈ ₱2,970 |
-| Motors + drivetrain (3× SGM-370 + rigid couplings + shafts + UCP06 pillow blocks + PETIYOUZA flange) | ≈ ₱3,049 |
-| Control electronics (Lazada) | ≈ ₱1,984 |
+| Motors + drivetrain (3× SGM-370 + couplings 6×8mm + 3× shafts + 3× UCP06 pillow blocks + PETIYOUZA flange) | ≈ ₱3,132 |
+| Aluminum plate 6061 6mm (motor plate + mounts) | ≈ ₱760 |
+| Control electronics (Lazada) | ≈ ₱1,314 |
 | SSRs (taxnele) + heatsinks + terminals | ≈ ₱2,051 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
-| Wiring + consumables (Lazada) | ≈ ₱2,500 |
+| Wiring + consumables (Lazada) | ≈ ₱2,400 |
 | DC Rocker Switch 50A | ~₱190 |
 | Battery (1× 200Ah) + charger | ≈ ₱11,700–12,200 |
-| Hardware store consumables | ≈ ₱490 |
-| **GRAND TOTAL** | **≈ ₱28,700–29,000** |
+| Hardware store consumables (alt. to the 4 online items) | ≈ ₱490 |
+| **GRAND TOTAL** | **≈ ₱29,000** (₱28,700–29,300 with price swings) |
 
 ---
 

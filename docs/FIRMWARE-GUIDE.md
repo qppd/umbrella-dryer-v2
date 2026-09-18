@@ -1,6 +1,6 @@
 # Firmware Guide — 12V DC + AVC Blower Fans
 
-> Complete firmware reference for the Umbrella Dryer V2 running on a **12V DC-only** system. AVC blowers are controlled via direct PWM from Mega pins (D10/D11/D12). PTC heaters and worm motors are switched by SSRs (SSR-40DD for PTC, SSR-10A for motors). No ESCs, no Servo library.
+> Complete firmware reference for the Umbrella Dryer V2 running on a **12V DC-only** system. AVC blowers are controlled via direct PWM from Mega pins (D10/D11/D12). PTC heaters and worm motors are switched by SSRs (SSR-40DD for PTC, SSR-10A for motors). No ESCs, no Servo library. DRY phase ends early when chamber humidity bottoms out (≤ 60% RH) — the energy-efficient control of the study.
 
 ---
 
@@ -8,12 +8,12 @@
 
 ### 1a. Operational Sequence
 
-1. **Boot** → Initialized. All SSR outputs LOW (OFF). Fan bus SSR (D13) is OFF. Blowes remain off until cycle starts.
+1. **Boot** → Initialized. All SSR outputs LOW (OFF). Fan bus SSR (D13) is OFF. Blowers remain off until cycle starts.
 2. **Idle** → Reads DHT22 (humidity) + DS18B20 (temperature), displays on LCD. Button waits for input. Status LED is **GREEN**.
 3. **Button press** → Starts a 4-phase drying cycle:
-   - **Phase 1 — Preheat** (Chamber Temp < 45°C): Master fan bus SSR (D13) ON. Blowes throttle to FULL (`analogWrite(D, 255)`). PTC heater SSRs D4, D6, D8 are energized (ON) sequentially to warm up the chamber. Motors remain OFF. Status LED is **RED** (heating active).
-   - **Phase 2 — Dry** (Chamber Temp ≥ 45°C): Chamber temperature has reached target. Station worm gear motor SSRs D5, D7, D9 are switched ON to spin the umbrellas at 6 RPM. PTC heaters and blowes continue running. Timer starts counting down (default 15 minutes). Status LED is **YELLOW** (drying/spinning).
-   - **Phase 3 — Cool** (Timer Done): PTC heaters switched OFF. Motors switched OFF (umbrellas stop spinning). Blowes remain running at full speed for 2 minutes to purge hot air and cool down the components. Status LED is **YELLOW**.
+   - **Phase 1 — Preheat** (Chamber Temp < 45°C): Master fan bus SSR (D13) ON. Blowers throttle to FULL (`analogWrite(D, 255)`). PTC heater SSRs D4, D6, D8 are energized (ON) sequentially to warm up the chamber. Motors remain OFF. Status LED is **RED** (heating active).
+   - **Phase 2 — Dry** (Chamber Temp ≥ 45°C): Chamber temperature has reached target. Station worm gear motor SSRs D5, D7, D9 are switched ON to spin the umbrellas at 6 RPM. PTC heaters and blowers continue running. Timer starts counting down (default 15 minutes). **Humidity auto-stop:** if DHT22 reads ≤ 60% RH after at least 3 minutes of drying, the cycle skips straight to COOL — no wasted energy on already-dry umbrellas. Status LED is **YELLOW** (drying/spinning).
+   - **Phase 3 — Cool** (Timer Done): PTC heaters switched OFF. Motors switched OFF (umbrellas stop spinning). Blowers remain running at full speed for 2 minutes to purge hot air and cool down the components. Status LED is **YELLOW**.
    - **Phase 4 — Done**: All loads de-energized. Master fan bus SSR OFF. Buzzer beeps 3 times. LCD shows "COMPLETE". Status LED is **GREEN**.
 4. **Safety cutoff (any active phase)**: If DS18B20 reads >65°C, all SSRs and PWM signals are immediately killed (latched OFF). LCD displays "THERMAL CUTOFF!" and the RED LED blinks.
 5. **Button repress (any active phase)**: Functions as an Emergency Stop. Immediately cuts all loads and returns the system to IDLE.
@@ -55,7 +55,9 @@
 | **Loop Tick Interval** | 500 ms | Prevents sensor bus congestion; provides stable sensor readings |
 | **Preheat Threshold** | 45.0°C | Chamber air temp target required to enable safe centrifugal drying |
 | **Thermal Cutoff** | 65.0°C | Absolute maximum chamber ceiling; triggers immediate system lock |
-| **Dry Phase Timer** | 15 minutes | Standard cycle length; sufficient for complete moisture removal |
+| **Dry Phase Timer** | 15 minutes (max) | Standard cycle ceiling; sufficient for complete moisture removal |
+| **Humidity Auto-Stop** | ≤ 60% RH, after ≥ 3 min drying | Chamber RH bottoms out once umbrellas are dry — cycle skips to COOL; saves the unused portion of the 15-minute budget |
+| **Min Dry Time before Auto-Stop** | 3 minutes | Guards against stale/spike DHT22 readings ending the cycle early |
 | **Cool Phase Timer** | 2 minutes | Blower-only overrun to dissipate residual heater block temperature |
 | **Debounce Delay** | 300 ms | Ignores button contact bounce and microphonics |
 
@@ -110,7 +112,9 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);  // Alternate address: 0x3F
 // ---- Configuration and Constants ----
 const float PREHEAT_TEMP   = 45.0;                      // °C - dry trigger
 const float CUTOFF_TEMP    = 65.0;                      // °C - safety threshold
-const unsigned long DRY_TIME_MS  = 15UL * 60UL * 1000UL; // 15-minute drying timer
+const float HUMIDITY_STOP  = 60.0;                      // % RH - early stop: chamber is dry
+const unsigned long MIN_DRY_TIME_MS = 3UL * 60UL * 1000UL; // min drying before auto-stop is allowed
+const unsigned long DRY_TIME_MS  = 15UL * 60UL * 1000UL; // 15-minute drying timer (max)
 const unsigned long COOL_TIME_MS = 2UL * 60UL * 1000UL;  // 2-minute cooling run
 const int PWM_FULL         = 255;                       // Full blower speed
 const int PWM_OFF          = 0;                         // Blower off
@@ -371,6 +375,18 @@ void loop() {
         applyStage(true);   // staged: PTC + motor for active station
         rotateStage(now);
 
+        // ---- Humidity auto-stop (energy-efficient control) ----
+        // Chamber RH bottoms out once the umbrellas are dry — end early.
+        // The 3-minute floor prevents a stale DHT22 reading from ending the cycle.
+        if (elapsed >= MIN_DRY_TIME_MS && !isnan(humidity) && humidity <= HUMIDITY_STOP) {
+          Serial.print("HUMIDITY TARGET REACHED (");
+          Serial.print(humidity);
+          Serial.println("% RH). ENDING DRY PHASE EARLY.");
+          currentPhase = STATE_COOL;
+          phaseStart = now;
+          break;
+        }
+
         if (elapsed >= DRY_TIME_MS) {
           Serial.println("TIMER ELAPSED. ENTERING COOL-DOWN");
           currentPhase = STATE_COOL;
@@ -524,7 +540,7 @@ void loop() {
 | LCD blank / garbage | Try address 0x3F; call `lcd.init()`; on the **Mega, I2C is pins 20/21 — NOT A4/A5** |
 | Heater SSR doesn't trigger | D4/D6/D8 → SSR IN+; SSR IN− → GND; COM → +12V, NO → heaters |
 | Motor SSR doesn't trigger | D5/D7/D9 → SSR-10A IN+; SSR IN− → GND; COM → +12V, NO → motor |
-| Relay clicks but load stays off | Check COM/NO high-current side: 12V → COM, load → NO |
+| SSR energized but load stays off | Check the high-current side: 12V → output COM, load → output NO |
 | Button not responding | D14 → button pin 1, pin 2 → GND; INPUT_PULLUP; LOW = pressed |
 | Thermal cutoff triggers immediately | DS18B20 may be heated by direct contact — mount probe in the air stream, not touching heater body |
 | Buck output not 5V | Adjust potentiometer with multimeter BEFORE connecting to Mega; must be 5.0V ± 0.1V |
@@ -534,8 +550,8 @@ void loop() {
 
 ## 8. Staged operation (IMPORTANT — current budget)
 
-One station's full load = 3 PTC (25A) + 3 blowers (13.5A) + motor (0.8A) ≈ **39.3A**.
-Staged operation keeps worst-case draw ≈ **38.8A** by running only one station at a time.
+One station's full load = 3 PTC (25A) + 3 blowers (13.5A) + motor (0.8A) + logic (0.5A) ≈ **39.3A**.
+Staged operation keeps the worst-case draw at ≈ **39.3A** by running only one station at a time — well under the 200A BMS limit.
 
 The firmware **always** operates in staged mode — heaters round-robin 30 s per station; only the active station's motor and blower PWM run. All other stations' PTC and PWM are OFF.
 

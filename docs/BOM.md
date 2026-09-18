@@ -30,7 +30,7 @@
 | Qty | Part | Notes | Price |
 |---|---|---|---|
 | 1 | **LiFePO4 12.8V 200Ah w/ BMS 200A (PowMr)** | Single battery, 200Ah, 2,560Wh; **ORDER FIRST** | ~₱8,900 |
-|| 1 | **LiFePO4 charger 14.6V 20A** | VariCore alligator clip; CC/CV; LED indicator; never lead-acid | ~₱2,809 |
+| 1 | **LiFePO4 charger 14.6V 20A** | VariCore alligator clip; CC/CV; LED indicator; never lead-acid | ~₱2,809 |
 
 ### 3b. DC power distribution
 
@@ -42,7 +42,7 @@
 
 > **No fuses, no ANL breakers.** Main power controlled by 50A DC rocker switch. Emergency kill = flip rocker OFF + unplug battery cable.
 
-|| Wire: 8 AWG battery main, 10 AWG heater/fan branches, 18 AWG motor, 20 AWG logic, 22 AWG signals. All stranded copper. No fuses. Main power disconnected via 50A DC rocker switch.
+> **Wire:** 8 AWG battery main, 10 AWG heater/fan branches, 18 AWG motor, 20 AWG logic, 22 AWG signals. All stranded copper. No fuses. Main power disconnected via 50A DC rocker switch.
 
 ### 3c. High-current switching (12V DC)
 
@@ -82,15 +82,11 @@
 
 | Qty | Part | Notes | Price |
 |---|---|---|---|
-||| 4 | **Solid State Relay taxnele 40A (DC-DC)** | SSR-40DD (3-32VDC input, 5-60VDC output); 3× PTC + 1× fan bus; direct-drive from Mega | ₱239.17 ea = ₱956.68 |
-|||| 3 | **Solid State Relay taxnele 10A (DC-DC)** | SSR-10DD (3-32VDC input, 5-60VDC output); motor control (replaces optocoupler module) | ₱218.22 ea = ₱654.66 |
-|| 9 | **AVC 12V DC blower fan** | Super High Speed Blower, 80×80×38mm, PWM control, ball bearing, 4.5A each | ₱330 ea = ₱2,970 |
-| 9 | **12V 100W PTC heater element (MXKJING T30)** | Self-regulating ceramic — 3 per station | ~₱484 ea = ~₱4,356 |
-|| 4 | Heatsinks for SSR-40A | ~₱50 ea | ~₱200 |
-| 1 | 16×2 I2C LCD | UI display | ₱165 |
-| 3 | 5 mm LEDs — red, yellow, green | Status indicators | ₱29 |
-| 1 | Active buzzer 5 V | Audible alert | ₱35 |
-| 1 | Arcade LED push button (5 V) | Start button | ₱45 |
+| 4 | Solid State Relay taxnele 40A (DC-DC) | SSR-40DD (3-32VDC input, 5-60VDC output); 3× PTC + 1× fan bus; direct-drive from Mega | ₱956.68 |
+| 3 | Solid State Relay taxnele 10A (DC-DC) | SSR-10DD (3-32VDC input, 5-60VDC output); motor control | ₱654.66 |
+| 4 | SSR Heatsink BLACK (80×50×50mm) | One per 40A SSR | ₱440 |
+| 9 | AVC 12V DC blower fan | Super High Speed Blower, 80×80×38mm, PWM control, 4.5A each | ₱2,970 |
+| 9 | 12V 100W PTC heater element (MXKJING T30) | Self-regulating ceramic — 3 per station | ₱4,356 |
 | 1 | Screw terminal 2-pin | Battery in | ₱10 |
 | 1 | Screw terminal 3-pin | Sensor | ₱10 |
 
@@ -146,8 +142,8 @@ Load profile (staged, one station at a time):
 
 | Phase | Draw | Notes |
 |---|---|---|
-| PREHEAT / DRY (active station) | ~38.8A | 3 PTC (25A) + 3 blowers (13.5A) + motor (0.8A) + logic (0.5A) |
-| COOL | ~13.5A | Blowers only |
+| PREHEAT / DRY (active station) | ~39.3A | 3 PTC (25A) + 3 blowers (13.5A) + motor (0.8A) + logic (0.5A) |
+| COOL | ~14A | Blowers (13.5A) + logic (0.5A) |
 | Standby | ~0.5A | Sensors + LCD |
 
 Energy per drying cycle (3 umbrellas per cycle):
@@ -166,7 +162,7 @@ Energy per drying cycle (3 umbrellas per cycle):
 |---|---|
 | Quick cycles | ≈ **9.6 cycles (~29 umbrellas)** per charge |
 | Standard cycles | ≈ **4.4 cycles (~13 umbrellas)** per charge |
-| Continuous staged operation | ≈ **3.7 hours** (144 Ah ÷ 38.8A) |
+| Continuous staged operation | ≈ **3.7 hours** (144 Ah ÷ 39.3A) |
 | Standby | ≈ 12 days (144 Ah ÷ 0.5A) |
 
 **Capacity requirement vs daily scenarios:**
@@ -227,10 +223,10 @@ Energy per drying cycle (3 umbrellas per cycle):
 | 1 | **Arduino Mega 2560 + Terminal Board** | CH340G + screw terminal board | ₱413 | Lazada | https://www.lazada.com.ph/products/mega-2560-16au-ch340g-based-on-arduino-arduino-mega-2560-terminal-board-i123143829-s20504057319.html |
 | 1 | **DHT22 sensor module** | humidity + temp, 3-pin | ₱220 | Lazada | https://www.lazada.com.ph/products/pdp-i132179919.html |
 | 1 | **DS18B20 temperature sensor module** | LEOOYI, 3-pin cable + pluggable terminal adapter | ₱141 | Lazada | https://www.lazada.com.ph/products/pdp-i4398946755-s24721782197.html |
-|| 1 | LCD 16×2 I2C | display | ₱165 | Lazada | https://www.lazada.com.ph/products/1602-16x2-character-lcd-module-display-hd44780-with-i2c-i104139284-s1630402476.html |
+| 1 | LCD 16×2 I2C | display | ₱165 | Lazada | https://www.lazada.com.ph/products/1602-16x2-character-lcd-module-display-hd44780-with-i2c-i104139284-s1630402476.html |
 | 1 | **DC Rocker Switch 50A 12V** | Main power disconnect (heavy duty toggle) | ~₱190 | Lazada | https://www.lazada.com.ph/catalog/?q=50A+12V+DC+heavy+duty+toggle+switch |
 | 3 | **PETIYOUZA Rigid Flange Coupling 6mm** | 6mm bore — shaft end → umbrella hub | ~₱107 ea = ~₱321 | Lazada | https://www.lazada.com.ph/products/petiyouza-coupler-hardware-power-transmission-parts-r11-rigid-flange-coupling-iron-motor-guide-shaft-diy-metal-coupling-i4018785636-s21726441085.html |
-| 3 | Rigid shaft coupling 6×8mm | motor output shaft → shaft | ₱82.84 ea = ~₱166 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
+| 3 | Rigid shaft coupling 6×8mm | motor output shaft → shaft | ₱82.84 ea (pack of 3) = ₱249 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
 | 3 | 304 SS shaft 6mm × 300mm | shaft — passes through the UCP06 pillow block middle | ~₱180 ea = ~₱540 | Lazada | https://www.lazada.com.ph/catalog/?q=304+stainless+steel+rod+6mm+300mm |
 | 3 | **UCP06 pillow block bearing (6mm bore)** | holds the shaft mid-span, absorbs radial load | ₱87 ea = ₱522 | Lazada | https://www.lazada.com.ph/catalog/?q=ucp06+pillow+block+bearing+6mm |
 | 1 | LED 5mm (R/Y/G) | status | ₱29 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/5mm-led-diode-assorted-colors-i144137387-s166391718.html |
@@ -250,7 +246,7 @@ Energy per drying cycle (3 umbrellas per cycle):
 | 1 | **Screws M3/M4/M5 stainless 320pcs kit** | M3 8/12/16mm + M4 + washers/nuts — Mega, plate, chamber mounts | ~₱298 | Lazada | https://www.lazada.com.ph/products/320pcs-380pcs-stainless-steel-screws-bolts-nuts-kit-m3-m4-m5-hex-socket-fasteners-assortment-set-anti-loosening-washers-gaskets-diy-home-furniture-auto-repair-hardware-tool-cod-ready-stock-ph-i15532367775.html |
 | 1 | **PROSEAL silicone sealant (clear)** | 100% RTV, waterproof, weather-resistant — seam sealing | ~₱199 | Lazada | https://www.lazada.com.ph/products/proseal-silicone-sealant-clear-white-black-brown-i4013402307.html |
 | 1 | **Rubber grommets 180pcs (8 sizes)** | Wire passthrough / chamber wall penetrations | ~₱249 | Lazada | https://www.lazada.com.ph/products/same-day-shipping-180pcs-rubber-grommet-assortment-contain-8-popular-sizes-gasket-firewall-hole-plug-set-electrical-wire-gasket-kit-for-car-high-quality-cyb-rubber-grommet-i3692147637.html |
-| 1 | Zip ties, screws, sealant, grommets | consumables | ~₱490 (hardware bulk alt.) | hardware | — |
+| 1 | Zip ties, screws, sealant, grommets | consumables — hardware-store bulk alternative to the 4 online items above | ~₱490 | hardware | — |
 
 ---
 
@@ -260,11 +256,11 @@ Energy per drying cycle (3 umbrellas per cycle):
 |---|---|
 | PTC heaters (9×₱484) | ≈ ₱4,356 |
 | AVC blowers (9×₱330) | ≈ ₱2,970 |
-| Motors + drivetrain (3× SGM-370 + 3× rigid couplings + 3× shafts + 3× pillow blocks + 3× PETIYOUZA flange) | ≈ ₱3,049 |
-| taxnele SSR 40A (4×₱239) + SSR 10A (3×₱218) + SSR Heatsink BLACK | ≈ ₱2,051 |
-| Control electronics (Mega w/ terminal board ₱413, DHT22 ₱220, DS18B20 ₱141, LCD ₱165, LM2596S ₱155) | ≈ ₱1,094 |
+| Motors + drivetrain + mounts (3× SGM-370, couplings 6×8mm, 3× shafts, 3× UCP06 pillow blocks, 3× PETIYOUZA flange, 6mm aluminum plate) | ≈ ₱3,892 |
+| taxnele SSR 40A (4×₱239) + SSR 10A (3×₱218) + SSR Heatsink BLACK (4×₱110) | ≈ ₱2,051 |
+| Control electronics (Mega w/ terminal board ₱413, DHT22 ₱220, DS18B20 ₱141, LCD ₱165, LM2596S ₱155, resistor kit ₱220) | ≈ ₱1,314 |
 | Battery (1× 200Ah) + charger | ≈ ₱11,700–12,200 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
-| Wiring, connectors, consumables | ≈ ₱2,500–2,900 |
+| Wiring, connectors, consumables | ≈ ₱2,400 |
 | DC Rocker Switch 50A | ~₱190 |
-| **TOTAL** | **≈ ₱29,900–30,200** |
+| **TOTAL** | **≈ ₱29,000** (₱28,700–29,300 with price swings) |

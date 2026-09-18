@@ -33,7 +33,7 @@
 - **Control:** Arduino Mega 2560, DHT22 + DS18B20, LCD 16×2 I2C (pins 20/21)
 - **Thermal safety:** DS18B20 firmware cutoff 65°C + PTC self-regulation + BMS 200A (no thermal fuses)
 - **Staged operation:** one station at a time (firmware-enforced 30s rotation)
-- **Cost:** ≈ ₱29,900–30,200 (battery + charger included)
+- **Cost:** ≈ ₱29,000 (battery + charger included)
 
 ---
 

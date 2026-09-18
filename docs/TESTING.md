@@ -17,7 +17,7 @@
 
 ## 2. L1 — Smoke test
 
-1. Disconnect all SSR outputs (no PTC, no motors, no blowes).
+1. Disconnect all SSR outputs (no PTC, no motors, no blowers).
 2. Connect battery.
 3. **Check:**
    - [ ] Buck LED lights, output = 5.0V at Mega **5V pin** (NOT barrel jack)
@@ -36,10 +36,10 @@
 1. Connect only SSR modules (no loads on COM/NO).
 2. Press button → PREHEAT phase.
 3. **Check:**
-   - [ ] D4 goes HIGH → station 1 PTC SSR clicks ON
-   - [ ] D13 goes HIGH → fan bus SSR clicks ON (blowers will spin)
+   - [ ] D4 goes HIGH → station 1 PTC SSR energizes (ON indicator lights)
+   - [ ] D13 goes HIGH → fan bus SSR energizes ON (blowers will spin)
 4. Wait for DRY phase:
-   - [ ] D5 goes HIGH → station 1 motor SSR clicks ON
+   - [ ] D5 goes HIGH → station 1 motor SSR energizes ON
    - [ ] After 30s rotation: D5→OFF, D6→HIGH (station 2 PTC), D7→HIGH (station 2 motor)
 5. COOL phase: all SSRs OFF, blowers stay ON.
 6. If PTC SSR doesn't trigger → check D4 connection to SSR IN+; IN− → GND; COM → +12V, NO → heaters.
@@ -87,15 +87,15 @@
 
 ## 4. L3 — Integration test (full cycle)
 
-1. Connect all loads: PTC heaters, motors, blowes.
+1. Connect all loads: PTC heaters, motors, blowers.
 2. Place umbrellas on stations.
 3. Press button → observe full cycle:
 
 | Phase | Expected | Time |
 |---|---|---|
-| PREHEAT | Blowes spin, PTC warm, staged station rotation every 30s | Until DS18B20 ≥ 45°C |
-| DRY | Motor spins umbrella (staged), blowes + PTC stay on | 15 min timer |
-| COOL | Motor off, PTC off, blowes run for cooling | 2 min |
+| PREHEAT | Blowers spin, PTC warm, staged station rotation every 30s | Until DS18B20 ≥ 45°C |
+| DRY | Motor spins umbrella (staged), blowers + PTC stay on | Max 15 min — ends early at ≤ 60% RH (after ≥ 3 min) |
+| COOL | Motor off, PTC off, blowers run for cooling | 2 min |
 | COMPLETE | Everything off, buzzer beeps 3×, LED green | Until button press |
 
 4. **Check:**
@@ -105,6 +105,8 @@
    - [ ] Thermal cutoff does NOT trigger during normal operation
    - [ ] Staged rotation verified: only one station's PTC + motor + blower ON at a time
    - [ ] Blower PWM works at full speed during PREHEAT/DRY
+   - [ ] Humidity auto-stop: with a dry chamber (RH ≤ 60%), DRY ends before the 15-min timer
+   - [ ] Min-dry guard: a wet load keeps RH > 60% → DRY runs the full 15 min
 
 ---
 

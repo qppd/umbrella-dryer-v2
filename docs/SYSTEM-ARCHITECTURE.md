@@ -61,7 +61,7 @@ flowchart TD
 
 ## 2. Power architecture
 
-Single domain: 12V DC throughout. Staged operation keeps one station active at a time (~38.8A). BMS 200A provides over-current protection.
+Single domain: 12V DC throughout. Staged operation keeps one station active at a time (~39.3A). BMS 200A provides over-current protection.
 
 ```mermaid
 flowchart LR
@@ -170,7 +170,7 @@ sequenceDiagram
     U->>FW: Press start (D14)
     FW->>S: Self-test read (humidity, temp)
     FW->>R: Fan bus ON (D13)
-    FW->>P: Blowes FULL (analogWrite(D, 255))
+    FW->>P: Blowers FULL (analogWrite(D, 255))
 
     Note over FW,R,P: PREHEAT — staged: one station PTC at a time (30s each)
 
@@ -188,8 +188,8 @@ sequenceDiagram
         end
     end
 
-    Note over FW: DRY phase — staged motor + PTC + blowes, 15 min timer
-    Note over FW: COOL phase — blowes only, 2 min, then ALL OFF
+    Note over FW: DRY phase — staged motor + PTC + blowers, max 15 min (auto-stop at ≤ 60% RH)
+    Note over FW: COOL phase — blowers only, 2 min, then ALL OFF
 
     FW-->>U: COMPLETE on LCD + buzzer 3×
     U->>U: Unload umbrellas, empty drip tray
@@ -201,7 +201,7 @@ sequenceDiagram
 |---|---|
 | **No mains anywhere** | Entire system 12V DC — no RCD, no changeover, no AC wiring |
 | **Defense in depth on heat** | DS18B20 → PTC self-regulation → BMS: three layers |
-| **Staged operation** | Firmware rotates stations every 30s; only one station's heaters active at a time; keeps draw ~38.8A |
+| **Staged operation** | Firmware rotates stations every 30s; only one station's heaters active at a time; keeps draw ~39.3A |
 | **Direct-drive SSRs** | All SSRs active-HIGH, driven directly from Mega pins — no NPN transistors, no optocoupler modules |
 | **PWM blower control** | AVC blowers accept 5V PWM directly from Mega — no ESC needed |
 | **Worm drive self-locking** | SGM-370 motors hold position when de-energized — no brake, no holding current |

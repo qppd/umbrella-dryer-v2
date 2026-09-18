@@ -71,7 +71,7 @@
 | ☐ | 1 | PROSEAL silicone sealant (clear) | ~₱199 |
 | ☐ | 1 | Rubber grommets 180 pcs (8 sizes) | ~₱249 |
 
-**ESTIMATED TOTAL ≈ ₱29,900–30,200** (battery + charger included)
+**ESTIMATED TOTAL ≈ ₱29,000** (₱28,700–29,300 with price swings; battery + charger included)
 
 ## Checkout variant checks
 

@@ -28,7 +28,7 @@
 | **D7** | out | Station 2 motor SSR-10A (input +) | HIGH = ON | 22 AWG — SGM-370 #2 |
 | **D8** | out | Station 3 PTC SSR-40DD (input +) | HIGH = ON | 22 AWG — heater group 3 |
 | **D9** | out | Station 3 motor SSR-10A (input +) | HIGH = ON | 22 AWG — SGM-370 #3 |
-| **D13** | out | Fan bus SSR-40DD (input +) | HIGH = ON | 22 AWG — powers all 9 blowes |
+| **D13** | out | Fan bus SSR-40DD (input +) | HIGH = ON | 22 AWG — powers all 9 blowers |
 | **D10** | out (PWM) | Blower PWM — Station 1 | — | `analogWrite(D10, val)` 0–255 |
 | **D11** | out (PWM) | Blower PWM — Station 2 | — | `analogWrite(D11, val)` 0–255 |
 | **D12** | out (PWM) | Blower PWM — Station 3 | — | `analogWrite(D12, val)` 0–255 |
@@ -82,12 +82,12 @@ Each station's 3 PTC heaters (~25A) are switched by one DC-output SSR-40DD (40A,
 
 ## 4. Motor branch — LCTC DC-DC SSR 10A (D5/D7/D9)
 
-|| SSR terminal | Goes to |
-||---|---|
-|| IN+ | Mega pin D5/D7/D9 |
-|| IN− | GND |
-|| COM (input side) | +12V motor branch |
-|| NO (output side) | SGM-370 motor + |
+| SSR terminal | Goes to |
+|---|---|
+| IN+ | Mega pin D5/D7/D9 |
+| IN− | GND |
+| COM (input side) | +12V motor branch |
+| NO (output side) | SGM-370 motor + |
 
 Active-HIGH: `digitalWrite(pin, HIGH)` = SSR ON. Floating pin at boot = SSR OFF (no input current).
 
@@ -139,7 +139,7 @@ Each of the 9 AVC blowers accepts PWM duty cycle directly from Mega pins via `an
 |---|---|
 | Battery → screw terminal → bus | 8 AWG |
 | Bus → station PTC SSR → heaters | 10 AWG |
-|| Bus → fan SSR → blower distribution | 10 AWG (18 AWG signal pigtails) |
+| Bus → fan SSR → blower distribution | 10 AWG (18 AWG signal pigtails) |
 | Bus → motor branch → module → motor | 18 AWG |
 | Bus → buck IN+ | 20 AWG |
 | Buck OUT → 5V rail | 20 AWG |
@@ -148,12 +148,12 @@ Each of the 9 AVC blowers accepts PWM duty cycle directly from Mega pins via `an
 ## 10. Safety features
 
 1. **PTC self-regulation** — current drops as element temperature rises
-2. **DS18B20 firmware cutoff** at 65 °C — cuts PTC SSRs + motor relays + fan bus
+2. **DS18B20 firmware cutoff** at 65 °C — cuts PTC SSRs + motor SSRs + fan bus
 3. **Boot-safe by design** — All SSRs are active-HIGH (floating pin at boot = SSR OFF). PWM pins default LOW = blowers off. `allOff()` called first in `setup()`.
    channels have onboard pull-ups (OFF); firmware writes safe states first in `setup()`
 4. **No mains voltage** — entire system is SELV
 5. **Single-point DC ground** — all returns meet at one bus bar
-| Emergency kill | pull battery cable from 2-pin screw terminal OR flip 50A rocker switch OFF |
+6. **Emergency kill** — pull battery cable from 2-pin screw terminal OR flip 50A rocker switch OFF
 7. **BMS 200A** — over-current protection on battery output
 
 > With fuses removed, the BMS and firmware cutoff are the only over-current/over-temperature

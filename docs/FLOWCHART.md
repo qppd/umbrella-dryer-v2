@@ -25,9 +25,11 @@ flowchart TD
     DRY --> READ2["Read sensors"]
     READ2 --> TOVER2{T > 65°C?}
     TOVER2 -- yes --> CUTOFF
-    TOVER2 -- no --> TIMER{15 min done?}
+    TOVER2 -- no --> RH{RH ≤ 60%?<br/>after ≥ 3 min drying}
+    RH -- yes --> COOL["COOL<br/>PTC OFF, motor OFF<br/>Blowers stay ON<br/>2 min timer"]
+    RH -- no --> TIMER{15 min done?}
     TIMER -- no --> DRY
-    TIMER -- yes --> COOL["COOL<br/>PTC OFF, motor OFF<br/>Blowers stay ON<br/>2 min timer"]
+    TIMER -- yes --> COOL
 
     COOL --> COOL_TIMER{2 min done?}
     COOL_TIMER -- no --> COOL
@@ -59,6 +61,8 @@ flowchart TD
 ```
 
 > **Defense in depth:** DS18B20 firmware cutoff (65°C) → PTC self-regulation → BMS 200A. Three independent layers.
+>
+> **Energy-efficient control:** DRY exits early once chamber RH ≤ 60% (min 3 min drying) — the study's humidity-based control.
 
 ---
 
@@ -96,6 +100,7 @@ flowchart LR
 | IDLE | OFF | OFF | OFF | Green | — |
 | PREHEAT | Staged (1 at a time) | OFF | ON (full speed) | Red | — |
 | DRY | Staged (1 at a time) | Staged (1 at a time) | ON (full speed) | Yellow | — |
+| DRY (auto-stop) | → COOL | → COOL | → COOL | Yellow | — |
 | COOL | OFF | OFF | ON (full speed) | Yellow | — |
 | COMPLETE | OFF | OFF | OFF | Green | 3 beeps |
 | THERMAL CUTOFF | OFF | OFF | OFF | Red (blink) | 1 chirp (on failed reset) |

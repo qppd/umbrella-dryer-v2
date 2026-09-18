@@ -209,7 +209,7 @@ flowchart LR
 
 ## 7. Design Notes
 
-1. **Staged operation is mandatory.** One station draws ~38.8A (3 PTC + 3 blowers + motor); two stations ≈ 77.6A. The BMS is rated 200A, so this is not a fuse limitation — staged operation preserves battery/BMS current budget and follows the study's energy-efficient control strategy. Firmware enforces one station at a time with 30s rotation.
+1. **Staged operation is mandatory.** One station draws ~39.3A (3 PTC + 3 blowers + motor + logic); two stations ≈ 78.6A. The BMS is rated 200A, so this is not a fuse limitation — staged operation preserves battery/BMS current budget and follows the study's energy-efficient control strategy. Firmware enforces one station at a time with 30s rotation.
 2. **PTC self-limiting.** PTC elements reduce current as temperature rises. Inrush is brief; steady-state per station ~15–20A.
 3. **No mains voltage anywhere.** Entire system is 12V DC SELV.
 4. **PTC heaters and fan bus are switched by SSR-40DD solid-state relays** (input 3–32VDC, DC output, 40A rated). Driven directly from Mega digital pins — no NPN transistors, no base resistors, no flyback diodes needed. Active HIGH = ON; no input current = OFF (boot-safe).

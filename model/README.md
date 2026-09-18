@@ -34,7 +34,7 @@ The 3D model shows:
 |---|---|
 | Station spacing | **700mm** center-to-center |
 | Umbrella hub height | ~300mm from base |
-|| Motor mount plate | 100×80mm aluminum 6mm |
+| Motor mount plate | 100×80mm aluminum 6mm |
 | Motor drivetrain | rigid coupling 6×8mm · 6mm × 300mm SS shaft · UCP06 pillow block (mid-shaft) · PETIYOUZA flange, 6mm bore (motor → shaft → hub) |
 | PTC heater spacing | ≥ 30mm between elements (airflow gap) |
 | Fan duct clearance | ≥ 10mm from umbrella fabric |

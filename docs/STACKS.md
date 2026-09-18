@@ -38,11 +38,11 @@ No Servo library needed — blowers take duty-cycle PWM straight from Mega pins.
 |---|---|
 | PTC heaters (9×₱484) | ≈ ₱4,356 |
 | AVC blowers (9×₱330) | ≈ ₱2,970 |
-| Motors + drivetrain (3× SGM-370 + couplings + shafts + pillow blocks) | ≈ ₱3,049 |
+| Motors + drivetrain (3× SGM-370 + couplings + shafts + pillow blocks + plate) | ≈ ₱3,892 |
 | taxnele SSR 40A (4×) + SSR 10A (3×) + heatsinks | ≈ ₱2,051 |
-| Control electronics (Mega, sensors, LCD, buck) | ≈ ₱1,094 |
+| Control electronics (Mega, sensors, LCD, buck, resistors) | ≈ ₱1,314 |
 | Battery (1× 200Ah) + charger | ≈ ₱11,700–12,200 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
-| Wiring + consumables | ≈ ₱2,500–2,900 |
+| Wiring + consumables | ≈ ₱2,400 |
 | DC Rocker Switch 50A | ~₱190 |
-| **Total** | **≈ ₱29,900–30,200** |
+| **Total** | **≈ ₱29,000** |
