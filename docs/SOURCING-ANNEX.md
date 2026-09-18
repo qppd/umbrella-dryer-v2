@@ -120,16 +120,18 @@
 
 > **⚠️ ORDER BATTERY FIRST** — longest shipping time. Verify seller rating ≥4.5.
 
-### 2k. Hardware store (physical — Robinsons/Wildepanda/etc.)
+### 2k. Cable management & consumables
 
-| Item | Est. Price | Note |
-|---|---|---|
-| Zip ties (assorted) | ~₱50 | |
-| M3/M4 screws + nuts (assorted) | ~₱150 | Stainless preferred |
-| Silicone sealant | ~₱100 | |
-| Plastic drip tray | ~₱100 | Station base |
-| Velcro strips | ~₱50 | Board mounting |
-| Rubber grommets | ~₱40 | Wire passthrough |
+| Qty | Item | Spec | Price | Store | Link |
+|---|---|---|---|---|---|
+| 1 | **Zip ties** 100pcs nylon, UV-resistant, heavy duty | 3-tooth buckle; wire bundling | ~₱84 | Lazada | https://www.lazada.com.ph/products/100pcs-heavy-duty-nylon-cable-zip-ties-uv-resistant-multipurpose-i4164586303.html |
+| 1 | **Screw kit** M3/M4/M5 stainless steel 320pcs | M3 8/12/16mm screws + nuts + washers; Mega/plate/chamber mounts | ~₱298 | Lazada | https://www.lazada.com.ph/products/320pcs-380pcs-stainless-steel-screws-bolts-nuts-kit-m3-m4-m5-hex-socket-fasteners-assortment-set-anti-loosening-washers-gaskets-diy-home-furniture-auto-repair-hardware-tool-cod-ready-stock-ph-i15532367775.html |
+| 1 | **PROSEAL silicone sealant (clear)** | 100% RTV, waterproof/weather-resistant; seam sealing | ~₱199 | Lazada | https://www.lazada.com.ph/products/proseal-silicone-sealant-clear-white-black-brown-i4013402307.html |
+| 1 | **Rubber grommets** 180pcs, 8 sizes | Wire passthrough / chamber wall penetrations | ~₱249 | Lazada | https://www.lazada.com.ph/products/same-day-shipping-180pcs-rubber-grommet-assortment-contain-8-popular-sizes-gasket-firewall-hole-plug-set-electrical-wire-gasket-kit-for-car-high-quality-cyb-rubber-grommet-i3692147637.html |
+| 1 | Plastic drip tray | Station base | ~₱100 | hardware | — |
+| 1 | Velcro strips | Board mounting | ~₱50 | hardware | — |
+
+> **Notes:** The 4 cable-management items (zip ties, screws, sealant, grommets) are all orderable online at ~₱830 total. If you prefer, the hardware store (Robinsons/Wildepanda) sells the same bulk at ~₱490 — pick whichever is cheaper after shipping.
 
 ---
 
@@ -144,11 +146,11 @@
 | Control electronics (Lazada) | ≈ ₱1,984 |
 | SSRs (taxnele) + heatsinks + terminals | ≈ ₱2,051 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
-| Wiring + consumables (Lazada) | ≈ ₱2,201 |
+| Wiring + consumables (Lazada) | ≈ ₱2,500 |
 | DC Rocker Switch 50A | ~₱190 |
 | Battery (1× 200Ah) + charger | ≈ ₱11,700–12,200 |
 | Hardware store consumables | ≈ ₱490 |
-| **GRAND TOTAL** | **≈ ₱29,300–29,500** |
+| **GRAND TOTAL** | **≈ ₱29,600–29,900** |
 
 ---
 

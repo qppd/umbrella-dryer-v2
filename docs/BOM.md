@@ -245,7 +245,11 @@ Energy per drying cycle (3 umbrellas per cycle):
 | 1 | Aluminum plate 6061 6mm | motor plate + mounts | ₱760 | Lazada | https://www.lazada.com.ph/products/pdp-i4449859085.html |
 | 1 | LiFePO4 12.8V 200Ah w/ BMS 200A | battery | ~₱8,900 | Lazada (PowMr) | https://h5.lazada.com.ph/products/powmr-12v-200ah-lifepo4-battery-lithium-battery-built-in-bms-6000-deep-cycles-rechargeable-solar-battery-i5047514166.html |
 | 1 | **VariCore 14.6V 20A Smart LiFePO4 Charger** | Alligator clip variant; CC/CV; LED red/green; 110-240V input | ~₱2,809 | Lazada | https://www.lazada.com.ph/products/varicore-146v-20a-smart-lifepo4-battery-charger-110-220v-4s-12v-high-power-charger-for-lithium-iron-phosphate-i5375251271-s32167681050.html |
-| 1 | Zip ties, screws, sealant, grommets | consumables | ~₱490 | hardware | — |
+| 1 | **Zip ties 100pcs nylon UV-resistant** | Heavy duty, 3-tooth buckle — wire bundling | ~₱84 | Lazada | https://www.lazada.com.ph/products/100pcs-heavy-duty-nylon-cable-zip-ties-uv-resistant-multipurpose-i4164586303.html |
+| 1 | **Screws M3/M4/M5 stainless 320pcs kit** | M3 8/12/16mm + M4 + washers/nuts — Mega, plate, chamber mounts | ~₱298 | Lazada | https://www.lazada.com.ph/products/320pcs-380pcs-stainless-steel-screws-bolts-nuts-kit-m3-m4-m5-hex-socket-fasteners-assortment-set-anti-loosening-washers-gaskets-diy-home-furniture-auto-repair-hardware-tool-cod-ready-stock-ph-i15532367775.html |
+| 1 | **PROSEAL silicone sealant (clear)** | 100% RTV, waterproof, weather-resistant — seam sealing | ~₱199 | Lazada | https://www.lazada.com.ph/products/proseal-silicone-sealant-clear-white-black-brown-i4013402307.html |
+| 1 | **Rubber grommets 180pcs (8 sizes)** | Wire passthrough / chamber wall penetrations | ~₱249 | Lazada | https://www.lazada.com.ph/products/same-day-shipping-180pcs-rubber-grommet-assortment-contain-8-popular-sizes-gasket-firewall-hole-plug-set-electrical-wire-gasket-kit-for-car-high-quality-cyb-rubber-grommet-i3692147637.html |
+| 1 | Zip ties, screws, sealant, grommets | consumables | ~₱490 (hardware bulk alt.) | hardware | — |
 
 ---
 
@@ -260,6 +264,6 @@ Energy per drying cycle (3 umbrellas per cycle):
 | Control electronics (Mega w/ terminal board ₱413, DHT22 ₱220, DS18B20 ₱141, LCD ₱165, LM2596S ₱155) | ≈ ₱1,094 |
 | Battery (1× 200Ah) + charger | ≈ ₱11,700–12,200 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
-| Wiring, connectors, consumables | ≈ ₱2,200–2,600 |
+| Wiring, connectors, consumables | ≈ ₱2,500–2,900 |
 | DC Rocker Switch 50A | ~₱190 |
-| **TOTAL** | **≈ ₱29,300–29,500** |
+| **TOTAL** | **≈ ₱29,600–29,900** |
