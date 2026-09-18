@@ -71,7 +71,7 @@
 ### 3e. Safety (12V DC)
 
 - No fuses in the circuit
-- DS18B20 cutoff if chamber exceeds 65 °C: firmware cuts all SSRs + ESCs
+- DS18B20 cutoff if chamber exceeds 65 °C: firmware cuts all SSRs + blower PWM
 - PTC self-regulation: resistance rises with temperature, auto-limits
 - Battery BMS protects against over-discharge, over-charge, short circuit
 - No mains voltage anywhere — no RCD needed
@@ -100,7 +100,7 @@
 
 3× SGM-370 12V 6RPM (14 kg·cm, ~0.2A rated / ~0.8A stall, 6mm output shaft, self-locking) — one per umbrella.
 
-Mechanical: 3× PETIYOUZA rigid flange couplings (6mm bore) connect each SGM-370 output shaft directly to the umbrella hub. Fabricated holders.
+Mechanical (per station): **SGM-370 DC worm gear motor → rigid coupling (6×8mm) → 6mm × 300mm SS shaft → UCP06 pillow block (shaft passes through the bearing's middle) → PETIYOUZA rigid flange coupling (6mm bore) → umbrella hub.** Motor and pillow block bolted to the 6mm aluminum plate mount.
 
 ---
 
@@ -110,28 +110,28 @@ Mechanical: 3× PETIYOUZA rigid flange couplings (6mm bore) connect each SGM-370
 |---|---|
 | Heat source | 9× PTC ceramic heaters, 12V 100W each = 900W total (300W per station) |
 | PTC behavior | Self-regulating: resistance rises with temperature → current drops → auto-limits |
-| Heating method | PTC elements radiate + convect heat; BLDC fans circulate warm air |
+| Heating method | PTC elements radiate + convect heat; AVC blowers circulate warm air |
 | Temperature target | 40–60°C chamber air |
 | Temperature sensing | DHT22 (humidity) mid-chamber + DS18B20 (temp) in heater airstream |
 | Over-temperature | (1) DS18B20 firmware cutoff at 65°C (2) PTC self-regulation |
-| Cooling | 3× BLDC fans per station; chamber is vented |
+| Cooling | 3× AVC blowers per station; chamber is vented |
 
 ---
 
 ## 7. Capacity verification
 
 ### 7a. Mechanical — per-station torque — PASS
-≤3 kg·cm per station vs 14 kg·cm → ≥4.6× margin; direct-drive flange coupling (no pillow block needed); 6 RPM gentle; self-locking hold.
+≤3 kg·cm per station vs 14 kg·cm → ≥4.6× margin; drivetrain: motor → rigid coupling → shaft through UCP06 pillow block → flange coupling to hub; 6 RPM gentle; self-locking hold.
 
 ### 7b. Thermal — PASS
-300W per station with BLDC fan circulation → 40–60°C chamber; DS18B20 + PTC self-regulation = dual over-temp protection.
+300W per station with AVC blower circulation → 40–60°C chamber; DS18B20 + PTC self-regulation = dual over-temp protection.
 
 ### 7c. Electrical — 12V DC — PASS
 
 | Subsystem | Voltage | Current (one station) | Protection |
 |---|---|---|---|
 | PTC heaters (3× 100W) | 12V | 25A | BMS 200A + PTC self-regulation |
-| BLDC fans (3× 4.5A) | 12V | 13.5A | BMS 200A |
+| AVC blowers (3× 4.5A) | 12V | 13.5A | BMS 200A |
 | Worm motor | 12V | 0.8A | BMS 200A |
 | Mega + sensors | 5V | 0.1A | BMS 200A |
 | **Total (one station)** | | **~39.3A** | **BMS 200A** |
@@ -147,7 +147,7 @@ Load profile (staged, one station at a time):
 | Phase | Draw | Notes |
 |---|---|---|
 | PREHEAT / DRY (active station) | ~38.8A | 3 PTC (25A) + 3 blowers (13.5A) + motor (0.8A) + logic (0.5A) |
-| COOL | ~13.5A | Blowes only |
+| COOL | ~13.5A | Blowers only |
 | Standby | ~0.5A | Sensors + LCD |
 
 Energy per drying cycle (3 umbrellas per cycle):
@@ -199,9 +199,9 @@ Energy per drying cycle (3 umbrellas per cycle):
 | D7 | SSR_MOTOR_2 | out | Worm motor station 2 (LCTC DC-DC SSR 10A) | HIGH = ON |
 | D8 | SSR_PTC_3 | out | PTC heaters station 3 (LCTC DC-DC SSR 40A) | HIGH = ON |
 | D9 | SSR_MOTOR_3 | out | Worm motor station 3 (LCTC DC-DC SSR 10A) | HIGH = ON |
-| D10 | ESC_1 | out (PWM) | ESC signal — station 1 BLDC fans | — |
-| D11 | ESC_2 | out (PWM) | ESC signal — station 2 BLDC fans | — |
-| D12 | ESC_3 | out (PWM) | ESC signal — station 3 BLDC fans | — |
+| D10 | PWM_FAN_1 | out (PWM) | Blower PWM — station 1 AVC blowers | — |
+| D11 | PWM_FAN_2 | out (PWM) | Blower PWM — station 2 AVC blowers | — |
+| D12 | PWM_FAN_3 | out (PWM) | Blower PWM — station 3 AVC blowers | — |
 | D13 | SSR_FAN_BUS | out | Fan power bus (LCTC DC-DC SSR 40A) | HIGH = ON |
 | D14 | BTN_START | in | Arcade push button (INPUT_PULLUP) | LOW = pressed |
 | D15 | LED_RED | out | Heating active | HIGH = ON |
@@ -229,7 +229,10 @@ Energy per drying cycle (3 umbrellas per cycle):
 | 1 | **DS18B20 temperature sensor module** | LEOOYI, 3-pin cable + pluggable terminal adapter | ₱141 | Lazada | https://www.lazada.com.ph/products/pdp-i4398946755-s24721782197.html |
 || 1 | LCD 16×2 I2C | display | ₱165 | Lazada | https://www.lazada.com.ph/products/1602-16x2-character-lcd-module-display-hd44780-with-i2c-i104139284-s1630402476.html |
 | 1 | **DC Rocker Switch 50A 12V** | Main power disconnect (heavy duty toggle) | ~₱190 | Lazada | https://www.lazada.com.ph/catalog/?q=50A+12V+DC+heavy+duty+toggle+switch |
-| 1 | **PETIYOUZA Rigid Flange Coupling 6mm** | 6mm bore — motor output shaft → umbrella hub | ~₱107 ea = ~₱321 | Lazada | https://www.lazada.com.ph/products/petiyouza-coupler-hardware-power-transmission-parts-r11-rigid-flange-coupling-iron-motor-guide-shaft-diy-metal-coupling-i4018785636-s21726441085.html |
+| 3 | **PETIYOUZA Rigid Flange Coupling 6mm** | 6mm bore — shaft end → umbrella hub | ~₱107 ea = ~₱321 | Lazada | https://www.lazada.com.ph/products/petiyouza-coupler-hardware-power-transmission-parts-r11-rigid-flange-coupling-iron-motor-guide-shaft-diy-metal-coupling-i4018785636-s21726441085.html |
+| 3 | Rigid shaft coupling 6×8mm | motor output shaft → shaft | ₱82.84 ea = ~₱166 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
+| 3 | 304 SS shaft 6mm × 300mm | shaft — passes through the UCP06 pillow block middle | ~₱180 ea = ~₱540 | Lazada | https://www.lazada.com.ph/catalog/?q=304+stainless+steel+rod+6mm+300mm |
+| 3 | **UCP06 pillow block bearing (6mm bore)** | holds the shaft mid-span, absorbs radial load | ₱87 ea = ₱522 | Lazada | https://www.lazada.com.ph/catalog/?q=ucp06+pillow+block+bearing+6mm |
 | 1 | LED 5mm (R/Y/G) | status | ₱29 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/5mm-led-diode-assorted-colors-i144137387-s166391718.html |
 | 1 | Active buzzer 5V | alarm | ₱35 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/active-alarm-buzzer-driver-module-high-current-blue-i3474748260-s17874906532.html |
 | 1 | Arcade LED push button 5V | start | ₱45 | Circuitrocks | https://www.lazada.com.ph/products/i343850766.html |
@@ -257,11 +260,11 @@ Energy per drying cycle (3 umbrellas per cycle):
 |---|---|
 | PTC heaters (9×₱484) | ≈ ₱4,356 |
 | AVC blowers (9×₱330) | ≈ ₱2,970 |
-| Motors + couplings (3× SGM-370 + 3× PETIYOUZA 6mm flange) | ≈ ₱1,821 |
+| Motors + drivetrain (3× SGM-370 + 3× rigid couplings + 3× shafts + 3× pillow blocks + 3× PETIYOUZA flange) | ≈ ₱3,049 |
 | taxnele SSR 40A (4×₱239) + SSR 10A (3×₱218) + SSR Heatsink BLACK | ≈ ₱2,051 |
 | Control electronics (Mega w/ terminal board ₱413, DHT22 ₱220, DS18B20 ₱141, LCD ₱165, LM2596S ₱155) | ≈ ₱1,094 |
 | Battery (1× 200Ah) + charger | ≈ ₱11,700–12,200 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
 | Wiring, connectors, consumables | ≈ ₱2,500–2,900 |
 | DC Rocker Switch 50A | ~₱190 |
-| **TOTAL** | **≈ ₱28,700–29,000** |
+| **TOTAL** | **≈ ₱29,900–30,200** |

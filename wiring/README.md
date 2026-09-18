@@ -40,8 +40,7 @@
 | **20 (SDA)** | I2C | LCD SDA | — | addr 0x27 or 0x3F |
 | **21 (SCL)** | I2C | LCD SCL | — | Mega I2C is pins 20/21 — NOT A4/A5 |
 
-> Mixed active levels are deliberate: SSRs are active-HIGH (floating pin at boot = SSR OFF).
-> Opto module channels are active-LOW with onboard pull-ups (floating pin at boot = relay OFF).
+> Mixed active levels are deliberate: SSRs are active-HIGH by design — a floating pin at boot = SSR OFF (boot-safe).
 
 ## 2. 12V DC power distribution
 

@@ -9,9 +9,9 @@
 The 3D model shows:
 - **3-station frame** — holds 3 umbrellas inverted for drying
 - **Motor mounts** — SGM-370 worm gear motors on aluminum plates
-- **Flange couplings** — 3× PETIYOUZA 6mm rigid flange couplings connect each SGM-370 output shaft directly to the umbrella hub (no separate shaft, no pillow blocks)
+- **Drivetrain** — per station: SGM-370 motor → rigid coupling 6×8mm → 6mm × 300mm shaft → UCP06 pillow block (shaft passes through the bearing's middle) → PETIYOUZA 6mm flange coupling → umbrella hub; all bolted to the aluminum plate
 - **PTC heater placement** — 3× PTC ceramic heaters per station, positioned for airflow
-- **BLDC fan placement** — 3× 50mm ducted fans per station, positioned for air circulation
+- **AVC blower placement** — 3× 80mm blowers per station, positioned for air circulation
 - **Electronics enclosure** — Mega, SSR modules, buck converter
 - **Battery compartment** — 1× LiFePO4 200Ah battery
 - **Drip tray** — under each station for water collection
@@ -35,7 +35,7 @@ The 3D model shows:
 | Station spacing | **700mm** center-to-center |
 | Umbrella hub height | ~300mm from base |
 || Motor mount plate | 100×80mm aluminum 6mm |
-| Motor couplings | PETIYOUZA rigid flange, 6mm bore (motor shaft → umbrella hub) |
+| Motor drivetrain | rigid coupling 6×8mm · 6mm × 300mm SS shaft · UCP06 pillow block (mid-shaft) · PETIYOUZA flange, 6mm bore (motor → shaft → hub) |
 | PTC heater spacing | ≥ 30mm between elements (airflow gap) |
 | Fan duct clearance | ≥ 10mm from umbrella fabric |
 | Chamber internal W × D × H | 2200 × 800 × 1300mm |
@@ -46,7 +46,7 @@ The 3D model shows:
 
 1. Print or fabricate motor mount plates from aluminum.
 2. Mount each SGM-370 motor directly onto its plate; align motor output shaft with umbrella hub.
-3. Connect motor output shaft to umbrella hub using a 6mm-bore PETIYOUZA rigid flange coupling (no separate shaft, no pillow blocks).
+3. Drivetrain per station, in order: rigid coupling 6×8mm on the motor output shaft, then the 6mm × 300mm shaft through the UCP06 pillow block (shaft centered in the bearing), then the PETIYOUZA 6mm flange coupling to the umbrella hub. Motor and pillow block share the aluminum plate.
 4. Verify: spin by hand. Should rotate freely with no binding. Motor is self-locking.
-5. Position BLDC fans to blow air across PTC heaters toward umbrella fabric.
+5. Position AVC blowers to blow air across PTC heaters toward umbrella fabric.
 6. Wire everything per [wiring/README.md](../wiring/README.md) and [HARDWARE.md](../HARDWARE.md).

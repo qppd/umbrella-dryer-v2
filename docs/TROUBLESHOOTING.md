@@ -8,8 +8,8 @@
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Nothing turns on | Disconnect switch off / battery disconnected | Flip 50A disconnect; check battery terminals; verify 50A ANL main fuse |
-| Buck LED off | Fuse blown / battery dead | Check 3A logic fuse; measure battery voltage (>12.0V) |
+| Nothing turns on | Rocker switch off / battery cable loose | Flip the 50A rocker ON; check battery terminals and the 2-pin screw terminal |
+| Buck LED off | Battery dead / input wiring loose | Measure battery voltage (>12.0V); check the buck input taps on the positive bus |
 | Buck output ≠ 5V | Potentiometer misadjusted | Re-calibrate buck with multimeter BEFORE connecting to Mega 5V pin |
 | Mega won't boot | Buck not providing 5V | Verify 5V at Mega **5V pin** (NOT barrel jack); check GND continuity |
 | Battery dies fast | Too many stations running | Run staged operation (one at a time); check for shorts |
@@ -38,46 +38,48 @@
 
 ---
 
-## 4. PTC relay issues (40A automotive + 2N2222)
+## 4. PTC SSR issues (SSR-40DD, D4/D6/D8)
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| PTC relay doesn't click | NPN circuit not driving coil | Check: D4/D6/D8 → 1kΩ → 2N2222 base; collector → coil 85; coil 86 → +12V; emitter → GND; 10kΩ base-to-GND pull-down present |
-| Relay clicks but heaters stay off | Wrong COM/NO terminals | Verify: fused 12V → COM (30), heaters → NO (87); check 30A branch fuse |
-| Relay stays ON at boot | Pull-down resistor missing | Add 10kΩ between 2N2222 base and GND; verify `allOff()` in setup |
-| Load turns on/off randomly | Floating base pin | Ensure 10kΩ pull-down; enable `pinMode(OUTPUT)` + default LOW in setup |
+| PTC heaters stay cold | SSR input not driven | Check: D4/D6/D8 → SSR IN+, SSR IN− → GND; measure ~5V at IN+ when the pin is HIGH |
+| SSR input powered, heaters still off | Output side miswired | Verify +12V bus → SSR output COM, heaters → output NO; reseat the 10 AWG heater leads |
+| Heaters flicker on/off | Loose input jumper | Reseat IN+/IN− wires; check the Mega pin header |
+| SSR overheats / shuts down | Heatsink missing or dry | Mount the SSR Heatsink BLACK with thermal paste; keep ≤25A per 40A SSR |
+| SSR stays ON at boot | Firmware not writing safe states | Verify `allOff()` runs first in `setup()` |
 
 ---
 
-## 5. Motor relay issues (opto module)
+## 5. Motor SSR issues (SSR-10A, D5/D7/D9)
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Motor relay doesn't click | Module not powered / wrong pin | Check: module VCC → 5V buck rail (NOT Mega pin); D5/D7/D9 → IN1/IN2/IN3; active-LOW: LOW = ON |
-| Relay clicks but motor stays off | Wrong COM/NO / fuse blown | Check COM→3A-fused 12V, NO→motor +; verify 3A fuse intact |
+| Motor stays off | SSR input not driven | Check D5/D7/D9 → SSR IN+, IN− → GND; ~5V at IN+ when commanded |
+| Motor stays off (input OK) | Output side miswired | Verify 18 AWG motor branch → SSR output side; motor + → the other output terminal |
 | Motor spins wrong direction | Polarity reversed | Swap the two motor leads (DC motor direction = polarity) |
-| Motor hums but doesn't spin | Coupling misaligned / shaft binding | Loosen flange coupling; realign motor output shaft to umbrella hub |
+| Motor hums but doesn't spin | Coupling misaligned / shaft binding | Loosen rigid + flange couplings; realign motor → shaft → hub; check the shaft spins freely in the UCP06 pillow block |
 
 ---
 
-## 6. Fan bus relay issues (40A automotive + NPN)
+## 6. Fan bus issues (SSR-40DD, D13)
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| All 9 fans don't start | Fan bus relay not ON | Check D13 → 1kΩ → 2N2222 → coil; measure 12V at ESC VIN after D13 goes HIGH |
-| Fan bus relay clicks but no power at ESCs | Wrong COM/NO | Verify: 30A-fused 12V → COM (30); ESC distribution → NO (87) |
+| All 9 blowers dead | Fan bus SSR off / miswired | Measure 12V at the blower distribution block after D13 goes HIGH; check SSR output side |
+| Bus powered, one blower dead | That blower's wiring | Check its VIN/GND pigtails and PWM lead |
 | D13 LED (built-in Mega) doesn't blink | Firmware not driving D13 | Verify `allOff()` / `fansOn()` functions |
 
 ---
 
-## 7. ESC / BLDC fan issues
+## 7. Blower PWM issues (D10/D11/D12)
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Fan doesn't spin | ESC not armed | Verify `esc.attach()` + `esc.writeMicroseconds(1000)` for 2s on boot; D13 must be HIGH during arming |
-| Fan spins then stops | ESC lost signal | Ensure `esc.write()` called continuously; check D10/D11/D12 wiring |
-| ESC gets hot | Drawing too much current | Verify fan current < 3.2A each; check 30A fan bus fuse |
-| Fan vibrates excessively | Bent propeller / unbalanced | Check propeller; ensure duct clears blades |
+| Blower doesn't spin | PWM duty 0 or fan bus off | Raise `analogWrite(D10–D12, …)`; confirm D13 HIGH |
+| Blower spins then stops | Loose PWM lead | Reseat the signal wire — 3 leads share one pin, find the loose one |
+| Blower always full speed | PWM lead on 5V by mistake | Signal must go to D10/D11/D12 only |
+| Blower weak | Low duty cycle / low bus voltage | Increase duty; verify 12V at the fan bus |
+| Blower vibrates excessively | Mount loose / unbalanced | Tighten mount; check impeller clearance |
 
 ---
 
@@ -85,8 +87,8 @@
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Motor doesn't relay not switching | Fuse blown / module unpowered | Check D5/D7/D9 wiring; verify 3A motor fuse; check module VCC→5V |
-| Motor stalls under load | Insufficient torque | Verify umbrella not too heavy (<3 kg·cm); check 12V supply |
+| Motor doesn't run | SSR not switching | Check D5/D7/D9 wiring and the SSR output side (see §5) |
+| Motor stalls under load | Insufficient torque | Verify umbrella load (<3 kg·cm); check 12V supply |
 | Motor holds when off | That's correct! | SGM-370 worm gear is self-locking by design |
 
 ---
@@ -96,7 +98,7 @@
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Thermal cutoff triggers immediately | DS18B20 reads >65°C at boot | Move probe away from direct contact with heater; mount in air stream |
-| PTC heaters don't get hot | Relay not switching / wrong voltage | Verify 12V at PTC terminals; check NPN relay circuit; confirm 12V heaters (not 220V) |
+| PTC heaters don't get hot | SSR not switching / wrong voltage | Verify 12V at PTC terminals; check SSR wiring (§4); confirm 12V heaters (not 220V) |
 | Chamber too hot (>60°C) | Multiple stations active | Ensure staged operation (firmware enforces one at a time); check `activeStation` rotation |
 | Burning smell | Wiring too thin / loose | Check wire gauges (10 AWG heater branches, 8 AWG main); tighten all terminals |
 
@@ -112,15 +114,16 @@
 
 ---
 
-## 11. Fuse issues
+## 11. Over-current protection (no-fuse design)
+
+There are no fuses in this build — the 200A BMS is the backstop.
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Main fuse (50A ANL) blows | Total current > 50A | Multiple stations active? Verify staged operation; check for short |
-| Station PTC fuse (30A) blows | Single station overcurrent | Check PTC heater count (3 max per station); verify wiring gauge |
-| Fan bus fuse (30A) blows | Fan bus short / all fans jammed | Check fan wiring; verify no bare wire on bus |
-| Motor fuse (3A) blows | Motor jam / stall | Remove umbrella jam; replace fuse |
-| Fuse blows immediately | Dead short | Trace wiring with multimeter (continuity mode); check for bare wire touching chassis |
+| Station commanded ON but nothing runs | BMS tripped or branch open | Measure 12V at the positive bus bar; if 0V, power-cycle the battery to reset the BMS; check for shorts |
+| BMS disconnects under load | Draw exceeds BMS limit | Verify staged operation (one station at a time ≈ 39A); check for shorts |
+| Branch dead but bus bar live | Branch wiring open | Trace the 10/18 AWG branch and its SSR output side with a multimeter |
+| Burning smell / hot wire | Overload or loose terminal | Stop: flip the 50A rocker OFF; check gauges and tighten terminals |
 
 ---
 

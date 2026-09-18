@@ -12,9 +12,12 @@
 - [ ] 4× LCTC DC-DC SSR 40A (for PTC heaters + fan bus) + 3× LCTC DC-DC SSR 10A (for motors)
 - [ ] 7× SSR heatsinks (~₱50 each)
 - [ ] 9× PTC ceramic heaters (12V 100W) — verify 12V, not 220V!
-- [ ] 9× BLDC fan modules (50mm, with ESC) — verify ESC included
+- [ ] 9× AVC 12V DC blower fans (80×80×38mm, 4.5A) — verify 12V variant
 - [ ] 3× SGM-370 worm gear motors
 - [ ] 3× PETIYOUZA rigid flange coupling (6mm bore)
+- [ ] 3× rigid shaft coupling 6×8mm (motor output shaft → shaft)
+- [ ] 3× 304 SS shaft 6mm × 300mm (passes through the pillow block middle)
+- [ ] 3× UCP06 pillow block bearing (6mm bore)
 - [ ] DHT22 module, DS18B20 waterproof, LCD 16×2 I2C
 - [ ] LM2596S buck module
 - [ ] LEDs (R/Y/G), buzzer, arcade button
@@ -48,7 +51,7 @@
 
 1. **Frame:** Build 3-station frame. Each station holds 1 umbrella inverted.
 2. **Motor mounts:** Attach SGM-370 motors to aluminum plates. Align motor output shaft center with umbrella hub center.
-3. **Couplings:** Connect each SGM-370 output shaft directly to the umbrella hub with a 6mm-bore PETIYOUZA rigid flange coupling (no separate shaft, no pillow blocks).
+3. **Drivetrain:** Per station, in order: SGM-370 motor → rigid coupling 6×8mm → 6mm × 300mm SS shaft → UCP06 pillow block (shaft passes through the bearing's middle) → PETIYOUZA 6mm-bore rigid flange coupling → umbrella hub. Motor and pillow block bolted to the 6mm aluminum plate.
 4. **Verify:** Spin by hand. Should rotate freely with no binding. Motor is self-locking.
 
 ---
@@ -63,7 +66,7 @@
    - Station 1 PTC: 10 AWG → LCTC DC-DC SSR 40A (D4) → 3 PTC heaters
    - Station 2 PTC: 10 AWG → LCTC DC-DC SSR 40A (D6) → 3 PTC heaters
    - Station 3 PTC: 10 AWG → LCTC DC-DC SSR 40A (D8) → 3 PTC heaters
-   - Fan bus: 10 AWG → LCTC DC-DC SSR 40A (D13) → ESC distribution
+   - Fan bus: 10 AWG → LCTC DC-DC SSR 40A (D13) → blower distribution
    - Motor 1/2/3: 18 AWG → LCTC DC-DC SSR 10A (D5/D7/D9) → SGM-370 motor
    - Logic: 20 AWG → buck module → 5V to Mega
 
@@ -78,12 +81,12 @@
 
 Active-HIGH: `digitalWrite(pin, HIGH)` = SSR ON. Onboard optocoupler holds SSR OFF at boot.
 
-### 5c. ESC wiring
+### 5c. Blower PWM wiring
 
-1. Each ESC has 3 wires: black (GND), red (VCC 12V), white/orange (signal).
-2. Connect ESC GND → common GND bus.
-3. Connect ESC VCC → fan bus relay output (switched 12V from 40A auto relay).
-4. Connect ESC signal → Mega D10 (station 1), D11 (station 2), D12 (station 3).
+1. Each AVC blower has 2 power leads (red VIN 12V, black GND) + 1 PWM signal lead.
+2. Connect VIN → fan bus distribution (switched 12V from the D13 SSR-40DD).
+3. Connect GND → common ground rail.
+4. Connect PWM signal → Mega D10 (station 1), D11 (station 2), D12 (station 3) — 3 leads per pin.
 
 ### 5e. Sensor wiring
 
@@ -105,7 +108,7 @@ Active-HIGH: `digitalWrite(pin, HIGH)` = SSR ON. Onboard optocoupler holds SSR O
 2. Connect battery.
 3. Buck LED should light. Measure 5V at Mega 5V pin.
 4. Mega should boot. LCD shows "Umbrella Dryer V2 DC SYSTEM".
-5. ESCs should arm (fan twitch or beep) — D13 briefly turns on during arming.
+5. Blowers must stay OFF at boot — D13 (fan bus) stays LOW in IDLE; the onboard LED follows the fan-bus state.
 6. After 2s, LCD settles on "SYSTEM READY / Press Button".
 7. Press button → should enter PREHEAT phase on LCD.
 8. Press again → should emergency stop back to IDLE.

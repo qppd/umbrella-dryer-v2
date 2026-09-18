@@ -142,7 +142,7 @@ graph TB
 |---|---|
 | Rated | 12 V, 6 RPM, **14 kg·cm**, ~0.2 A @ rated load |
 | Stall | 28 kg·cm, ~0.8 A |
-| Shaft | 6 mm Ø output shaft, single shaft | Connects to umbrella hub via 6mm flange coupling |
+| Shaft | 6 mm Ø output shaft, single shaft | Drivetrain per station: 6×8mm rigid coupling → 6mm × 300mm SS shaft (passes through a UCP06 pillow block mid-shaft) → 6mm-bore PETIYOUZA flange coupling → umbrella hub; motor + pillow block bolted to the 6mm aluminum plate |
 | Behavior | **Self-locking** (worm not back-drivable); stall-tolerant |
 
 ### Battery bank + power distribution

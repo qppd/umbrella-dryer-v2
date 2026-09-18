@@ -44,14 +44,19 @@
 > **Pick variant:** 12V 4.5A, 80mm. PWM-controlled directly from Mega. No ESC needed.
 > **Physical store fallback:** If online unavailable, check **e-Gizmo** (Manila) or **Rep Asia** for similar blower fans.
 
-### 2d. Motors + couplings (drivetrain)
+### 2d. Motors + drivetrain (motor → rigid coupling → shaft → pillow block → flange coupling → plate)
+
+Drivetrain chain per station: **SGM-370 DC worm gear motor → rigid coupling 6×8mm → 6mm × 300mm SS shaft → UCP06 pillow block (shaft passes through the bearing's middle) → PETIYOUZA rigid flange coupling → umbrella hub.** Motor and pillow block bolted to the 6mm aluminum plate.
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
 | 3 | SGM-370 DC Worm Gear Motor 12V 6RPM (6mm output shaft) | ₱500 ea = ₱1,500 | makerlab.ph | https://makerlab.ph/products/dc-worm-gear-motor-sgm-370-12v-16rpm |
+| 3 | Rigid shaft coupling 6×8mm (motor output shaft → shaft) | ₱82.84 ea = ~₱166 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
+| 3 | 304 SS shaft 6mm × 300mm (shaft — passes through the pillow block middle) | ~₱180 ea = ~₱540 | Lazada | https://www.lazada.com.ph/catalog/?q=304+stainless+steel+rod+6mm+300mm |
+| 3 | UCP06 pillow block bearing (6mm bore) | ₱87 ea = ₱522 | Lazada | https://www.lazada.com.ph/catalog/?q=ucp06+pillow+block+bearing+6mm |
 | 3 | PETIYOUZA Rigid Flange Coupling (6mm bore) | ~₱107 ea = ~₱321 | Lazada | https://www.lazada.com.ph/products/petiyouza-coupler-hardware-power-transmission-parts-r11-rigid-flange-coupling-iron-motor-guide-shaft-diy-metal-coupling-i4018785636-s21726441085.html |
 
-> **Note:** Select the **6mm** flange-coupling variant (matches the SGM-370's 6mm output shaft). The motor drives the umbrella hub directly through this coupling — **no separate shaft, no pillow blocks**.
+> **Note:** Keep both rigid-coupling bores consistent with the shaft diameter (6mm motor side; use the 6mm bore on the shaft side too, or step the whole shaft/pillow/flange set up to 8mm — just don't mix). Pillow block and flange coupling must be **6mm** to match the 6mm shaft and the SGM-370's 6mm output shaft.
 
 ### 2f. Control electronics (Lazada)
 
@@ -125,7 +130,7 @@
 |---|---|
 | PTC heaters (9×₱484) | ≈ ₱4,356 |
 | AVC blowers (9×₱330) | ≈ ₱2,970 |
-| Motors + couplings (3× SGM-370 + 3× PETIYOUZA 6mm) | ≈ ₱1,821 |
+| Motors + drivetrain (3× SGM-370 + rigid couplings + shafts + UCP06 pillow blocks + PETIYOUZA flange) | ≈ ₱3,049 |
 | Control electronics (Lazada) | ≈ ₱1,984 |
 | SSRs (taxnele) + heatsinks + terminals | ≈ ₱2,051 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
@@ -152,7 +157,10 @@
 
 | Item | Pick this | NOT this |
 |---|---|---|
-| Coupling | PETIYOUZA rigid flange, 6mm bore (motor shaft → umbrella hub) | Other sizes |
+| Coupling | PETIYOUZA rigid flange, 6mm bore (driveshaft → umbrella hub) | Other sizes |
+| Rigid coupling | 6×8mm (motor shaft → driveshaft) | Beam/flexible type |
+| Shaft | 304 SS 6mm × 300mm | Undersized (<250mm) |
+| Pillow block | UCP06, 6mm bore | KP08 (set-screw only, less radial hold) |
 | PTC relay | **SSR-40DD DC-output 40A** | 40A automotive relay (has moving parts, needs NPN driver) |
 | PTC relay | **DC-output** (3–32VDC input, DC output) | AC-output (DA type) |
 | Motor relay | **SSR-10DD DC-output 10A** | 40A auto (overkill for 0.8A motor) |
