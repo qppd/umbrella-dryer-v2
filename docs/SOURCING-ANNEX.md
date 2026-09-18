@@ -8,7 +8,7 @@
 
 1. **Battery first** — longest lead time (PowMr from Lazada)
 2. **50A DC rocker switch** — main power disconnect, order with battery
-3. **MakeLAB.PH** — motor + couplings (local, fast shipping)
+3. **MakeLAB.PH** — motors (local, fast shipping)
 3. **Lazada** — everything else (electronics, PTC heaters, blowers, wiring)
 4. **Hardware store** — consumables (screws, zip ties, sealant)
 
@@ -44,30 +44,14 @@
 > **Pick variant:** 12V 4.5A, 80mm. PWM-controlled directly from Mega. No ESC needed.
 > **Physical store fallback:** If online unavailable, check **e-Gizmo** (Manila) or **Rep Asia** for similar blower fans.
 
-### 2d. Motors + drivetrain (makerlab.ph)
+### 2d. Motors + couplings (drivetrain)
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
-| 3 | SGM-370 DC Worm Gear Motor 12V 6RPM | ₱500 ea = ₱1,500 | makerlab.ph | https://makerlab.ph/products/dc-worm-gear-motor-sgm-370-12v-16rpm |
-| 3 | Rigid Coupling 6×8mm (motor to shaft) | ₱82.84 ea = ₱248.52 | makerlab.ph | https://makerlab.ph/products/6x8mm-rigid-coupling-set |
+| 3 | SGM-370 DC Worm Gear Motor 12V 6RPM (6mm output shaft) | ₱500 ea = ₱1,500 | makerlab.ph | https://makerlab.ph/products/dc-worm-gear-motor-sgm-370-12v-16rpm |
+| 3 | PETIYOUZA Rigid Flange Coupling (6mm bore) | ~₱107 ea = ~₱321 | Lazada | https://www.lazada.com.ph/products/petiyouza-coupler-hardware-power-transmission-parts-r11-rigid-flange-coupling-iron-motor-guide-shaft-diy-metal-coupling-i4018785636-s21726441085.html |
 
-> **Note:** Select **6×8mm** variant (6mm motor bore, 8mm shaft side). We have 3 needed + can use the spare from a second set if needed.
-
-### 2d. Bearings (Lazada)
-
-| Qty | Item | Price | Store | Link |
-|---|---|---|---|---|
-| 6 | KP08 Pillow Block Bearing 6mm bore (2 per station) | ₱87 ea = ₱522 | Lazada | https://www.lazada.com.ph/catalog/?q=kp08+pillow+block+bearing+6mm |
-
-> **Note:** KP08 accepts 6mm bore insert bearing. Select "6mm" variant at checkout. 2 per station × 3 stations = 6 total. (Or buy 3× 2-packs at ₱167 = ₱501)
-
-### 2e. Shafts (Lazada)
-
-| Qty | Item | Price | Store | Link |
-|---|---|---|---|---|
-| 3 | 304 Stainless Steel Rod 6mm × 300mm | ~₱180 ea = ~₱540 | Lazada | https://www.lazada.com.ph/catalog/?q=304+stainless+steel+rod+6mm+300mm |
-
-> Search and pick the closest match. Some sellers offer cut-to-length.
+> **Note:** Select the **6mm** flange-coupling variant (matches the SGM-370's 6mm output shaft). The motor drives the umbrella hub directly through this coupling — **no separate shaft, no pillow blocks**.
 
 ### 2f. Control electronics (Lazada)
 
@@ -141,8 +125,7 @@
 |---|---|
 | PTC heaters (9×₱484) | ≈ ₱4,356 |
 | AVC blowers (9×₱330) | ≈ ₱2,970 |
-| Motors + couplings (makerlab) | ≈ ₱1,749 |
-| Bearings + shafts (Lazada) | ≈ ₱1,062 |
+| Motors + couplings (3× SGM-370 + 3× PETIYOUZA 6mm) | ≈ ₱1,821 |
 | Control electronics (Lazada) | ≈ ₱1,984 |
 | SSRs (taxnele) + heatsinks + terminals | ≈ ₱2,051 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
@@ -150,7 +133,7 @@
 | DC Rocker Switch 50A | ~₱190 |
 | Battery (1× 200Ah) + charger | ≈ ₱11,700–12,200 |
 | Hardware store consumables | ≈ ₱490 |
-| **GRAND TOTAL** | **≈ ₱29,600–29,900** |
+| **GRAND TOTAL** | **≈ ₱28,700–29,000** |
 
 ---
 
@@ -159,8 +142,7 @@
 | Item | Physical store | Location |
 |---|---|---|
 | AVC blower fans | e-Gizmo Mechatronics | Tomas Morato, QC |
-| KP08 pillow blocks | Kuan Kee Hardware | Manila |
-| Steel shafts | Manila Trading (steel) | Various |
+| Motors + couplings | e-Gizmo / Makerlab (Lazada) | QC |
 | Arduino + sensors | e-Gizmo / Circuitrocks | QC / Online |
 | SSR-40DD | Any electronics parts shop | Universal |
 
@@ -170,11 +152,7 @@
 
 | Item | Pick this | NOT this |
 |---|---|---|
-| PTC heater | 12V 100W MXKJING T30 | 220V (wrong!) |
-| Blower fan | AVC 12V 4.5A, 80mm, PWM | BLDC with ESC (different control) |
-| Pillow block | KP08, 6mm bore | KP08, 8mm bore |
-| Shaft | 6mm × 300mm SS | 8mm (wrong) |
-| Coupling | 6×8mm rigid | Other sizes |
+| Coupling | PETIYOUZA rigid flange, 6mm bore (motor shaft → umbrella hub) | Other sizes |
 | PTC relay | **SSR-40DD DC-output 40A** | 40A automotive relay (has moving parts, needs NPN driver) |
 | PTC relay | **DC-output** (3–32VDC input, DC output) | AC-output (DA type) |
 | Motor relay | **SSR-10DD DC-output 10A** | 40A auto (overkill for 0.8A motor) |

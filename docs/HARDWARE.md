@@ -142,7 +142,7 @@ graph TB
 |---|---|
 | Rated | 12 V, 6 RPM, **14 kg·cm**, ~0.2 A @ rated load |
 | Stall | 28 kg·cm, ~0.8 A |
-| Shaft | 6 mm Ø × 15 mm, single shaft |
+| Shaft | 6 mm Ø output shaft, single shaft | Connects to umbrella hub via 6mm flange coupling |
 | Behavior | **Self-locking** (worm not back-drivable); stall-tolerant |
 
 ### Battery bank + power distribution
@@ -300,7 +300,7 @@ graph TB
 |---|---|
 | Rev 2 | SSR-25DD + BTS7960 + single carousel motor + (optional) MLX90614 |
 | Rev 3 | Relays replace SSR + driver; MLX90614 dropped |
-| Rev 4 | 3 independent stations (3× motors, shafts, KP08 sets); 25A main fuse |
+| Rev 4 | 3 independent stations (3× motors + flange couplings); 25A main fuse |
 | Rev 5 | Mains heat: 2× 1500W PTC heater-fans via 2× SSR-40DA; RCD added |
 | Rev 6 | Dual source: wall outlet OR 3000W inverter via changeover; 2× 200Ah LiFePO4 |
 | Rev 7 | Complete 12V DC redesign: 9× PTC + 9× AVC blower + 3× SGM-370; no mains, no inverter |

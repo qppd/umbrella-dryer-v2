@@ -98,9 +98,9 @@
 
 ## 5. Motor & Drive — 3× worm stations
 
-3× SGM-370 12V 6RPM (14 kg·cm, ~0.2A rated / ~0.8A stall, 6mm shaft, self-locking) — one per umbrella.
+3× SGM-370 12V 6RPM (14 kg·cm, ~0.2A rated / ~0.8A stall, 6mm output shaft, self-locking) — one per umbrella.
 
-Mechanical: 3× 6mm × 300mm 304 SS shafts · 6× KP08 pillow block bearings · 3× 6×8 rigid couplings · fabricated holders.
+Mechanical: 3× PETIYOUZA rigid flange couplings (6mm bore) connect each SGM-370 output shaft directly to the umbrella hub. Fabricated holders.
 
 ---
 
@@ -121,7 +121,7 @@ Mechanical: 3× 6mm × 300mm 304 SS shafts · 6× KP08 pillow block bearings · 
 ## 7. Capacity verification
 
 ### 7a. Mechanical — per-station torque — PASS
-≤3 kg·cm per station vs 14 kg·cm → ≥4.6× margin; KP08 >90× load margin; 6 RPM gentle; self-locking hold.
+≤3 kg·cm per station vs 14 kg·cm → ≥4.6× margin; direct-drive flange coupling (no pillow block needed); 6 RPM gentle; self-locking hold.
 
 ### 7b. Thermal — PASS
 300W per station with BLDC fan circulation → 40–60°C chamber; DS18B20 + PTC self-regulation = dual over-temp protection.
@@ -229,9 +229,7 @@ Energy per drying cycle (3 umbrellas per cycle):
 | 1 | **DS18B20 temperature sensor module** | LEOOYI, 3-pin cable + pluggable terminal adapter | ₱141 | Lazada | https://www.lazada.com.ph/products/pdp-i4398946755-s24721782197.html |
 || 1 | LCD 16×2 I2C | display | ₱165 | Lazada | https://www.lazada.com.ph/products/1602-16x2-character-lcd-module-display-hd44780-with-i2c-i104139284-s1630402476.html |
 | 1 | **DC Rocker Switch 50A 12V** | Main power disconnect (heavy duty toggle) | ~₱190 | Lazada | https://www.lazada.com.ph/catalog/?q=50A+12V+DC+heavy+duty+toggle+switch |
-| 3 | 304 SS shaft 6mm × 300mm | — | ~₱180 ea = ~₱540 | Lazada | https://www.lazada.com.ph/catalog/?q=304+stainless+steel+rod+6mm+300mm |
-| 6 | KP08 pillow block 6mm bore | — | ₱87 ea = ₱522 | Lazada | https://www.lazada.com.ph/catalog/?q=kp08+pillow+block+bearing+6mm |
-| 2 | Rigid coupling 6×8mm | — | ₱82.84 ea = ~₱166 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
+| 1 | **PETIYOUZA Rigid Flange Coupling 6mm** | 6mm bore — motor output shaft → umbrella hub | ~₱107 ea = ~₱321 | Lazada | https://www.lazada.com.ph/products/petiyouza-coupler-hardware-power-transmission-parts-r11-rigid-flange-coupling-iron-motor-guide-shaft-diy-metal-coupling-i4018785636-s21726441085.html |
 | 1 | LED 5mm (R/Y/G) | status | ₱29 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/5mm-led-diode-assorted-colors-i144137387-s166391718.html |
 | 1 | Active buzzer 5V | alarm | ₱35 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/active-alarm-buzzer-driver-module-high-current-blue-i3474748260-s17874906532.html |
 | 1 | Arcade LED push button 5V | start | ₱45 | Circuitrocks | https://www.lazada.com.ph/products/i343850766.html |
@@ -259,11 +257,11 @@ Energy per drying cycle (3 umbrellas per cycle):
 |---|---|
 | PTC heaters (9×₱484) | ≈ ₱4,356 |
 | AVC blowers (9×₱330) | ≈ ₱2,970 |
-| Motors + shafts + bearings + couplings | ≈ ₱2,728 |
+| Motors + couplings (3× SGM-370 + 3× PETIYOUZA 6mm flange) | ≈ ₱1,821 |
 | taxnele SSR 40A (4×₱239) + SSR 10A (3×₱218) + SSR Heatsink BLACK | ≈ ₱2,051 |
 | Control electronics (Mega w/ terminal board ₱413, DHT22 ₱220, DS18B20 ₱141, LCD ₱165, LM2596S ₱155) | ≈ ₱1,094 |
 | Battery (1× 200Ah) + charger | ≈ ₱11,700–12,200 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
 | Wiring, connectors, consumables | ≈ ₱2,500–2,900 |
 | DC Rocker Switch 50A | ~₱190 |
-| **TOTAL** | **≈ ₱29,600–29,900** |
+| **TOTAL** | **≈ ₱28,700–29,000** |

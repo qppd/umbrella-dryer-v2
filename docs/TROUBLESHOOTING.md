@@ -56,7 +56,7 @@
 | Motor relay doesn't click | Module not powered / wrong pin | Check: module VCC → 5V buck rail (NOT Mega pin); D5/D7/D9 → IN1/IN2/IN3; active-LOW: LOW = ON |
 | Relay clicks but motor stays off | Wrong COM/NO / fuse blown | Check COM→3A-fused 12V, NO→motor +; verify 3A fuse intact |
 | Motor spins wrong direction | Polarity reversed | Swap the two motor leads (DC motor direction = polarity) |
-| Motor hums but doesn't spin | Coupling misaligned / shaft binding | Loosen coupling; realign; check KP08 pillow blocks |
+| Motor hums but doesn't spin | Coupling misaligned / shaft binding | Loosen flange coupling; realign motor output shaft to umbrella hub |
 
 ---
 

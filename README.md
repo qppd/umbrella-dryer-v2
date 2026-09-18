@@ -7,7 +7,7 @@ Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air 
 
 ## How it works
 
-1. Each umbrella mounts on its **own motorized station** — a SGM-370 worm gear motor (14 kg·cm) direct-driving a 6mm shaft — inside the drying chamber. Stations run independently; firmware stages one station at a time to stay within the BMS current budget.
+1. Each umbrella mounts on its **own motorized station** — a SGM-370 worm gear motor (14 kg·cm) direct-driving the umbrella hub through a 6mm flange coupling — inside the drying chamber. Stations run independently; firmware stages one station at a time to stay within the BMS current budget.
 2. **9× PTC ceramic heaters (12V 100W)** provide heating (3 per station), switched by **DC-output SSRs (SSR-40DD class)** driven directly from the Mega. **9× BLDC ducted fans (50mm, ESC-controlled)** circulate warm air (40–60°C).
 3. **DHT22** (humidity) + **DS18B20** (heater-zone temp) drive the duty-cycling controller on the **Arduino Mega 2560** — heaters run only while chamber humidity is above threshold (the "energy efficient control" of the study).
 4. When chamber humidity drops below threshold → auto-shutoff + buzzer + green LED. Condensate drains passively (sloped floor → drain tube → drip tray).
@@ -23,7 +23,7 @@ Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air 
 | Sensors | DHT22 (humidity) · DS18B20 (heater-zone temp) |
 | Thermal safety | PTC self-regulation · firmware 65°C cutoff · BMS |
 | UI | 16×2 LCD (I2C, pins 20/21), 3 status LEDs, buzzer, illuminated arcade start button |
-| Mechanical | 3× 6mm SS shafts, 6× KP08 pillow blocks, 3× 6×8 couplings, aluminum chassis |
+| Mechanical | 3× PETIYOUZA 6mm flange couplings, aluminum chassis |
 
 ## Where to start (read in this order)
 

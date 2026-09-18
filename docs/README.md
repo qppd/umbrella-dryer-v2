@@ -43,7 +43,7 @@
 2. **Upload firmware** — See FIRMWARE-GUIDE.md. Install libraries, upload sketch.
 3. **Calibrate buck** — Set LM2596S to 5.0V. Connect to Mega 5V pin (not barrel jack).
 4. **Build frame** — 3-station frame for inverted umbrellas (700mm pitch).
-5. **Mount motors** — SGM-370 on aluminum plates, shafts through KP08 pillow blocks.
+5. **Mount motors** — SGM-370 on aluminum plates, connect output shaft to umbrella hub via 6mm flange coupling.
 6. **Wire power** — Battery → 50A disconnect → 50A ANL → distribution → per-branch fuses.
 7. **Wire relays** — PTC heaters via 40A automotive relays + 2N2222 NPN drivers; motors via opto module; fans via 40A auto relay + ESC.
 8. **Wire sensors** — DHT22 (D2), DS18B20 (D3), LCD I2C (D20/D21).

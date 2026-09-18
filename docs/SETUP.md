@@ -14,9 +14,7 @@
 - [ ] 9× PTC ceramic heaters (12V 100W) — verify 12V, not 220V!
 - [ ] 9× BLDC fan modules (50mm, with ESC) — verify ESC included
 - [ ] 3× SGM-370 worm gear motors
-- [ ] 6× KP08 pillow block bearing (6mm bore)
-- [ ] 3× 6mm × 300mm shafts
-- [ ] 2× rigid coupling sets (use 6×8 bore)
+- [ ] 3× PETIYOUZA rigid flange coupling (6mm bore)
 - [ ] DHT22 module, DS18B20 waterproof, LCD 16×2 I2C
 - [ ] LM2596S buck module
 - [ ] LEDs (R/Y/G), buzzer, arcade button
@@ -49,8 +47,8 @@
 ## 4. Mechanical assembly
 
 1. **Frame:** Build 3-station frame. Each station holds 1 umbrella inverted.
-2. **Motor mounts:** Attach SGM-370 motors to aluminum plates. Align shaft center with umbrella hub center.
-3. **Shafts:** Insert 6mm × 300mm shafts through KP08 pillow blocks. Connect motor shaft to umbrella shaft via 6×8 rigid coupling.
+2. **Motor mounts:** Attach SGM-370 motors to aluminum plates. Align motor output shaft center with umbrella hub center.
+3. **Couplings:** Connect each SGM-370 output shaft directly to the umbrella hub with a 6mm-bore PETIYOUZA rigid flange coupling (no separate shaft, no pillow blocks).
 4. **Verify:** Spin by hand. Should rotate freely with no binding. Motor is self-locking.
 
 ---
