@@ -154,7 +154,7 @@ Each of the 9 AVC blowers accepts PWM duty cycle directly from Mega pins via `an
    channels have onboard pull-ups (OFF); firmware writes safe states first in `setup()`
 4. **No mains voltage** — entire system is SELV
 5. **Single-point DC ground** — all returns meet at one bus bar
-6. **Emergency kill** — pull battery cable from 2-pin screw terminal
+| Emergency kill | pull battery cable from 2-pin screw terminal OR flip 50A rocker switch OFF |
 7. **BMS 200A** — over-current protection on battery output
 
 > With fuses removed, the BMS and firmware cutoff are the only over-current/over-temperature

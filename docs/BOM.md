@@ -34,7 +34,15 @@
 
 ### 3b. DC power distribution
 
-|| Wire: 8 AWG battery main, 10 AWG heater/fan branches, 18 AWG motor, 20 AWG logic, 22 AWG signals. All stranded copper. No fuses, no disconnect switch in the circuit.
+| From | To | Wire | Protection |
+|---|---|---|---|
+| Battery + | 50A DC Rocker Switch | 8 AWG | Manual disconnect |
+| Rocker Switch + | 2-pin screw terminal (battery in) | 8 AWG | — |
+| Battery − | 12V Negative Ground Bus Bar | 8 AWG | — |
+
+> **No fuses, no ANL breakers.** Main power controlled by 50A DC rocker switch. Emergency kill = flip rocker OFF + unplug battery cable.
+
+|| Wire: 8 AWG battery main, 10 AWG heater/fan branches, 18 AWG motor, 20 AWG logic, 22 AWG signals. All stranded copper. No fuses. Main power disconnected via 50A DC rocker switch.
 
 ### 3c. High-current switching (12V DC)
 
@@ -219,7 +227,8 @@ Energy per drying cycle (3 umbrellas per cycle):
 | 1 | **Arduino Mega 2560 + Terminal Board** | CH340G + screw terminal board | ₱413 | Lazada | https://www.lazada.com.ph/products/mega-2560-16au-ch340g-based-on-arduino-arduino-mega-2560-terminal-board-i123143829-s20504057319.html |
 | 1 | **DHT22 sensor module** | humidity + temp, 3-pin | ₱220 | Lazada | https://www.lazada.com.ph/products/pdp-i132179919.html |
 | 1 | **DS18B20 temperature sensor module** | LEOOYI, 3-pin cable + pluggable terminal adapter | ₱141 | Lazada | https://www.lazada.com.ph/products/pdp-i4398946755-s24721782197.html |
-| 1 | LCD 16×2 I2C | display | ₱165 | Lazada | https://www.lazada.com.ph/products/pdp-i3934869498.html |
+|| 1 | LCD 16×2 I2C | display | ₱165 | Lazada | https://www.lazada.com.ph/products/1602-16x2-character-lcd-module-display-hd44780-with-i2c-i104139284-s1630402476.html |
+| 1 | **DC Rocker Switch 50A 12V** | Main power disconnect (heavy duty toggle) | ~₱190 | Lazada | https://www.lazada.com.ph/catalog/?q=50A+12V+DC+heavy+duty+toggle+switch |
 | 3 | 304 SS shaft 6mm × 300mm | — | ~₱180 ea = ~₱540 | Lazada | https://www.lazada.com.ph/catalog/?q=304+stainless+steel+rod+6mm+300mm |
 | 6 | KP08 pillow block 6mm bore | — | ₱87 ea = ₱522 | Lazada | https://www.lazada.com.ph/catalog/?q=kp08+pillow+block+bearing+6mm |
 | 2 | Rigid coupling 6×8mm | — | ₱82.84 ea = ~₱166 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
@@ -252,4 +261,5 @@ Energy per drying cycle (3 umbrellas per cycle):
 | Battery (1× 200Ah) + charger | ≈ ₱10,900–11,600 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
 | Wiring, connectors, consumables | ≈ ₱1,500–1,900 |
-| **TOTAL** | **≈ ₱27,600–27,800** |
+| DC Rocker Switch 50A | ~₱190 |
+| **TOTAL** | **≈ ₱27,800–28,000** |

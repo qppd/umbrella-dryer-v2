@@ -278,14 +278,14 @@ graph TB
 | SSR-40DA solid-state relays | Replaced by SSR-40DD DC-output SSRs for PTC + SSR-10DD for motors |
 | 3000W pure sine inverter | All loads run natively on 12V DC |
 | 14.6V lead-acid charger | LiFePO4 charger only |
-| Mains rocker switches | Not needed — firmware control |
+| Mains rocker switches | Not needed — 50A DC rocker switch for main power |
 | 40A automotive relays (×4) | Replaced by SSR-40DD — no mechanical contacts, no NPN driver needed |
 | NPN driver stage (2N2222 ×4) | SSR-40DD driven directly from Mega pins |
 | 1kΩ base resistors ×4 | No longer needed — no NPN transistors |
 | 10kΩ pull-down resistors ×4 | No longer needed — SSR has no input current at boot |
 | 1N4007 flyback diodes ×4 | No longer needed — no relay coils |
 | 50A ANL main fuse | BMS 200A is the sole over-current protection |
-| 50A disconnect switch | Battery connects directly to bus; power off = disconnect battery |
+| 50A disconnect switch | Replaced by 50A DC rocker switch (main power disconnect) |
 | 30A blade fuses ×3 (PTC branches) | Removed — SSR handles switching; BMS is backstop |
 | 30A blade fuse (fan bus) | Removed — SSR handles switching; BMS is backstop |
 | 3A blade fuses ×3 (motors) | Removed — BMS is backstop |
@@ -305,4 +305,4 @@ graph TB
 | Rev 6 | Dual source: wall outlet OR 3000W inverter via changeover; 2× 200Ah LiFePO4 |
 | Rev 7 | Complete 12V DC redesign: 9× PTC + 9× AVC blower + 3× SGM-370; no mains, no inverter |
 | Rev 8 | Fuse plan fixed (50A main, 30A PTC/fan, per-heater 130°C thermal fuse); PTC relays upgraded to 40A automotive; pin map reconciled; LCD I2C corrected to pins 20/21; staged operation mandatory |
-| **Rev 9** | **No-fuse SSR build: all fuses, disconnect switch, NPN driver stages, and thermal fuses removed; 40A automotive relays replaced by SSR-40DD DC-output SSRs driven directly from Mega pins; protection = BMS 200A + PTC self-regulation + DS18B20 firmware cutoff** |
+| **Rev 9** | **No-fuse SSR build: all fuses, NPN driver stages, and thermal fuses removed; 40A automotive relays replaced by SSR-40DD DC-output SSRs driven directly from Mega pins; protection = BMS 200A + PTC self-regulation + DS18B20 firmware cutoff; added 50A DC rocker switch for main power disconnect** |

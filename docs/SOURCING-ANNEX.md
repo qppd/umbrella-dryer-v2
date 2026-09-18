@@ -7,7 +7,8 @@
 ## 1. Order strategy
 
 1. **Battery first** — longest lead time (PowMr from Lazada)
-2. **MakeLAB.PH** — motor + couplings (local, fast shipping)
+2. **50A DC rocker switch** — main power disconnect, order with battery
+3. **MakeLAB.PH** — motor + couplings (local, fast shipping)
 3. **Lazada** — everything else (electronics, PTC heaters, blowers, wiring)
 4. **Hardware store** — consumables (screws, zip ties, sealant)
 
@@ -25,7 +26,16 @@
 
 > **Important:** At checkout, select the **12V 100W** variant. Some listings offer 220V — do NOT pick that. LazMall seller with 95% rating.
 
-### 2b. Fans (AVC blowers)
+### 2b. Main Power Disconnect
+
+| Qty | Item | Price | Store | Link |
+|---|---|---|---|---|
+| 1 | **50A 12V DC Heavy Duty Toggle Switch** | ~₱190 | Lazada | https://www.lazada.com.ph/catalog/?q=50A+12V+DC+heavy+duty+toggle+switch |
+
+> **Purpose:** Manual main power disconnect. Installed between battery + and positive bus bar. Flip OFF to completely isolate battery from all loads.
+> **Mounting:** Panel-mount, 2-pin SPST. Wire 8 AWG through switch.
+
+### 2c. Fans (AVC blowers)
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
@@ -34,7 +44,7 @@
 > **Pick variant:** 12V 4.5A, 80mm. PWM-controlled directly from Mega. No ESC needed.
 > **Physical store fallback:** If online unavailable, check **e-Gizmo** (Manila) or **Rep Asia** for similar blower fans.
 
-### 2c. Motors + drivetrain (makerlab.ph)
+### 2d. Motors + drivetrain (makerlab.ph)
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
@@ -66,7 +76,7 @@
 | 1 | Arduino Mega 2560 + Terminal Board (CH340G) | ₱413 | Lazada | https://www.lazada.com.ph/products/mega-2560-16au-ch340g-based-on-arduino-arduino-mega-2560-terminal-board-i123143829-s20504057319.html |
 | 1 | DHT22 sensor module | ₱220 | Lazada | https://www.lazada.com.ph/products/pdp-i132179919.html |
 | 1 | DS18B20 temperature sensor module + terminal adapter + 3-pin cable (LEOOYI) | ₱141 | Lazada | https://www.lazada.com.ph/products/pdp-i4398946755-s24721782197.html |
-| 1 | LCD 16×2 I2C (black on white) | ₱165 | Lazada | https://www.lazada.com.ph/products/pdp-i3934869498.html |
+| 1 | LCD 16×2 I2C (black on white) | ₱165 | Lazada | https://www.lazada.com.ph/products/1602-16x2-character-lcd-module-display-hd44780-with-i2c-i104139284-s1630402476.html |
 | 1 | LM2596S DC-DC buck converter with 7-segment display | ₱155 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i127879071-s137114729.html |
 
 ### 2g. SSRs, drivers, and modules (Lazada)
@@ -135,9 +145,10 @@
 | SSRs (taxnele) + heatsinks + terminals | ≈ ₱2,051 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
 | Wiring + consumables (Lazada) | ≈ ₱1,476 |
+| DC Rocker Switch 50A | ~₱190 |
 | Battery (1× 200Ah) + charger | ≈ ₱10,900–11,600 |
 | Hardware store consumables | ≈ ₱490 |
-| **GRAND TOTAL** | **≈ ₱27,600–27,800** |
+|| **GRAND TOTAL** | **≈ ₱27,800–28,000** |
 
 ---
 
@@ -176,7 +187,7 @@
 
 ## 6. Notes on the no-fuse design
 
-The no-fuse SSR build removes all fuses (50A ANL, 30A blade, 3A blade, 130°C thermal fuses, disconnect switch) from the power path. The battery connects directly to the distribution bus through a 2-pin screw terminal. Emergency kill is achieved by unplugging the battery cable.
+The no-fuse SSR build removes all fuses (50A ANL, 30A blade, 3A blade, 130°C thermal fuses) from the power path. The battery connects to the distribution bus through a **50A DC rocker switch** (main power disconnect) then a 2-pin screw terminal. Emergency kill = flip rocker OFF + unplug the battery cable.
 
 **Protection scheme:**
 - Over-current: BMS 200A cutoff
