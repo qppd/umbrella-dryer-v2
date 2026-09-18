@@ -34,7 +34,7 @@
 |---|---|---|
 | LCD blank | Wrong I2C address | Try 0x3F instead of 0x27; use I2C scanner sketch |
 | LCD shows squares | I2C not initialized | Call `lcd.init()` not `lcd.begin()`; **on Mega, I2C is pins 20/21 — NOT A4/A5** |
-| LCD flickers | Loose connection | Check VCC, GND, SDA→D20, SCL→D21; reseat dupont connectors |
+| LCD flickers | Loose connection | Check VCC, GND, SDA→D20, SCL→D21; reseat wire connections |
 
 ---
 

@@ -103,7 +103,7 @@
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
 | 1 | Silicone wire kit 6–18AWG | ₱218 | Lazada | https://www.lazada.com.ph/products/pdp-i4880482146.html |
-| 1 | Dupont jumper kit 40-pin | ₱45 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
+| 2 | **Model 1007 Tinned Copper Wire Kit** (COLOR 01 + COLOR 02) | 18/20/22/24 AWG wire, 5-color spool | ₱385 ea = ₱770 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/model-1007-18awg-20awg-22-awg-24awg-tinned-copper-wire-5-color-spool-i3154761672-s17328234744.html |
 | 1 | Terminal block 15A barrier strip | ₱106 | Lazada | https://www.lazada.com.ph/products/pdp-i2818578034.html |
 | 2 | 10-Terminal Bus Bar 150A (Copper) | ~₱120 ea = ₱240 | Lazada | https://www.lazada.com.ph/products/814-terminal-bus-bar-150a-high-current-dc-busbar-12-48v-copper-power-distribution-terminal-block-for-car-boat-i5119401028-s30216194181.html |
 | 1 | Heat-shrink tube kit | ₱111 | Lazada | https://www.lazada.com.ph/products/pdp-i2569065087.html |
@@ -144,11 +144,11 @@
 | Control electronics (Lazada) | ≈ ₱1,984 |
 | SSRs (taxnele) + heatsinks + terminals | ≈ ₱2,051 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
-| Wiring + consumables (Lazada) | ≈ ₱1,476 |
+| Wiring + consumables (Lazada) | ≈ ₱2,201 |
 | DC Rocker Switch 50A | ~₱190 |
 | Battery (1× 200Ah) + charger | ≈ ₱10,900–11,600 |
 | Hardware store consumables | ≈ ₱490 |
-|| **GRAND TOTAL** | **≈ ₱27,800–28,000** |
+| **GRAND TOTAL** | **≈ ₱28,500–28,700** |
 
 ---
 

@@ -236,7 +236,7 @@ Energy per drying cycle (3 umbrellas per cycle):
 | 1 | Active buzzer 5V | alarm | ₱35 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/active-alarm-buzzer-driver-module-high-current-blue-i3474748260-s17874906532.html |
 | 1 | Arcade LED push button 5V | start | ₱45 | Circuitrocks | https://www.lazada.com.ph/products/i343850766.html |
 | 1 | Silicone wire kit 6–18AWG | gauges | ₱218 | Lazada | https://www.lazada.com.ph/products/pdp-i4880482146.html |
-| 1 | Dupont jumper kit 40-pin | logic | ₱45 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
+| 2 | **Model 1007 Tinned Copper Wire Kit** (COLOR 01 + COLOR 02) | 18/20/22/24 AWG, 5-color spool — logic + signal wiring | ₱385 ea = ₱770 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/model-1007-18awg-20awg-22-awg-24awg-tinned-copper-wire-5-color-spool-i3154761672-s17328234744.html |
 | 1 | Terminal block 15A barrier | Existing terminal block (unchanged) | ₱106 | Lazada | https://www.lazada.com.ph/products/pdp-i2818578034.html |
 | 2 | 10-Terminal Bus Bar 150A (Copper) | Main 12V (+ & -) bus rails | ~₱120 ea = ₱240 | Lazada | https://www.lazada.com.ph/products/814-terminal-bus-bar-150a-high-current-dc-busbar-12-48v-copper-power-distribution-terminal-block-for-car-boat-i5119401028-s30216194181.html |
 | 1 | Heat-shrink tube kit | insulation | ₱111 | Lazada | https://www.lazada.com.ph/products/pdp-i2569065087.html |
@@ -260,6 +260,6 @@ Energy per drying cycle (3 umbrellas per cycle):
 | Control electronics (Mega w/ terminal board ₱413, DHT22 ₱220, DS18B20 ₱141, LCD ₱165, LM2596S ₱155) | ≈ ₱1,094 |
 | Battery (1× 200Ah) + charger | ≈ ₱10,900–11,600 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
-| Wiring, connectors, consumables | ≈ ₱1,500–1,900 |
+| Wiring, connectors, consumables | ≈ ₱2,200–2,600 |
 | DC Rocker Switch 50A | ~₱190 |
-| **TOTAL** | **≈ ₱27,800–28,000** |
+| **TOTAL** | **≈ ₱28,500–28,700** |
