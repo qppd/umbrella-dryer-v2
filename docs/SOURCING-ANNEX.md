@@ -94,8 +94,8 @@
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
-| 1 | LED 5mm red | ₱29 | Lazada | https://www.lazada.com.ph/products/pdp-i2573601435.html |
-| 1 | Active buzzer 5V | ₱35 | Lazada | https://www.lazada.com.ph/products/pdp-i4472196293.html |
+| 1 | LED 5mm red | ₱29 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/5mm-led-diode-assorted-colors-i144137387-s166391718.html |
+| 1 | Active buzzer 5V | ₱35 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/active-alarm-buzzer-driver-module-high-current-blue-i3474748260-s17874906532.html |
 | 1 | Arcade LED push button 5V (Circuitrocks) | ₱45 | Lazada | https://www.lazada.com.ph/products/i343850766.html |
 
 ### 2i. Wiring + consumables (Lazada)

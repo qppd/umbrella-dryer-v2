@@ -232,8 +232,8 @@ Energy per drying cycle (3 umbrellas per cycle):
 | 3 | 304 SS shaft 6mm × 300mm | — | ~₱180 ea = ~₱540 | Lazada | https://www.lazada.com.ph/catalog/?q=304+stainless+steel+rod+6mm+300mm |
 | 6 | KP08 pillow block 6mm bore | — | ₱87 ea = ₱522 | Lazada | https://www.lazada.com.ph/catalog/?q=kp08+pillow+block+bearing+6mm |
 | 2 | Rigid coupling 6×8mm | — | ₱82.84 ea = ~₱166 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
-| 1 | LED 5mm (R/Y/G) | status | ₱29 | Lazada | https://www.lazada.com.ph/products/pdp-i2573601435.html |
-| 1 | Active buzzer 5V | alarm | ₱35 | Lazada | https://www.lazada.com.ph/products/pdp-i4472196293.html |
+| 1 | LED 5mm (R/Y/G) | status | ₱29 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/5mm-led-diode-assorted-colors-i144137387-s166391718.html |
+| 1 | Active buzzer 5V | alarm | ₱35 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/active-alarm-buzzer-driver-module-high-current-blue-i3474748260-s17874906532.html |
 | 1 | Arcade LED push button 5V | start | ₱45 | Circuitrocks | https://www.lazada.com.ph/products/i343850766.html |
 | 1 | Silicone wire kit 6–18AWG | gauges | ₱218 | Lazada | https://www.lazada.com.ph/products/pdp-i4880482146.html |
 | 1 | Dupont jumper kit 40-pin | logic | ₱45 | Lazada | https://www.lazada.com.ph/products/pdp-i245055558.html |
