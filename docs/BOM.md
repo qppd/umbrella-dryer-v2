@@ -86,7 +86,7 @@
 | 3 | Solid State Relay taxnele 10A (DC-DC) | SSR-10DD (3-32VDC input, 5-60VDC output); motor control | ₱654.66 |
 | 4 | SSR Heatsink BLACK (80×50×50mm) | One per 40A SSR | ₱440 |
 | 9 | AVC 12V DC blower fan | Super High Speed Blower, 80×80×38mm, PWM control, 4.5A each | ₱2,970 |
-| 9 | 12V 100W PTC heater element (MXKJING T30) | Self-regulating ceramic — 3 per station | ₱4,356 |
+| 9 | 12V 100W PTC heater element (diymore) | Self-regulating ceramic — 3 per station | ₱10,459.80 |
 | 1 | Screw terminal 2-pin | Battery in | ₱10 |
 | 1 | Screw terminal 3-pin | Sensor | ₱10 |
 
@@ -213,7 +213,7 @@ Energy per drying cycle (3 umbrellas per cycle):
 
 | Qty | Part | Spec | Price | Seller | URL / note |
 |---|---|---|---|---|---|
-| 9 | PTC ceramic heater MXKJING T30 | 12V 100W | ₱484 ea = ₱4,356 | Lazada (LazMall) | https://www.lazada.com.ph/products/pdp-i15593670246.html |
+| 9 | PTC ceramic heater **diymore 12V 100W** | Self-regulating PTC ceramic, 12V 100W, ~6×4.2×6cm, 120g, mounting holes | ₱1,162.20 ea = ₱10,459.80 | Lazada — diymore | https://www.lazada.com.ph/products/diymore-dc-12v-100w-room-heater-energy-saving-ptc-car-air-fan-heater-constant-temperature-heating-heaters-factory-price-safe-home-diy-i2578103151.html (select **12V100W** variant) |
 | 9 | **AVC 12V DC blower fan** | Super High Speed Blower, 80×80×38mm, PWM control, 4.5A | ₱330 ea = ₱2,970 | Lazada | https://www.lazada.com.ph/products/pdp-i2328323489.html |
 | 3 | Worm gear motor SGM-370 | 12V 6RPM 14 kg·cm | ₱500 ea = ₱1,500 | makerlab.ph | https://makerlab.ph/products/dc-worm-gear-motor-sgm-370-12v-16rpm |
 | 4 | Solid State Relay taxnele 40A (DC-DC) | SSR-40DD (3-32VDC input, 5-60VDC output) | ₱239.17 ea = ₱956.68 | Lazada | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
@@ -254,7 +254,7 @@ Energy per drying cycle (3 umbrellas per cycle):
 
 | Category | Estimate |
 |---|---|
-| PTC heaters (9×₱484) | ≈ ₱4,356 |
+| PTC heaters (9×₱1,162) | ≈ ₱10,460 |
 | AVC blowers (9×₱330) | ≈ ₱2,970 |
 | Motors + drivetrain + mounts (3× SGM-370, couplings 6×8mm, 3× shafts, 3× UCP06 pillow blocks, 3× PETIYOUZA flange, 6mm aluminum plate) | ≈ ₱3,892 |
 | taxnele SSR 40A (4×₱239) + SSR 10A (3×₱218) + SSR Heatsink BLACK (4×₱110) | ≈ ₱2,051 |
@@ -263,4 +263,4 @@ Energy per drying cycle (3 umbrellas per cycle):
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
 | Wiring, connectors, consumables | ≈ ₱2,400 |
 | DC Rocker Switch 50A | ~₱190 |
-| **TOTAL** | **≈ ₱29,000** (₱28,700–29,300 with price swings) |
+| **TOTAL** | **≈ ₱35,100** (₱34,800–35,400 with price swings; PTC heaters now ₱1,162 ea — original ₱484 MXKJING listing out of stock) |
