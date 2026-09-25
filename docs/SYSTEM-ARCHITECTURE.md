@@ -20,6 +20,7 @@ flowchart TD
     subgraph L3["LAYER 3 — Sensing"]
         DHT["DHT22 — chamber humidity + ambient temp"]
         DS["DS18B20 — heater-zone temp (safety signal)"]
+        REED["Reed switch (D22) — lid closed (start-interlock signal)"]
     end
 
     subgraph L2["LAYER 2 — Actuation"]
@@ -35,6 +36,7 @@ flowchart TD
         end
         FAN_SSR["Fan bus SSR (D13 → SSR-40DD, active-HIGH)"]
         PWM_FAN["PWM blower control ×3 (D10–D12) — analogWrite"]
+        SOL["Lid solenoid lock SSR-10A (D23) — fail-secure, pulse-unlock"]
     end
 
     subgraph L1["LAYER 1 — Power"]
@@ -122,6 +124,8 @@ No fuses in the circuit. BMS 200A is the sole over-current protection.
 | D16 | Yellow LED | Cycle running / cooling | 220Ω | HIGH |
 | D17 | Green LED | Ready / done | 220Ω | HIGH |
 | D18 | Buzzer | Active buzzer | — | HIGH |
+| D22 | Lid reed switch | Lid-closed sensor (NO reed) | INPUT_PULLUP | LOW (CLOSED) |
+| D23 | Lid solenoid lock | SSR-10A → solenoid lock | Direct drive | HIGH (UNLOCK pulse) |
 | 20 (SDA) | LCD I2C | 16×2 LCD | I2C | — |
 | 21 (SCL) | LCD I2C | 16×2 LCD | I2C | — |
 
@@ -205,6 +209,7 @@ sequenceDiagram
 | **Direct-drive SSRs** | All SSRs active-HIGH, driven directly from Mega pins — no NPN transistors, no optocoupler modules |
 | **PWM blower control** | AVC blowers accept 5V PWM directly from Mega — no ESC needed |
 | **Worm drive self-locking** | SGM-370 motors hold position when de-energized — no brake, no holding current |
+| **Lid safety interlock** | Reed switch (D22) refuses start while the lid is open; fail-secure solenoid lock (D23) holds the lid shut for the whole cycle — no access to rotating/heated elements while running |
 | **No fuses** | BMS 200A is the sole over-current protection; no blade fuses, ANL fuses, or thermal fuses |
 
 ## 7. Deliberate non-features

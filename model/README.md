@@ -12,7 +12,7 @@ The 3D model shows:
 - **Drivetrain** — per station: SGM-370 motor → rigid coupling 6×8mm → 6mm × 300mm shaft → UCP06 pillow block (shaft passes through the bearing's middle) → PETIYOUZA 6mm flange coupling → umbrella hub; all bolted to the aluminum plate
 - **PTC heater placement** — 3× PTC ceramic heaters per station, positioned for airflow
 - **AVC blower placement** — 3× 80mm blowers per station, positioned for air circulation
-- **Electronics enclosure** — Mega, SSR modules, buck converter
+- **Electronics enclosure** — Mega, SSR modules, buck converter, reed switch, solenoid lock
 - **Battery compartment** — 1× LiFePO4 200Ah battery
 - **Drip tray** — under each station for water collection
 

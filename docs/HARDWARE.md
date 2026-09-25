@@ -27,6 +27,8 @@ graph TB
         BTN["Button D14"]
         BUZ["Buzzer D18"]
         LED["Status LEDs D15–D17"]
+        REED["Lid Reed Switch<br/>D22 (closed = LOW)"]
+        SOL["Solenoid Lock SSR-10A<br/>D23 (HIGH = UNLOCK pulse)"]
     end
 
     subgraph SSR_BLOCK["SSR driver stages ×4 (D4/D6/D8/D13)"]
@@ -81,7 +83,7 @@ graph TB
     BUS --> SSR_H1 & SSR_H2 & SSR_H3 & FAN_SSR
     BUS --> SSR_M1 & SSR_M2 & SSR_M3
     BUS --> BUCK --> MEGA
-    MEGA --> DHT & DS & LCD & BTN & BUZ & LED
+    MEGA --> DHT & DS & LCD & BTN & BUZ & LED & REED & SOL
 
     SSR_BLOCK --> SSR_H1 & SSR_H2 & SSR_H3 & FAN_SSR
 
@@ -106,7 +108,7 @@ graph TB
 | Spec | Value | Design implication |
 |---|---|---|
 | MCU | ATmega2560, AVR 8-bit @ 16 MHz | Bare-metal firmware, no OS |
-| Digital I/O | 54 (15 PWM) | 18 used — headroom remains |
+| Digital I/O | 54 (15 PWM) | 20 used (D2–D18 + D22/D23) — headroom remains |
 | Flash / SRAM / EEPROM | 256 KB / 8 KB / 4 KB | Use `F()` macro for string literals |
 | Logic level | 5V | SSR inputs, PWM fan control compatible |
 | Power input | **5V pin from buck** | Never 12V on the barrel jack |
@@ -164,7 +166,32 @@ graph TB
 | Motor 1 | LCTC DC-DC SSR 10A (DC output) | 10A @ 30VDC | D5 HIGH = ON | SGM-370 #1 | ~0.8A |
 | Motor 2 | LCTC DC-DC SSR 10A (DC output) | 10A @ 30VDC | D7 HIGH = ON | SGM-370 #2 | ~0.8A |
 | Motor 3 | LCTC DC-DC SSR 10A (DC output) | 10A @ 30VDC | D9 HIGH = ON | SGM-370 #3 | ~0.8A |
+| Lid lock | LCTC DC-DC SSR 10A (DC output) | 10A @ 30VDC | D23 HIGH = UNLOCK | Solenoid lock | ~0.65A (pulsed) |
 **Why LCTC DC-DC SSR for PTC:** 3× 100W PTC = 25A — over the 10A rating of PCB optocoupler modules. LCTC DC-DC SSR 40A handles DC output at 40A with no mechanical contacts. Driven directly from Mega digital pins (3–32VDC input); no NPN transistors, no base resistors, no flyback diodes required. Heatsink required (≈1 W/A → ~25 W at 25A). Motor SSRs (10A): minimal dissipation at 0.8A.
+
+### Lid solenoid lock — 1× Makerlab Solenoid Lock 12VDC
+
+Fail-secure lid bolt lock for the chamber front cover. **Normally-LOCKED** (spring holds the bolt out) with **0 A draw**. Energizing pulls the bolt in (UNLOCK).
+
+| Spec | Value | Note |
+|---|---|---|
+| Type | 12 VDC solenoid lock (bolt) | Normally-locked / fail-secure |
+| Operating voltage | 12 V DC | Switched by the 4th LCTC DC-DC SSR-10A (D23) |
+| Current | ~650 mA @ 12 V (500 mA @ 9 V) | **When energized only** — pulsed ~3 s to unlock |
+| Duty | Design for 1–10 s activation | **Do not hold energized** — pulse-only |
+| Wire length | ~222 mm | On-board, mounts to the lid/frame |
+| Role | Locks the lid shut during a drying cycle; unlocks at COMPLETE | Safety: prevents access to spinning/heated chamber |
+
+### Lid reed switch — 1× Magnetic Door Reed Switch Set NO/NC (Makerlab)
+
+Magnetic door/window switch used as the lid-closed detector.
+
+| Spec | Value | Note |
+|---|---|---|
+| Type | Magnetic reed switch set (NO / NC configurable) | Includes magnet + reed housing |
+| Contacts | Use **NO** (normally open) | Closed when the magnet is near (lid shut) |
+| Wiring | D22 (INPUT_PULLUP) + GND | Lid closed = D22 LOW; lid open = HIGH |
+| Role | Start-interlock: the machine will not start while the lid is open | Safety |
 
 ---
 
@@ -190,6 +217,8 @@ graph TB
 | **D16** | **Yellow LED** | Output | HIGH = ON | 220 Ω series |
 | **D17** | **Green LED** | Output | HIGH = ON | 220 Ω series |
 | **D18** | **Buzzer** | Output | HIGH = ON | Active buzzer |
+| **D22** | **Lid reed switch** | Input | LOW = LID CLOSED | INPUT_PULLUP, NO reed → GND |
+| **D23** | **Lid solenoid lock SSR** | Output | HIGH = UNLOCK (pulse ~3 s) | SSR-10A direct drive |
 | **20 (SDA)** | **LCD I2C SDA** | I2C | — | addr 0x27 or 0x3F |
 | **21 (SCL)** | **LCD I2C SCL** | I2C | — | Mega hardware I2C |
 
@@ -207,6 +236,7 @@ graph TB
 | AVC blower (12V 4.5A) | 4.5A | 9 | 40.5A (all on) | SSR-40DD fan bus |
 | SGM-370 motor | 0.2A / 0.8A stall | 3 | 0.6A / 2.4A | SSR-10DD |
 | Arduino Mega + sensors | 0.1A | 1 | 0.1A | Buck converter |
+| Lid solenoid lock | 0.65A when pulsed (~3 s) | 1 | **~0 A avg** (0 A while locked) | SSR-10A |
 | **Worst-case total** | | | **~104A** | **BMS 200A** |
 
 > **Staged operation is mandatory.** One station full load = ~39.3A (3 PTC + 3 blowers + motor + logic).
@@ -261,6 +291,7 @@ graph TB
 | **Battery over-charge** | BMS high-voltage cutoff (~14.6V pack) |
 | **Accidental heater on at boot** | SSR has no input current at boot = OFF; `allOff()` called first in `setup()` |
 | **Water ingress** | Waterproof sensors; grommets; silicone-sealed seams; no bare connections below 5 cm |
+| **Lid open / access during operation** | **Lid safety interlock:** reed switch (D22) blocks start while the lid is open; solenoid lock (D23, fail-secure) holds the lid shut for the whole cycle — no access to rotating or heated elements while running |
 | **RCD / GFCI** | **Not required** — SELV system, ≤ 50V DC |
 
 > **No hardware fuse backstop.** This build intentionally omits all blade fuses, ANL fuses,
@@ -306,3 +337,4 @@ graph TB
 | Rev 7 | Complete 12V DC redesign: 9× PTC + 9× AVC blower + 3× SGM-370; no mains, no inverter |
 | Rev 8 | Fuse plan fixed (50A main, 30A PTC/fan, per-heater 130°C thermal fuse); PTC relays upgraded to 40A automotive; pin map reconciled; LCD I2C corrected to pins 20/21; staged operation mandatory |
 | **Rev 9** | **No-fuse SSR build: all fuses, NPN driver stages, and thermal fuses removed; 40A automotive relays replaced by SSR-40DD DC-output SSRs driven directly from Mega pins; protection = BMS 200A + PTC self-regulation + DS18B20 firmware cutoff; added 50A DC rocker switch for main power disconnect** |
+| **Rev 10** | **Lid safety interlock: added a Magnetic Door Reed Switch Set (D22) so the machine will not start while the chamber lid is open, and a Makerlab Solenoid Lock 12VDC switched by a 4th LCTC DC-DC SSR-10A (D23, fail-secure) so the lid is locked for the whole cycle and only pulsed open at COMPLETE / on a 2 s hold to load** |

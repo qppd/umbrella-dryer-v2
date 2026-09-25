@@ -1,6 +1,6 @@
 # Umbrella Dryer V2 — Bill of Materials
 
-| Design: | 12V DC-only system. Each umbrella station has 3× PTC heaters (100W each), 3× AVC 12V 4.5A blowers (PWM-controlled directly from Mega), and 1× worm gear motor. Battery-powered with **1× 200Ah LiFePO4**. **DC-output SSR-40DD** control PTC heaters (direct-drive from Mega), **LCTC DC-DC SSR 10A** controls worm motors (replaces optocoupler module), **Mega PWM** controls AVC blowers.
+> Design: 12V DC-only system. Each umbrella station has 3× PTC heaters (100W each), 3× AVC 12V 4.5A blowers (PWM-controlled directly from Mega), and 1× worm gear motor. Battery-powered with **1× 200Ah LiFePO4**. **DC-output SSR-40DD** control PTC heaters (direct-drive from Mega), **LCTC DC-DC SSR 10A** (×4) control the worm motors **and the lid solenoid lock** (replaces optocoupler module), **Mega PWM** controls AVC blowers. A **reed switch + solenoid lock lid safety interlock** prevents starting with the lid open and locks the lid for the whole cycle.
 
 ---
 
@@ -55,6 +55,7 @@
 | PTC Station 3 | D8 | LCTC DC-DC SSR 40A (DC output) | 3× PTC heaters | ~25A | HIGH = ON |
 | Motor Station 3 | D9 | LCTC DC-DC SSR 10A (DC output) | SGM-370 | ~0.8A | HIGH = ON |
 | Fan bus | D13 | LCTC DC-DC SSR 40A (DC output) | 9× AVC blowers | ~40.5A | HIGH = ON |
+| Lid lock | D23 | LCTC DC-DC SSR 10A (DC output) | Solenoid lock | ~0.65A (pulsed) | HIGH = UNLOCK |
 
 > **SSR direct drive:** All LCTC DC-DC SSR inputs connect directly to Mega pins. SSR input draws ≈10–20 mA at 5V — fine for direct drive. No additional components needed. Each SSR requires a heatsink (40A version: ~25W dissipation at 25A; fan bus at 40.5A: ~40W dissipation). Motor SSRs (10A): minimal dissipation at 0.8A.
 
@@ -72,6 +73,7 @@
 
 - No fuses in the circuit
 - DS18B20 cutoff if chamber exceeds 65 °C: firmware cuts all SSRs + blower PWM
+- **Lid safety interlock:** firmware refuses to start while the lid is open (reed D22); the lid is locked shut for the whole cycle (solenoid D23, fail-secure) and only pulsed open at COMPLETE / on a 2 s hold to load
 - PTC self-regulation: resistance rises with temperature, auto-limits
 - Battery BMS protects against over-discharge, over-charge, short circuit
 - No mains voltage anywhere — no RCD needed
@@ -83,12 +85,15 @@
 | Qty | Part | Notes | Price |
 |---|---|---|---|
 | 4 | Solid State Relay taxnele 40A (DC-DC) | SSR-40DD (3-32VDC input, 5-60VDC output); 3× PTC + 1× fan bus; direct-drive from Mega | ₱956.68 |
-| 3 | Solid State Relay taxnele 10A (DC-DC) | SSR-10DD (3-32VDC input, 5-60VDC output); motor control | ₱654.66 |
+| 4 | Solid State Relay taxnele 10A (DC-DC) | SSR-10DD (3-32VDC input, 5-60VDC output); 3× motor + 1× lid solenoid | ₱872.88 |
 | 4 | SSR Heatsink BLACK (80×50×50mm) | One per 40A SSR | ₱440 |
 | 9 | AVC 12V DC blower fan | Super High Speed Blower, 80×80×38mm, PWM control, 4.5A each | ₱2,970 |
 | 9 | 12V 100W PTC heater element (diymore) | Self-regulating ceramic — 3 per station | ₱10,459.80 |
 | 1 | Screw terminal 2-pin | Battery in | ₱10 |
 | 1 | Screw terminal 3-pin | Sensor | ₱10 |
+| 1 | **Magnetic Door Reed Switch Set NO/NC (Makerlab PH)** | Lid-closed sensor (D22) — sends magnet included | ₱165 |
+| 1 | **Solenoid Lock 12VDC (Makerlab PH)** | Lid bolt lock, fail-secure (D23 via SSR-10A) | ₱310 |
+| 1 | 1N4007 diode | Flyback across solenoid — protects SSR output MOSFET | ~₱5 or scavenged |
 
 ---
 
@@ -204,6 +209,8 @@ Energy per drying cycle (3 umbrellas per cycle):
 | D16 | LED_YELLOW | out | Cycle running / cooling | HIGH = ON |
 | D17 | LED_GREEN | out | Ready / done | HIGH = ON |
 | D18 | BUZZER | out | Audible notification | HIGH = ON |
+| D22 | LID_REED | in | Lid closed sensor (NO reed) | LOW = LID CLOSED |
+| D23 | SOL_LOCK | out | Lid solenoid lock (SSR-10A) | HIGH = UNLOCK (pulse ~3 s) |
 | 20 | SDA | I2C | LCD data | — |
 | 21 | SCL | I2C | LCD clock | — |
 
@@ -218,7 +225,9 @@ Energy per drying cycle (3 umbrellas per cycle):
 | 3 | Worm gear motor SGM-370 | 12V 6RPM 14 kg·cm | ₱500 ea = ₱1,500 | makerlab.ph | https://makerlab.ph/products/dc-worm-gear-motor-sgm-370-12v-16rpm |
 | 4 | Solid State Relay taxnele 40A (DC-DC) | SSR-40DD (3-32VDC input, 5-60VDC output) | ₱239.17 ea = ₱956.68 | Lazada | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
 | 4 | SSR Heatsink BLACK (Makerlab) | BLACK 10A to 40A (Size: 80x50x50mm) | ₱110 ea = ₱440 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/ssr-heatsink-black-10a-to-40a-size80x50x50mm-ssr-heatsink-m-shape-small-type-heat-radiator-for-10a-to100a-size125x50x70mm-i3585835660-s18544712824.html |
-| 3 | Solid State Relay taxnele 10A (DC-DC) | SSR-10DD (3-32VDC input, 5-60VDC output) | ₱218.22 ea = ₱654.66 | Lazada | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
+| 4 | Solid State Relay taxnele 10A (DC-DC) | SSR-10DD (3-32VDC input, 5-60VDC output); 3× motor + 1× lid solenoid | ₱218.22 ea = ₱872.88 | Lazada | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
+| 1 | **Magnetic Door Reed Switch Set NO/NC (Makerlab PH)** | Lid-closed sensor (D22); NO contacts; magnet included | ₱165 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i578584751-s1579814280.html |
+| 1 | **Solenoid Lock 12VDC (Makerlab PH)** | Lid bolt lock, fail-secure; ~650 mA; pulse-only (D23 via SSR-10A). + 1N4007 flyback diode | ₱310 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i109883946-s111626068.html |
 | 1 | LM2596S Buck Converter (w/ display) | 12V→5V with 7-segment voltmeter display | ₱155 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i127879071-s137114729.html |
 | 1 | **Arduino Mega 2560 + Terminal Board** | CH340G + screw terminal board | ₱413 | Lazada | https://www.lazada.com.ph/products/mega-2560-16au-ch340g-based-on-arduino-arduino-mega-2560-terminal-board-i123143829-s20504057319.html |
 | 1 | **DHT22 sensor module** | humidity + temp, 3-pin | ₱220 | Lazada | https://www.lazada.com.ph/products/pdp-i132179919.html |
@@ -257,10 +266,11 @@ Energy per drying cycle (3 umbrellas per cycle):
 | PTC heaters (9×₱1,162) | ≈ ₱10,460 |
 | AVC blowers (9×₱330) | ≈ ₱2,970 |
 | Motors + drivetrain + mounts (3× SGM-370, couplings 6×8mm, 3× shafts, 3× UCP06 pillow blocks, 3× PETIYOUZA flange, 6mm aluminum plate) | ≈ ₱3,892 |
-| taxnele SSR 40A (4×₱239) + SSR 10A (3×₱218) + SSR Heatsink BLACK (4×₱110) | ≈ ₱2,051 |
+| taxnele SSR 40A (4×₱239) + SSR 10A (4×₱218) + SSR Heatsink BLACK (4×₱110) | ≈ ₱2,270 |
 | Control electronics (Mega w/ terminal board ₱413, DHT22 ₱220, DS18B20 ₱141, LCD ₱165, LM2596S ₱155, resistor kit ₱220) | ≈ ₱1,314 |
+| Lid safety interlock (reed switch ₱165 + solenoid lock ₱310 + 1N4007) | ≈ ₱480 |
 | Battery (1× 200Ah) + charger | ≈ ₱11,700–12,200 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
 | Wiring, connectors, consumables | ≈ ₱2,400 |
 | DC Rocker Switch 50A | ~₱190 |
-| **TOTAL** | **≈ ₱35,100** (₱34,800–35,400 with price swings; PTC heaters now ₱1,162 ea — original ₱484 MXKJING listing out of stock) |
+| **TOTAL** | **≈ ₱35,800** (₱35,600–36,300 with price swings; PTC heaters now ₱1,162 ea — original ₱484 MXKJING listing out of stock; includes lid safety interlock: reed switch + solenoid lock + 4th SSR-10A) |

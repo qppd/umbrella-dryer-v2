@@ -13,7 +13,13 @@ flowchart TD
     SELF -- no --> FAULT["FAULT state<br/>red LED + long beeps"]
     SELF -- yes --> IDLE["IDLE<br/>green LED<br/>All loads OFF<br/>LCD: READY"]
 
-    IDLE -- "button (D14)" --> PREHEAT["PREHEAT<br/>red LED<br/>Fan bus ON (D13)<br/>Blowers FULL (D10–D12)<br/>PTC ON for station 1 (D4)<br/>Staged: rotate 30s"]
+    IDLE -- "hold 2s" --> UNLID["UNLOCK LID<br/>(solenoid pulse ~3 s)<br/>open + load"]
+    UNLID --> IDLE
+
+    IDLE -- "tap Start (D14)" --> LIDCLOSED{Lid closed?<br/>reed D22 = LOW}
+    LIDCLOSED -- no --> REFUSE["START BLOCKED<br/>buzzer + CLOSE LID"]
+    REFUSE --> IDLE
+    LIDCLOSED -- yes --> PREHEAT["PREHEAT<br/>red LED<br/>Lid LOCKED (solenoid off)<br/>Fan bus ON (D13)<br/>Blowers FULL (D10–D12)<br/>PTC ON for station 1 (D4)<br/>Staged: rotate 30s"]
 
     PREHEAT --> READ["Read DHT22 humidity<br/>read DS18B20 temp"]
     READ --> TOVER{T > 65°C?}
@@ -95,13 +101,13 @@ flowchart LR
 
 ## 5. State summary
 
-| State | PTC SSRs | Motor SSRs | Fan Bus + Blower PWM | LED | Buzzer |
-|---|---|---|---|---|---|
-| IDLE | OFF | OFF | OFF | Green | — |
-| PREHEAT | Staged (1 at a time) | OFF | ON (full speed) | Red | — |
-| DRY | Staged (1 at a time) | Staged (1 at a time) | ON (full speed) | Yellow | — |
-| DRY (auto-stop) | → COOL | → COOL | → COOL | Yellow | — |
-| COOL | OFF | OFF | ON (full speed) | Yellow | — |
-| COMPLETE | OFF | OFF | OFF | Green | 3 beeps |
-| THERMAL CUTOFF | OFF | OFF | OFF | Red (blink) | 1 chirp (on failed reset) |
-| FAULT | OFF | OFF | OFF | Red | long beeps |
+| State | PTC SSRs | Motor SSRs | Fan Bus + Blower PWM | LED | Buzzer | Lid lock |
+|---|---|---|---|---|---|---|
+| IDLE | OFF | OFF | OFF | Green | — | LOCKED (unlock = hold 2 s) |
+| PREHEAT | Staged (1 at a time) | OFF | ON (full speed) | Red | — | LOCKED |
+| DRY | Staged (1 at a time) | Staged (1 at a time) | ON (full speed) | Yellow | — | LOCKED |
+| DRY (auto-stop) | → COOL | → COOL | → COOL | Yellow | — | LOCKED |
+| COOL | OFF | OFF | ON (full speed) | Yellow | — | LOCKED |
+| COMPLETE | OFF | OFF | OFF | Green | 3 beeps | **UNLOCKED** (pulsed open) |
+| THERMAL CUTOFF | OFF | OFF | OFF | Red (blink) | 1 chirp (on failed reset) | LOCKED |
+| FAULT | OFF | OFF | OFF | Red | long beeps | LOCKED |

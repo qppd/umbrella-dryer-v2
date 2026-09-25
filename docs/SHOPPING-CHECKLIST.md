@@ -19,14 +19,22 @@
 | ✓ | Qty | Item | Price |
 |---|---|---|---|
 | ☐ | 4 | taxnele SSR-40DD (DC-DC, 40A) | ₱956.68 |
-| ☐ | 3 | taxnele SSR-10DD (DC-DC, 10A) | ₱654.66 |
+| ☐ | 4 | taxnele SSR-10DD (DC-DC, 10A) — 3 motor + 1 lid solenoid | ₱872.88 |
 | ☐ | 4 | SSR heatsink BLACK (80×50×50mm) | ₱440 |
+
+## Lid safety interlock
+
+| ✓ | Qty | Item | Price |
+|---|---|---|---|
+| ☐ | 1 | Magnetic Door Reed Switch Set NO/NC (Makerlab PH) — lid-closed sensor | ₱165 |
+| ☐ | 1 | Solenoid Lock 12VDC (Makerlab PH) — lid bolt lock, fail-secure | ₱310 |
+| ☐ | 1 | 1N4007 diode (flyback across solenoid) | ~₱5 or scavenged |
 
 ## Heaters & fans
 
 | ✓ | Qty | Item | Price |
 |---|---|---|---|
-| ☐ | 9 | PTC ceramic heater MXKJING T30 — **12V 100W** | ₱4,356 |
+| ☐ | 9 | PTC ceramic heater diymore **12V 100W** | ₱10,459.80 |
 | ☐ | 9 | AVC blower 12V 4.5A (80×80×38mm) | ₱2,970 |
 
 ## Drivetrain (per station: motor → rigid coupling → shaft → pillow block → flange coupling → hub)
@@ -71,12 +79,14 @@
 | ☐ | 1 | PROSEAL silicone sealant (clear) | ~₱199 |
 | ☐ | 1 | Rubber grommets 180 pcs (8 sizes) | ~₱249 |
 
-**ESTIMATED TOTAL ≈ ₱29,000** (₱28,700–29,300 with price swings; battery + charger included)
+**ESTIMATED TOTAL ≈ ₱35,800** (₱35,600–36,300 with price swings; battery + charger included; PTC now ₱1,162 ea — original ₱484 listing out of stock; includes lid safety interlock)
 
 ## Checkout variant checks
 
 - PTC heater: **12V 100W** (never 220V)
 - SSRs: **DC-output DD type** (never DA/AC-output)
+- Reed switch: **Magnetic Door Reed Switch Set NO/NC** (use **NO** contacts; magnet included — avoid a bare module without a magnet)
+- Solenoid lock: **12VDC normally-LOCKED (fail-secure), ~650 mA, pulse-only** (not 5V/24V, not a continuous-hold type)
 - Charger: **LiFePO4 14.6V** (never lead-acid)
 - Battery: **LiFePO4** (never lead-acid)
 - Bores: rigid coupling 6×8mm · shaft/pillow block/flange **6mm**

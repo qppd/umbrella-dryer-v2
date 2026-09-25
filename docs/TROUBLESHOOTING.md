@@ -56,7 +56,9 @@
 |---|---|---|
 | Motor stays off | SSR input not driven | Check D5/D7/D9 → SSR IN+, IN− → GND; ~5V at IN+ when commanded |
 | Motor stays off (input OK) | Output side miswired | Verify 18 AWG motor branch → SSR output side; motor + → the other output terminal |
-| Motor spins wrong direction | Polarity reversed | Swap the two motor leads (DC motor direction = polarity) |
+| Motors spin wrong direction | Swap the two motor leads (DC motor direction = polarity) |
+| Cycle won't start / start blocked | **Lid is open** — the reed switch (D22) must read LOW (lid closed). Close the lid; if it still won't start, verify the reed wiring and that the magnet on the lid aligns with the reed housing |
+| Lid stuck locked / won't open | Hold Start ~2 s in IDLE to pulse the solenoid (D23). Check the SSR input (IN+ → D23, IN− → GND) and the output path (+12V → SSR COM → SSR NO → solenoid + → GND). The lock is fail-secure and needs a 12 V pulse to release |
 | Motor hums but doesn't spin | Coupling misaligned / shaft binding | Loosen rigid + flange couplings; realign motor → shaft → hub; check the shaft spins freely in the UCP06 pillow block |
 
 ---
@@ -141,4 +143,5 @@ Serial.print(" | PTC1: "); Serial.print(digitalRead(PIN_SSR_PTC_1));
 Serial.print(" | PTC2: "); Serial.print(digitalRead(PIN_SSR_PTC_2));
 Serial.print(" | PTC3: "); Serial.print(digitalRead(PIN_SSR_PTC_3));
 Serial.print(" | FAN: "); Serial.println(digitalRead(PIN_SSR_FAN_BUS));
+Serial.print(" | LID: "); Serial.println(digitalRead(PIN_REED));
 ```

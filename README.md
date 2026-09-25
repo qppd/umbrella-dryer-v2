@@ -21,6 +21,7 @@ Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air 
 | Rotation | **3× SGM-370 worm gear motors** 12V (14 kg·cm each), LCTC DC-DC SSR 10A switched |
 | Fans | **9× AVC 12V 4.5A blowers** (3 per station), PWM via Mega D10/D11/D12 |
 | Sensors | DHT22 (humidity) · DS18B20 (heater-zone temp) |
+| Lid safety | **Magnetic Door Reed Switch Set NO/NC** (D22 — lid-closed sensor) · **Solenoid Lock 12VDC** (D23 via SSR-10A, fail-secure bolt lock) |
 | Thermal safety | PTC self-regulation · firmware 65°C cutoff · BMS |
 | UI | 16×2 LCD (I2C, pins 20/21), 3 status LEDs, buzzer, illuminated arcade start button |
 | Mechanical | 3× drivetrains (rigid coupling 6×8mm → 6mm SS shaft on UCP06 pillow block → PETIYOUZA 6mm flange coupling), aluminum chassis |
@@ -33,7 +34,7 @@ Dries **3 umbrellas simultaneously** (or any 1–3 mix) using heated forced air 
 | 2 | [docs/HARDWARE.md](docs/HARDWARE.md) | What each part is and its ratings |
 | 3 | [model/README.md](model/README.md) | What you are building — dimensioned views |
 | 4 | [docs/BLOCK-DIAGRAM.md](docs/BLOCK-DIAGRAM.md) | How everything wires together |
-| 5 | [wiring/README.md](wiring/README.md) | Pin map and all connections |
+| 5 | [wiring/README.md](wiring/README.md) | Pin map and all connections (incl. lid interlock D22/D23) |
 | 6 | [docs/SETUP.md](docs/SETUP.md) | Build it — numbered steps, check after each |
 | 7 | [docs/FIRMWARE-GUIDE.md](docs/FIRMWARE-GUIDE.md) | Load and tune the code |
 | 8 | [docs/TESTING.md](docs/TESTING.md) | Prove it works, record results |
@@ -46,7 +47,7 @@ Reference material: `docs/SYSTEM-ARCHITECTURE.md`, `docs/FLOWCHART.md`, `docs/ST
 - **Cycle:** ≈ 15–25 min (light rain) – ~45 min (fully soaked), humidity auto-stop
 - **Energy:** staged operation (1 station) ≈ 39.3A draw → ~3.7 h continuous, or ≈ 9.6 quick cycles (~29 umbrellas) per charge (144 Ah usable)
 - **Margins:** motor torque ≥4.6× per station · BMS 5.5× vs staged DC draw · PTC self-regulation prevents thermal runaway
-- **Cost:** ≈ ₱29,000 (battery + charger included)
+- **Cost:** ≈ ₱35,800 (battery + charger included; includes lid safety interlock: reed switch + solenoid lock + 4th SSR-10A)
 
 ## Key design decisions
 

@@ -29,6 +29,8 @@ flowchart TB
     DHT["DHT22<br/>Ambient T/RH"]
     DS["DS18B20<br/>Heater T"]
     LCD["LCD 16x2<br/>I2C (pins 20/21)"]
+    REED["Reed Switch<br/>Lid closed (D22)"]
+    SOLN["Solenoid Lock SSR-10A<br/>(D23, fail-secure)"]
 
     BAT --> BUS_POS
     BAT --> BUS_NEG
@@ -39,6 +41,8 @@ flowchart TB
     BUS_POS --> BUCK --> MEGA
     DHT --> MEGA
     DS --> MEGA
+    REED --> MEGA
+    MEGA --> SOLN
     MEGA <--> LCD
     MEGA -. "D4/D6/D8<br/>DC SSR (SSR-40DD)" .-> ST1
     MEGA -. "D4/D6/D8<br/>DC SSR (SSR-40DD)" .-> ST2
@@ -135,6 +139,7 @@ flowchart LR
     subgraph IN["SENSOR INPUTS"]
         DHT["DHT22<br/>Data: D2<br/>10kΩ pull-up"]
         DS["DS18B20<br/>Data: D3<br/>4.7kΩ pull-up"]
+        REED["Reed switch<br/>Lid closed: D22<br/>INPUT_PULLUP"]
     end
 
     MEGA["Arduino Mega 2560<br/>ATmega2560 16MHz<br/>5V from LM2596S buck<br/>I2C on pins 20/21"]
@@ -170,13 +175,19 @@ flowchart LR
         BUZ["D18: Buzzer"]
     end
 
+    subgraph LID_OUT["LID INTERLOCK"]
+        SOLN["D23: Solenoid lock SSR-10A<br/>(fail-secure; ~3 s pulse = unlock)"]
+    end
+
     DHT --> MEGA
     DS --> MEGA
+    REED --> MEGA
     MEGA <--> LCD
     MEGA --> PTC_OUT
     MEGA --> MOT_OUT
     MEGA --> FAN_OUT
     MEGA --> UI_OUT
+    MEGA --> LID_OUT
 ```
 
 ---
@@ -193,6 +204,7 @@ flowchart LR
 | Station 2 Motor branch | 18 AWG | SGM-370 via SSR-10A |
 | Station 3 Motor branch | 18 AWG | SGM-370 via SSR-10A |
 | AVC blower bus | 10 AWG | 9 blowers, 18 AWG pigtails |
+| Lid solenoid lock branch | 20 AWG | SSR-10A (D23) → solenoid lock |
 | Logic feed | 20 AWG | Buck converter input |
 | Buck to Mega | 20 AWG | 5V regulated rail |
 | BLOWER signal wires | 22 AWG | PWM from Mega (D10–D12) |
@@ -218,3 +230,4 @@ flowchart LR
 7. **No thermal fuses.** Over-temperature protection relies on PTC self-regulation and DS18B20 firmware 65 °C cutoff. Over-current protection relies on BMS 200A cutoff and PTC self-regulation. There is no hardware fuse backstop.
 8. **Fan bus SSR (D13)** must be ON for blowers to receive 12V power. The PWM signal (D10/D11/D12) controls speed independently.
 9. **LCD I2C is on Mega pins 20/21** (hardware I2C) — NOT A4/A5 (which are ADC on the Mega).
+10. **Lid safety interlock:** reed switch (D22) prevents a start while the lid is open; a fail-secure solenoid lock (D23 via SSR-10A) holds the lid shut for the whole cycle and is pulsed open only at COMPLETE / on a 2 s hold to load.

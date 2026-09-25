@@ -20,7 +20,9 @@
 
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
-| 9 | MXKJING T30 12V 100W PTC Ceramic Heater (with fan + housing) | ₱484 ea = ₱4,356 | Lazada (LazMall, 95% rating) | https://www.lazada.com.ph/products/pdp-i15593670246.html |
+| 9 | **PTC ceramic heater diymore 12V 100W** (self-regulating, mounting holes) | ₱1,162.20 ea = ₱10,459.80 | Lazada (diymore) | https://www.lazada.com.ph/products/diymore-dc-12v-100w-room-heater-energy-saving-ptc-car-air-fan-heater-constant-temperature-heating-heaters-factory-price-safe-home-diy-i2578103151.html (select **12V100W** variant) |
+
+> **Price note (2026-09):** the original ₱484 MXKJING T30 listing sold out; the live budget option is the **diymore 12V 100W** at ₱1,162.20 ea (as in BOM §9).
 
 > **Alternative (cheaper, bare element only):** "Direct Sale 50W/12V Ceramic Ribbon PTC Heater 92×31mm" at ₱219 — but this is 50W, not 100W. You'd need 2 per station (6 total) = ₱1,314. Search: https://www.lazada.com.ph/catalog/?q=12v+100w+ptc+ceramic+heater+element
 
@@ -73,7 +75,7 @@ Drivetrain chain per station: **SGM-370 DC worm gear motor → rigid coupling 6�
 | Qty | Item | Price | Store | Link |
 |---|---|---|---|---|
 | 4 | **Solid State Relay taxnele 40A (DC-DC)** — SSR-40DD | ₱239.17 ea = ₱956.68 | Lazada (taxnele) | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
-| 3 | **Solid State Relay taxnele 10A (DC-DC)** — SSR-10DD | ₱218.22 ea = ₱654.66 | Lazada (taxnele) | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
+| 4 | **Solid State Relay taxnele 10A (DC-DC)** — SSR-10DD (3 motors + 1 lid solenoid) | ₱218.22 ea = ₱872.88 | Lazada (taxnele) | https://www.lazada.com.ph/products/pdp-i4110347574-s22718212255.html |
 | 4 | **SSR Heatsink BLACK (Makerlab)** — 10A to 40A (80x50x50mm) | ₱110 ea = ₱440 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/ssr-heatsink-black-10a-to-40a-size80x50x50mm-ssr-heatsink-m-shape-small-type-heat-radiator-for-10a-to100a-size125x50x70mm-i3585835660-s18544712824.html |
 
 > **Important:** SSR-40DD must be **DC-output** type (input 3–32VDC, DC output). Do NOT buy the AC-output 'DA' type. The SSRs are driven directly from Mega pins (D4/D6/D8 for PTC, D13 for fan bus).
@@ -122,24 +124,37 @@ Drivetrain chain per station: **SGM-370 DC worm gear motor → rigid coupling 6�
 
 > **Notes:** The 4 cable-management items (zip ties, screws, sealant, grommets) are all orderable online at ~₱830 total. If you prefer, the hardware store (Robinsons/Wildepanda) sells the same bulk at ~₱490 — pick whichever is cheaper after shipping.
 
+### 2l. Lid safety interlock (Lazada — Makerlab PH)
+
+Both parts ship from the **Makerlab PH** store (Bulacan; 98% seller rating) — the preferred vendor.
+
+| Qty | Item | Price | Store | Link |
+|---|---|---|---|---|
+| 1 | **Magnetic Door Reed Switch Set NO/NC** — lid-closed sensor (D22); magnet included | ₱165 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i578584751-s1579814280.html |
+| 1 | **Solenoid Lock 12VDC** — lid bolt lock, fail-secure, ~650 mA, pulse-only (D23 via SSR-10A) | ₱310 | Lazada (Makerlab PH) | https://www.lazada.com.ph/products/pdp-i109883946-s111626068.html |
+| 1 | 1N4007 diode (flyback across the solenoid) | ~₱5 or scavenged | — | — |
+
+> **Safety purpose:** the reed switch prevents the machine from starting with the lid open; the solenoid holds the lid locked for the whole drying cycle and is pulsed open only at COMPLETE / on a 2 s hold to load. Verified on the live Makerlab PH store (reed switch: 4.86★ / 77 ratings / 1.0K sold · solenoid lock: 4.86★ / 141 ratings / 1.0K sold).
+
 ---
 
 ## 3. Quick price summary
 
 | Category | Total |
 |---|---|
-| PTC heaters (9×₱484) | ≈ ₱4,356 |
+| PTC heaters (9×₱1,162) | ≈ ₱10,460 |
 | AVC blowers (9×₱330) | ≈ ₱2,970 |
 | Motors + drivetrain (3× SGM-370 + couplings 6×8mm + 3× shafts + 3× UCP06 pillow blocks + PETIYOUZA flange) | ≈ ₱3,132 |
 | Aluminum plate 6061 6mm (motor plate + mounts) | ≈ ₱760 |
 | Control electronics (Lazada) | ≈ ₱1,314 |
-| SSRs (taxnele) + heatsinks + terminals | ≈ ₱2,051 |
+| SSRs (taxnele) + heatsinks + terminals | ≈ ₱2,270 |
+| Lid safety interlock (reed switch ₱165 + solenoid lock ₱310 + 1N4007) | ≈ ₱480 |
 | UI (LEDs, buzzer, button) | ≈ ₱109 |
 | Wiring + consumables (Lazada) | ≈ ₱2,400 |
 | DC Rocker Switch 50A | ~₱190 |
 | Battery (1× 200Ah) + charger | ≈ ₱11,700–12,200 |
 | Hardware store consumables (alt. to the 4 online items) | ≈ ₱490 |
-| **GRAND TOTAL** | **≈ ₱29,000** (₱28,700–29,300 with price swings) |
+| **GRAND TOTAL** | **≈ ₱35,800** (₱35,600–36,300 with price swings; PTC now ₱1,162 ea — original ₱484 MXKJING listing out of stock; includes lid safety interlock) |
 
 ---
 
@@ -171,6 +186,8 @@ Drivetrain chain per station: **SGM-370 DC worm gear motor → rigid coupling 6�
 | DHT22 | Module (black) | Blue (less accurate) |
 | DS18B20 | Module + terminal adapter + 3-pin cable | Waterproof probe (harder to wire) |
 | Mega | With terminal board | Bare board (more wiring work) |
+| Reed switch | Magnetic Door Reed Switch Set NO/NC (Makerlab) — **NO** contacts, magnet included | Bare reed module without magnet |
+| Solenoid lock | **12VDC, normally-LOCKED (fail-secure), ~650 mA, pulse-only** | 5V/24V, or a normally-open/continuous-hold type |
 
 ---
 

@@ -8,15 +8,16 @@
 
 ### 1a. Operational Sequence
 
-1. **Boot** → Initialized. All SSR outputs LOW (OFF). Fan bus SSR (D13) is OFF. Blowers remain off until cycle starts.
-2. **Idle** → Reads DHT22 (humidity) + DS18B20 (temperature), displays on LCD. Button waits for input. Status LED is **GREEN**.
-3. **Button press** → Starts a 4-phase drying cycle:
+1. **Boot** → Initialized. All SSR outputs LOW (OFF). Fan bus SSR (D13) is OFF. Lid solenoid SSR (D23) LOW = **lid locked (fail-secure)**. Blowers remain off until cycle starts.
+2. **Idle** → Reads DHT22 (humidity) + DS18B20 (temperature), displays on LCD. Button waits for input. Status LED is **GREEN**. The LCD shows the lid state; **hold Start ~2 s to UNLOCK the lid for loading** (bolt retracts ~3 s, then re-locks).
+3. **Button tap (release < 2 s)** → Starts a 4-phase drying cycle **only if the lid is CLOSED** (reed switch D22 reads LOW). If the lid is open, the start is **refused** (buzzer + "CLOSE LID") — the machine will not run with the lid open. Once started, the lid is spring-***LOCKED*** for the whole cycle (solenoid off, 0 A).
    - **Phase 1 — Preheat** (Chamber Temp < 45°C): Master fan bus SSR (D13) ON. Blowers throttle to FULL (`analogWrite(D, 255)`). PTC heater SSRs D4, D6, D8 are energized (ON) sequentially to warm up the chamber. Motors remain OFF. Status LED is **RED** (heating active).
    - **Phase 2 — Dry** (Chamber Temp ≥ 45°C): Chamber temperature has reached target. Station worm gear motor SSRs D5, D7, D9 are switched ON to spin the umbrellas at 6 RPM. PTC heaters and blowers continue running. Timer starts counting down (default 15 minutes). **Humidity auto-stop:** if DHT22 reads ≤ 60% RH after at least 3 minutes of drying, the cycle skips straight to COOL — no wasted energy on already-dry umbrellas. Status LED is **YELLOW** (drying/spinning).
    - **Phase 3 — Cool** (Timer Done): PTC heaters switched OFF. Motors switched OFF (umbrellas stop spinning). Blowers remain running at full speed for 2 minutes to purge hot air and cool down the components. Status LED is **YELLOW**.
-   - **Phase 4 — Done**: All loads de-energized. Master fan bus SSR OFF. Buzzer beeps 3 times. LCD shows "COMPLETE". Status LED is **GREEN**.
+   - **Phase 4 — Done**: All loads de-energized. Master fan bus SSR OFF. Buzzer beeps 3 times. LCD shows "COMPLETE". Status LED is **GREEN**. The **lid is pulsed UNLOCKED (~3 s)** so the user can retrieve the umbrellas ("Lid UNLOCKED - open"). After closing, a tap resets to IDLE.
 4. **Safety cutoff (any active phase)**: If DS18B20 reads >65°C, all SSRs and PWM signals are immediately killed (latched OFF). LCD displays "THERMAL CUTOFF!" and the RED LED blinks.
-5. **Button repress (any active phase)**: Functions as an Emergency Stop. Immediately cuts all loads and returns the system to IDLE.
+5. **Button tap (any active phase)**: Functions as an Emergency Stop. Immediately cuts all loads and returns the system to IDLE. (The lid remains locked until you hold Start ~2 s to unlock it.)
+6. **Lid-open safety interlock (any active phase)**: If the reed switch reads OPEN mid-cycle — impossible while the lock holds — the firmware aborts everything to IDLE (defense in depth against a failed lock).
 
 ---
 
@@ -41,10 +42,13 @@
 | | **D16** | LED_YELLOW | Output | LOW | HIGH (ON) | Status LED: drying and rotating / cooling |
 | | **D17** | LED_GREEN | Output | HIGH | HIGH (ON) | Status LED: system ready or cycle complete |
 | | **D18** | BUZZER | Output | LOW | HIGH (ON) | Active 5V buzzer |
+| | **D22** | LID_REED | Input | HIGH | LOW (CLOSED) | Lid closed sensor (NO reed, INPUT_PULLUP) |
+| | **D23** | SOL_LOCK | Output | LOW | HIGH (UNLOCK) | Lid solenoid lock (SSR-10A) — pulse ~3 s |
 | | **D20** | I2C_SDA | I2C | — | — | LCD SDA pin (hardware I2C) |
 | | **D21** | I2C_SCL | I2C | — | — | LCD SCL pin (hardware I2C) |
 
 > All SSRs are active-HIGH. Floating pins at boot default LOW = SSR OFF. `allOff()` in `setup()` enforces safe state.
+> **Lid interlock:** D23 (SOL_LOCK) LOW = lid LOCKED (fail-secure, 0 A). A ~3 s HIGH pulse on D23 retracts the bolt (UNLOCK) — used at cycle COMPLETE and when holding Start ~2 s in IDLE to load. The START button only begins a cycle while D22 (LID_REED) reads LOW (lid closed).
 
 ---
 
@@ -60,6 +64,8 @@
 | **Min Dry Time before Auto-Stop** | 3 minutes | Guards against stale/spike DHT22 readings ending the cycle early |
 | **Cool Phase Timer** | 2 minutes | Blower-only overrun to dissipate residual heater block temperature |
 | **Debounce Delay** | 300 ms | Ignores button contact bounce and microphonics |
+| **Lid Hold-to-Unlock** | 2 seconds | Hold Start in IDLE to retract the lock bolt for loading |
+| **Lid Unlock Pulse** | 3 seconds | Length of the D23 SSR pulse that retracts the bolt (solenoid is rated for 1–10 s activation — never hold it on) |
 
 ---
 
@@ -102,6 +108,10 @@ Copy and paste the following complete, verified sketch into the Arduino IDE.
 #define PIN_LED_YELLOW    16  // Centrifugal drying / Cooling
 #define PIN_LED_GREEN     17  // System ready / Cycle complete
 #define PIN_BUZZER        18  // Audible notifications
+
+// ---- Lid Safety Interlock ----
+#define PIN_REED          22  // Lid closed sensor (NO reed, INPUT_PULLUP; LOW = LID CLOSED)
+#define PIN_SOL_LOCK      23  // Solenoid lock SSR-10A (HIGH = UNLOCK pulse; LOW = LOCKED)
 
 // ---- Sensor Objects ----
 DHT dht(PIN_DHT22, DHT22);
@@ -158,6 +168,23 @@ unsigned long lastLoopTick = 0;
 float humidity            = 0;
 float temperature         = 0;
 bool buttonPrevState      = HIGH;
+unsigned long btnDownAt   = 0;    // timestamp when Start was pressed (for tap-vs-hold)
+bool btnWasDown           = false; // Start currently held
+bool btnUnlockSent        = false; // prevent repeat unlocks during one long hold
+
+// ---- Lid Lock Helpers (fail-secure solenoid) ----
+// The solenoid is NORMALLY-LOCKED: the bolt stays out (LID LOCKED) with zero power.
+// A HIGH pulse retracts the bolt (UNLOCK) for ~3 s. Rated 1-10 s only — never hold it on.
+void unlockLid() {
+  digitalWrite(PIN_SOL_LOCK, HIGH);
+  delay(3000);                 // hold bolt retracted ~3 s so the user can pull the lid open
+  digitalWrite(PIN_SOL_LOCK, LOW);
+  Serial.println(F("Lid UNLOCKED (bolt retracted 3 s)"));
+}
+
+inline bool lidIsClosed() {
+  return digitalRead(PIN_REED) == LOW;   // magnet near reed (lid shut) = reed shorted = LOW
+}
 
 // ---- Absolute System Safety Shutdown ----
 void allOff() {
@@ -175,6 +202,7 @@ void allOff() {
   digitalWrite(PIN_LED_YELLOW, LOW);
   digitalWrite(PIN_LED_GREEN, LOW);
   digitalWrite(PIN_BUZZER, LOW);
+  digitalWrite(PIN_SOL_LOCK, LOW);   // lid LOCKED (fail-secure) — never energized during a cycle
 }
 
 // ---- Fan Control ----
@@ -255,12 +283,14 @@ void setup() {
   pinMode(PIN_LED_YELLOW, OUTPUT);
   pinMode(PIN_LED_GREEN, OUTPUT);
   pinMode(PIN_BUZZER, OUTPUT);
+  pinMode(PIN_SOL_LOCK, OUTPUT);       // solenoid lock SSR
 
   // Put system in completely safe offline state
   allOff();
 
   // Input Setup
   pinMode(PIN_BTN_START, INPUT_PULLUP);
+  pinMode(PIN_REED, INPUT_PULLUP);     // lid-closed reed sensor (LOW = lid closed)
 
   // Initialize Peripherals
   dht.begin();
@@ -303,10 +333,32 @@ void loop() {
     return;
   }
 
-  // ---- Non-blocking Button Edge Detection ----
+  // ---- Lid-open Interlock (defense in depth) ----
+  // The fail-secure solenoid holds the lid locked for the whole cycle, so an OPEN reading
+  // mid-cycle means the solenoid failed or the lid was forced. Kill all loads and return to IDLE.
+  if (!lidIsClosed() &&
+      (currentPhase == STATE_PREHEAT || currentPhase == STATE_DRY || currentPhase == STATE_COOL)) {
+    Serial.println(F("LID OPENED DURING CYCLE - SAFETY ABORT"));
+    allOff();
+    currentPhase = STATE_IDLE;
+    return;
+  }
+
+  // ---- Non-blocking Button Detection (tap vs hold) ----
+  // Quick tap  = "click" (start / estop). Hold ~2 s in IDLE = "unlock lid for loading".
+  // Act on the RELEASE edge so a deliberate hold doesn't accidentally start a cycle.
   bool buttonState = digitalRead(PIN_BTN_START);
-  bool buttonClicked = (buttonState == LOW && buttonPrevState == HIGH);
-  buttonPrevState = buttonState;
+  bool buttonClicked = false;                 // short tap completed
+  bool longHold = false;                      // 2 s hold completed (unlock gesture)
+
+  if (buttonState == LOW) {
+    if (!btnWasDown) { btnDownAt = now; btnUnlockSent = false; btnWasDown = true; }
+    if (!btnUnlockSent && (now - btnDownAt >= 2000)) { longHold = true; btnUnlockSent = true; }
+  } else {
+    if (btnWasDown && (now - btnDownAt < 2000)) buttonClicked = true;   // short tap released
+    btnWasDown = false;
+  }
+  buttonPrevState = buttonState;   // diagnostics
 
   // ---- State Machine Logic ----
   switch (currentPhase) {
@@ -316,18 +368,44 @@ void loop() {
       digitalWrite(PIN_LED_GREEN, HIGH);
       digitalWrite(PIN_LED_RED, LOW);
       digitalWrite(PIN_LED_YELLOW, LOW);
-      lcdUpdate("READY", -1, -1);
 
+      // Hold Start ~2 s to UNLOCK the lid for loading (bolt retracts ~3 s, then re-locks).
+      if (longHold) {
+        Serial.println(F("UNLOCKING LID FOR LOADING"));
+        lcd.clear(); lcd.setCursor(0,0); lcd.print("UNLOCKING LID");
+        lcd.setCursor(0,1); lcd.print("OPEN + LOAD");
+        unlockLid();
+      }
+
+      lcdUpdate("READY", -1, -1);
+      if (!lidIsClosed()) {
+        lcd.setCursor(0, 1);
+        lcd.print("LID OPEN  Hold unlock");
+      }
+
+      // START is safety-gated by the lid-closed reed switch: the machine will NOT start
+      // with the lid open. Closing the lid and tapping Start begins the cycle.
       if (buttonClicked) {
-        Serial.println("CYCLE COMMENCING");
-        digitalWrite(PIN_LED_GREEN, LOW);
-        digitalWrite(PIN_LED_RED, HIGH);
-        currentPhase = STATE_PREHEAT;
-        phaseStart = now;
-        fansOn();
-        activeStation = 0;
-        stageStart = now;
-        applyStage(false); // PTC heaters only, motors off
+        if (lidIsClosed()) {
+          Serial.println("CYCLE COMMENCING (lid closed)");
+          digitalWrite(PIN_LED_GREEN, LOW);
+          digitalWrite(PIN_LED_RED, HIGH);
+          currentPhase = STATE_PREHEAT;
+          phaseStart = now;
+          fansOn();
+          activeStation = 0;
+          stageStart = now;
+          applyStage(false); // PTC heaters only, motors off
+          // Lid stays LOCKED for the whole cycle (solenoid LOW / fail-secure).
+        } else {
+          Serial.println("START BLOCKED - LID OPEN");
+          lcd.clear();
+          lcd.setCursor(0,0); lcd.print("CLOSE LID");
+          lcd.setCursor(0,1); lcd.print("To Start Cycle");
+          for (int i = 0; i < 3; i++) {   // warning beeps
+            digitalWrite(PIN_BUZZER, HIGH); delay(150); digitalWrite(PIN_BUZZER, LOW); delay(150);
+          }
+        }
       }
       break;
 
@@ -418,7 +496,7 @@ void loop() {
         if (elapsed >= COOL_TIME_MS) {
           Serial.println("CYCLE COMPLETE. DE-ENERGIZING FANS.");
           fansOff();
-          allOff();
+          allOff();            // all loads OFF; lid solenoid LOW (locked, fail-secure)
           currentPhase = STATE_DONE;
           phaseStart = now;
           
@@ -430,6 +508,10 @@ void loop() {
             digitalWrite(PIN_BUZZER, LOW);
             delay(300);
           }
+          unlockLid();         // retract bolt ~3 s so the user can retrieve the umbrellas
+          lcd.clear();
+          lcd.setCursor(0,0); lcd.print("COMPLETE");
+          lcd.setCursor(0,1); lcd.print("Lid UNLOCKED - open");
         }
         
         if (buttonClicked) {
@@ -445,7 +527,7 @@ void loop() {
       digitalWrite(PIN_LED_GREEN, HIGH);
       lcdUpdate("COMPLETE", -1, -1);
       lcd.setCursor(0, 1);
-      lcd.print("Press to Reset ");
+      lcd.print("Lid unlocked - reset");
 
       if (buttonClicked) {
         Serial.println("SYSTEM RESET TO IDLE STATUS");
@@ -514,6 +596,8 @@ void loop() {
 | **19** | Mega Pin D18 | 22 AWG | White | Active Buzzer + | Emits cycle alerts (Audible notification) |
 | **20** | Mega Pin D20 | 22 AWG | Green | LCD I2C SDA | Hardware SDA interface (pull-ups usually integrated on I2C board) |
 | **21** | Mega Pin D21 | 22 AWG | Yellow | LCD I2C SCL | Hardware SCL interface (pull-ups usually integrated on I2C board) |
+| **22** | Mega Pin D22 | 22 AWG | Brown | Lid Reed Switch | NO reed to GND; INPUT_PULLUP; lid closed = LOW (machine won't start while open) |
+| **23** | Mega Pin D23 | 22 AWG | Pink | Solenoid Lock SSR (SSR-10A) IN+ | SSR IN− → GND; SSR COM → +12V, NO → solenoid +; HIGH pulse ~3 s = unlock |
 
 ---
 
@@ -545,6 +629,8 @@ void loop() {
 | Thermal cutoff triggers immediately | DS18B20 may be heated by direct contact — mount probe in the air stream, not touching heater body |
 | Buck output not 5V | Adjust potentiometer with multimeter BEFORE connecting to Mega; must be 5.0V ± 0.1V |
 | Motors spin wrong direction | Swap the two motor leads (DC motor direction = polarity) |
+| Cycle won't start | **Lid is open** — the reed switch (D22) must read LOW (lid closed). Close the lid; if it still won't start, verify the reed wiring and that the magnet on the lid aligns with the reed housing |
+| Lid stuck locked / won't open | Hold Start ~2 s in IDLE to pulse the solenoid (D23). Check the SSR input (IN+ → D23, IN− → GND) and the output path (+12V → SSR COM → SSR NO → solenoid + → GND). The lock is fail-secure and needs a 12 V pulse to release |
 
 ---
 
@@ -566,4 +652,6 @@ The firmware **always** operates in staged mode — heaters round-robin 30 s per
 - Over-temperature protection relies on PTC self-regulation and DS18B20 firmware 65°C cutoff. No thermal fuses.
 - Over-current protection relies on BMS 200A cutoff and PTC self-regulation. No hardware fuses.
 - SSR pins boot in their OFF state (floating/LOW = OFF). `setup()` calls `allOff()` first regardless.
+- **Lid safety interlock:** the machine will not start a drying cycle while the lid is open (reed D22 must read LOW); the lid is locked shut for the whole cycle (solenoid D23) and only pulsed open at COMPLETE or on a 2 s hold while IDLE.
+- **Fail-secure lock:** the solenoid lock is normally-locked — D23 LOW (or any 12 V power loss) keeps the lid shut. During a power loss mid-cycle the lid stays locked until power returns (all thermal/fan/motor loads are also off, so this is safe; hold Start ~2 s once power returns to open).
 - Mega is powered ONLY from the calibrated buck via the 5V pin — never the barrel jack, never raw 12V.

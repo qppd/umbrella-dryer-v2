@@ -9,7 +9,7 @@
 - [ ] Battery bank: 1× LiFePO4 12.8V 200Ah with BMS
 - [ ] Charger: 14.6V 20A LiFePO4 charger
 - [ ] Mega 2560 clone + USB cable
-- [ ] 4× LCTC DC-DC SSR 40A (for PTC heaters + fan bus) + 3× LCTC DC-DC SSR 10A (for motors)
+- [ ] 4× LCTC DC-DC SSR 40A (for PTC heaters + fan bus) + 4× LCTC DC-DC SSR 10A (3 for motors + 1 for solenoid lock)
 - [ ] 7× SSR heatsinks (~₱50 each)
 - [ ] 9× PTC ceramic heaters (12V 100W) — verify 12V, not 220V!
 - [ ] 9× AVC 12V DC blower fans (80×80×38mm, 4.5A) — verify 12V variant
@@ -19,6 +19,8 @@
 - [ ] 3× 304 SS shaft 6mm × 300mm (passes through the pillow block middle)
 - [ ] 3× UCP06 pillow block bearing (6mm bore)
 - [ ] DHT22 module, DS18B20 waterproof, LCD 16×2 I2C
+- [ ] **Magnetic Door Reed Switch Set NO/NC** (Makerlab) — lid-closed sensor (with magnet)
+- [ ] **Solenoid Lock 12VDC** (Makerlab) — lid bolt lock; 1N4007 flyback diode across its terminals
 - [ ] LM2596S buck module
 - [ ] LEDs (R/Y/G), buzzer, arcade button
 - [ ] Wire kit (6–18 AWG silicone), connectors, heat-shrink
@@ -53,6 +55,7 @@
 2. **Motor mounts:** Attach SGM-370 motors to aluminum plates. Align motor output shaft center with umbrella hub center.
 3. **Drivetrain:** Per station, in order: SGM-370 motor → rigid coupling 6×8mm → 6mm × 300mm SS shaft → UCP06 pillow block (shaft passes through the bearing's middle) → PETIYOUZA 6mm-bore rigid flange coupling → umbrella hub. Motor and pillow block bolted to the 6mm aluminum plate.
 4. **Verify:** Spin by hand. Should rotate freely with no binding. Motor is self-locking.
+5. **Lid safety interlock:** Mount the **reed switch** housing on the chamber frame edge and its **magnet** on the front lid so the pair aligns (closes) when the lid is fully shut. Mount the **solenoid lock** bolt bracket on the frame and its strike on the lid so the bolt holds the lid shut when extended. Run the reed and solenoid wires through a rubber grommet into the control enclosure.
 
 ---
 
@@ -68,13 +71,14 @@
    - Station 3 PTC: 10 AWG → LCTC DC-DC SSR 40A (D8) → 3 PTC heaters
    - Fan bus: 10 AWG → LCTC DC-DC SSR 40A (D13) → blower distribution
    - Motor 1/2/3: 18 AWG → LCTC DC-DC SSR 10A (D5/D7/D9) → SGM-370 motor
+   - Lid solenoid lock: 20 AWG → LCTC DC-DC SSR 10A (D23) → solenoid lock
    - Logic: 20 AWG → buck module → 5V to Mega
 
-### 5b. SSR wiring (for each LCTC DC-DC SSR — 7 total)
+### 5b. SSR wiring (for each LCTC DC-DC SSR — 8 total: 4× 40A + 4× 10A)
 
 | SSR terminal | Goes to |
 |---|---|
-| IN+ | Mega pin (D4/D6/D8 for PTC, D13 for fan, D5/D7/D9 for motor) |
+| IN+ | Mega pin (D4/D6/D8 for PTC, D13 for fan, D5/D7/D9 for motor, **D23 for the lid solenoid**) |
 | IN− | GND |
 | COM (input side) | +12V bus |
 | NO (output side) | Load (heaters/fans/motors) |
@@ -100,6 +104,21 @@ Active-HIGH: `digitalWrite(pin, HIGH)` = SSR ON. Onboard optocoupler holds SSR O
 2. LEDs: anode→D15(red)/D16(yellow)/D17(green) via 220Ω, cathode→GND.
 3. Buzzer: +→D18, −→GND.
 
+### 5g. Lid safety interlock wiring
+
+**Reed switch (lid-closed sensor):**
+1. Reed switch lead 1 → Mega **D22** (INPUT_PULLUP). Lead 2 → GND.
+2. Use the **NO** contacts, and mount the magnet on the lid so it aligns with the reed housing when shut.
+3. Fully closed lid = D22 reads **LOW** (contact closed). Open = HIGH.
+> Verify: with the lid shut, `digitalRead(D22)` = LOW; the machine will **not start** while it reads HIGH.
+
+**Solenoid lock (via the 4th SSR-10A on D23):**
+1. SSR IN+ → Mega **D23**, SSR IN− → GND.
+2. SSR COM (load side) → +12V bus (20 AWG).
+3. SSR NO (load side) → solenoid lock **+** lead; solenoid **−** → GND.
+4. Solder a **1N4007 flyback diode** across the solenoid terminals (banded/cathode end → solenoid **+**) to protect the SSR from inductive kickback.
+> The lock is **normally-locked (fail-secure)**: D23 LOW (or power off) = bolt out = lid locked, 0 A draw. A ~3 s HIGH pulse on D23 retracts the bolt (unlock) — at cycle COMPLETE and when you hold Start ~2 s while IDLE to load.
+
 ---
 
 ## 6. Power-on test (no load)
@@ -118,10 +137,13 @@ Active-HIGH: `digitalWrite(pin, HIGH)` = SSR ON. Onboard optocoupler holds SSR O
 ## 7. Functional test (with loads)
 
 1. Reconnect SSR outputs to PTC heaters, motors, and fans.
-2. Press button → fans spin up, PTC heaters warm (feel heat after 30s).
-3. Wait for DHT22 to read ≥45°C → motor starts spinning (staged — one at a time).
-4. Timer counts down 15 min → enters COOL phase for 2 min.
-5. Buzzer beeps 3× → COMPLETE. Press button to reset to IDLE.
+2. **Lid interlock check:** With the lid OPEN, tap Start → the cycle must be **refused** (buzzer + "CLOSE LID", stays IDLE). Close the lid → tap Start → cycle begins and the lid **locks shut** (D23 solenoid off = fail-secure; try the lid — it must not open).
+3. Fans spin up, PTC heaters warm (feel heat after 30s).
+4. Wait for the lid reed (D22) to confirm closed; wait for DHT22 to read ≥45°C → motor starts spinning (staged — one at a time).
+5. During DRY, verify the lid cannot be opened (locked).
+6. Timer counts down 15 min → enters COOL phase for 2 min.
+7. Buzzer beeps 3× → COMPLETE and the **lid pulses UNLOCKED** (open the lid and retrieve). Tap Start to reset to IDLE.
+8. **Loading check:** hold Start ~2 s in IDLE → the lid unlocks for ~3 s (open + load).
 
 ---
 

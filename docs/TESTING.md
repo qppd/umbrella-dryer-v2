@@ -9,8 +9,8 @@
 | Level | What | Pass criteria |
 |---|---|---|
 | L1 — Smoke test | Power on with no loads | Buck outputs 5V, Mega boots, LCD shows "READY", SSRs idle |
-| L2 — Component test | Each subsystem individually | Each SSR triggers, each blower spins, each motor rotates, sensors read values |
-| L3 — Integration test | Full cycle with loads | PREHEAT → DRY → COOL → COMPLETE completes; safety cutoff works |
+| L2 — Component test | Each subsystem individually | Each SSR triggers, each blower spins, each motor rotates, sensors read values, lid interlock asserts (refuses start when open, unlocks at COMPLETE) |
+| L3 — Integration test | Full cycle with loads | PREHEAT → DRY → COOL → COMPLETE completes; safety cutoff works; lid locks during cycle and unlocks at COMPLETE |
 | L4 — Stress test | Extended run | Battery drains correctly, no overheating, SSR ratings adequate |
 
 ---
@@ -83,6 +83,14 @@
    - [ ] No false triggers from noise
    - [ ] Button responsive within 300ms
 
+### 3f. Lid interlock test
+
+1. With the lid **OPEN**, tap Start → the cycle must be **refused** (LCD: "CLOSE LID", 3 warning beeps, stays IDLE).
+2. Close the lid → tap Start → cycle should begin; LCD shows "PREHEAT".
+3. While the cycle is running, try opening the lid → all loads must kill immediately (lid-open safety interlock) and the system returns to IDLE.
+4. After COMPLETE, the lid should pulse **UNLOCKED** (open it freely).
+5. In IDLE, hold Start ~2 s → the lid should unlock for ~3 s (pulse to load), then re-lock.
+
 ---
 
 ## 4. L3 — Integration test (full cycle)
@@ -144,3 +152,5 @@
 | L4: Stress (3 cycles) | | | |
 | Safety: Thermal cutoff | | | |
 | Safety: BMS | | | |
+| Safety: Lid interlock — refuse start when open | | | |
+| Safety: Lid interlock — lock during cycle, unlock at COMPLETE | | | |

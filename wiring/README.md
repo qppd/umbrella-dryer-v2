@@ -6,13 +6,13 @@
 
 | Domain | Source | Loads | Switched by |
 |---|---|---|---|
-| 12V DC | 1× LiFePO4 200Ah | PTC heaters, AVC blowers, worm motors | 4× SSR-40DD (3 PTC + 1 fan bus, direct-drive), 3× SSR-10A (motors), PWM (D10/D11/D12) |
+| 12V DC | 1× LiFePO4 200Ah | PTC heaters, AVC blowers, worm motors, solenoid lock | 4× SSR-40DD (3 PTC + 1 fan bus, direct-drive), 4× SSR-10A (3 motors + 1 solenoid lock), PWM (D10/D11/D12) |
 | 5V DC | LM2596S buck (12V→5V) | Mega, sensors, LCD | — |
 
 > **SSR architecture:** a station's 3 PTC heaters draw ~25A — over the 10A rating
 > of PCB relay modules. Every PTC group therefore uses a **DC-output SSR-40DD** (40A).
 > The motor SSRs are LCTC DC-DC SSR-10A (active-HIGH). No optocoupler module needed. Each motor draws only ~0.8A.
-> The fan bus (9 blowers, ~40.5A) uses SSR-40DD.
+> The fan bus (9 blowers, ~40.5A) uses SSR-40DD. A 4th SSR-10A switches the lid **solenoid lock** (~0.65A).
 
 ## 1. Pin map — Mega 2560 side
 
@@ -37,10 +37,14 @@
 | D16 | out | Yellow LED (cycle running) via 220 Ω | HIGH = ON | 22 AWG |
 | D17 | out | Green LED (done) via 220 Ω | HIGH = ON | 22 AWG |
 | D18 | out | Active buzzer + (− → GND) | HIGH = ON | 22 AWG |
+| **D22** | in | **Lid reed switch** (other side → GND) | **LOW = lid CLOSED** | INPUT_PULLUP |
+| **D23** | out | **Solenoid lock SSR-10A (input +)** | **HIGH = UNLOCK (pulse ~3 s)** | 22 AWG |
 | **20 (SDA)** | I2C | LCD SDA | — | addr 0x27 or 0x3F |
 | **21 (SCL)** | I2C | LCD SCL | — | Mega I2C is pins 20/21 — NOT A4/A5 |
 
 > Mixed active levels are deliberate: SSRs are active-HIGH by design — a floating pin at boot = SSR OFF (boot-safe).
+> The lid safety interlock uses D22 (reed input) and D23 (solenoid SSR). The solenoid lock is **normally-locked
+> (fail-secure)**: an ON pulse to D23 retracts the bolt (unlocks); spring re-locks on its own the rest of the time.
 
 ## 2. 12V DC power distribution
 
@@ -56,6 +60,7 @@ The system uses **two heavy-duty 10-terminal 150A copper bus bars** (20 holes to
 | 12V Positive Bus | Station 3 PTC branch → SSR-40DD → heaters | 10 AWG | — |
 | 12V Positive Bus | Fan bus branch → SSR-40DD → blower distribution | 10 AWG | — |
 | 12V Positive Bus | Motor 1/2/3 branches → SSR-10A COM/NO → motors | 18 AWG | — |
+| 12V Positive Bus | **Solenoid lock branch → SSR-10A (D23) → solenoid lock** | **20 AWG** | — |
 | 12V Positive Bus | Buck IN+ (logic power) | 20 AWG | — |
 | All returns | 12V Negative Ground Bus Bar (10-Terminal Copper) → bank − | — | chassis bonded at one bolt |
 | Buck OUT+ (5V) | Mega 5V pin, sensors, LCD, button LED ring | 20 AWG | set 5.00 V first |
@@ -64,6 +69,8 @@ The system uses **two heavy-duty 10-terminal 150A copper bus bars** (20 holes to
 > stations at once ≈ 70A — exceeds the BMS 200A continuous rating and stresses the
 > battery. The firmware enforces one station at a time (`docs/FIRMWARE-GUIDE.md`).
 > With fuses removed, the BMS + firmware cutoff are the only over-current protections.
+> The solenoid lock draws ~0.65A **only during brief unlock pulses** (~3 s); it draws 0 A
+> while locked, so it adds no meaningful draw to the running budget.
 
 ## 3. Station PTC branch — SSR-40DD (×3, D4/D6/D8)
 
@@ -103,6 +110,47 @@ Active-HIGH: `digitalWrite(pin, HIGH)` = SSR ON. Floating pin at boot = SSR OFF 
 D13 HIGH → all blowers powered. D13 LOW → every blower dies instantly (emergency kill).
 On the Mega, D13 also blinks the onboard LED when the fan bus is on — free indicator.
 
+## 5b. Lid safety interlock — reed switch + solenoid lock (D22 / D23)
+
+The chamber front lid has an automatic bolt lock (fail-secure solenoid) and a closed-lid
+detector. **The machine will not start a drying cycle unless the lid is closed**, and the
+lid is **locked shut for the whole cycle** — both are for safety (no access to rotating
+umbrellas or heated air while running).
+
+| Item | Part | Pins | Notes |
+|---|---|---|---|
+| Lid-closed sensor | **Magnetic Door Reed Switch Set NO/NC** (Makerlab PH) | D22 + GND | NO mode: lid closed (magnet near) = contacts close = D22 LOW. INPUT_PULLUP on D22. OPEN = HIGH |
+| Lid lock | **Solenoid Lock 12VDC** (Makerlab PH), switched by the 4th **SSR-10A** | D23 (SSR input) | Normally-locked bolt; ON pulse retracts (unlocks). ~650 mA @ 12 V, 1–10 s duty — pulse only |
+
+**Reed switch wiring (door-closed detection):**
+
+| Terminal | Goes to |
+|---|---|
+| Reed lead 1 | Mega **D22** (INPUT_PULLUP enabled; pull-up holds HIGH when open) |
+| Reed lead 2 | GND |
+| Magnet (mount on the door) | Align with the reed housing on the frame so the pair closes when the lid is fully shut |
+
+NO/NC configurable set: use the **NO** contacts (closed when the magnet is near). Closed lid → read `LOW`.
+
+**Solenoid lock wiring (via the 4th SSR-10A):**
+
+| SSR terminal | Goes to |
+|---|---|
+| IN+ | Mega pin **D23** |
+| IN− | GND |
+| COM (input side) | +12V bus |
+| NO (output side) | Solenoid lock + lead |
+| Solenoid − lead | GND |
+| 1N4007 flyback diode | Across the solenoid terminals (cathode/banded → solenoid **+**) — protects the SSR output MOSFET from inductive kickback |
+
+Active-HIGH: `digitalWrite(D23, HIGH)` energizes the solenoid → bolt retracts → **UNLOCK**.
+`digitalWrite(D23, LOW)` → bolt returns (spring) → **LOCKED**. Keep the ON pulse ~3 s (the solenoid is rated for 1–10 s activation, not continuous hold).
+
+> **Fail-secure by design:** the bolt is spring-locked whenever D23 is LOW (or power is lost).
+> During a drying cycle D23 stays LOW, so the lid is mechanically locked with **0 A draw**.
+> On power loss mid-cycle the lid stays locked until power is restored and the solenoid is pulsed
+> open — an intentional safety trade-off (running heater/fan/motor loads also drop instantly on 12 V loss).
+
 ## 6. Blower PWM wiring (D10/D11/D12)
 
 Each of the 9 AVC blowers accepts PWM duty cycle directly from Mega pins via `analogWrite()`. Per station, the 3 blowers share one Mega PWM pin.
@@ -141,6 +189,7 @@ Each of the 9 AVC blowers accepts PWM duty cycle directly from Mega pins via `an
 | Bus → station PTC SSR → heaters | 10 AWG |
 | Bus → fan SSR → blower distribution | 10 AWG (18 AWG signal pigtails) |
 | Bus → motor branch → module → motor | 18 AWG |
+| **Bus → solenoid lock SSR → solenoid** | **20 AWG** |
 | Bus → buck IN+ | 20 AWG |
 | Buck OUT → 5V rail | 20 AWG |
 | All Mega signal / sensor jumpers | 22 AWG |
@@ -149,12 +198,12 @@ Each of the 9 AVC blowers accepts PWM duty cycle directly from Mega pins via `an
 
 1. **PTC self-regulation** — current drops as element temperature rises
 2. **DS18B20 firmware cutoff** at 65 °C — cuts PTC SSRs + motor SSRs + fan bus
-3. **Boot-safe by design** — All SSRs are active-HIGH (floating pin at boot = SSR OFF). PWM pins default LOW = blowers off. `allOff()` called first in `setup()`.
-   channels have onboard pull-ups (OFF); firmware writes safe states first in `setup()`
+3. **Boot-safe by design** — All SSRs are active-HIGH (floating pin at boot = SSR OFF). PWM pins default LOW = blowers off. `allOff()` called first in `setup()`. The solenoid SSR is LOW at boot = lid locked (fail-secure).
 4. **No mains voltage** — entire system is SELV
 5. **Single-point DC ground** — all returns meet at one bus bar
 6. **Emergency kill** — pull battery cable from 2-pin screw terminal OR flip 50A rocker switch OFF
 7. **BMS 200A** — over-current protection on battery output
+8. **Lid safety interlock** — the machine will not start a drying cycle while the lid is open (reed switch D22 gates the start button); the lid is locked shut (solenoid D23) for the whole cycle and only unlocked at COMPLETE (and on demand for loading)
 
 > With fuses removed, the BMS and firmware cutoff are the only over-current/over-temperature
 > protections. There is no hardware fuse backstop anymore.
