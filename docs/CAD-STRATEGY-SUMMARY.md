@@ -1,6 +1,6 @@
 # Fusion 360 CAD Strategy — Summary
 
-## What I Did
+## Produced verification for the Umbrella Dryer V2 Fusion 360 modeling strategy:
 
 Produced two files for the Umbrella Dryer V2 Fusion 360 modeling strategy:
 
