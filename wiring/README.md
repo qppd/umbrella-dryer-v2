@@ -1,5 +1,7 @@
 # Wiring Reference — Arduino Mega 2560
 
+> **CirKit Designer schematic:** https://app.cirkitdesigner.com/project/2e875907-8296-419f-81b1-bf9ca0faf2a8
+
 > Pin map for every component. Pure 12V DC architecture: **all loads run from the battery** — no mains voltage, no inverter, no changeover switch. If any other doc disagrees with this file, this file wins.
 
 ## 0. Domains overview
